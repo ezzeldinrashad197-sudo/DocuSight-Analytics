@@ -1,0 +1,116 @@
+@import "tailwindcss";
+
+@layer components {
+  .markdown-body {
+    @apply text-slate-700 leading-relaxed;
+  }
+  .markdown-body h1, .markdown-body h2, .markdown-body h3 {
+    @apply font-bold text-slate-900 mt-6 mb-3;
+  }
+  .markdown-body h1 { @apply text-2xl border-b border-slate-200 pb-2; }
+  .markdown-body h2 { @apply text-xl; }
+  .markdown-body h3 { @apply text-lg; }
+  .markdown-body p { @apply my-3; }
+  .markdown-body ul, .markdown-body ol { @apply pl-5 my-3; }
+  .markdown-body ul { @apply list-disc; }
+  .markdown-body ol { @apply list-decimal; }
+  .markdown-body li { @apply mb-1; }
+  .markdown-body strong { @apply font-bold text-slate-900; }
+}
+
+@media print {
+  @page {
+    size: auto;
+    margin: 10mm;
+  }
+
+  body {
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+    background-color: transparent !important;
+  }
+
+  /* Prevent page breaks inside rows and cards */
+  tr, .analysis-card, .chart-container, .break-inside-avoid {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  /* Force table wrappers to be visible and not truncate width */
+  .overflow-x-auto {
+    overflow-x: visible !important;
+  }
+
+  /* Make tables adapt to paper width instead of cutting off */
+  table {
+    width: 100% !important;
+    max-width: 100% !important;
+    table-layout: auto !important;
+  }
+
+  /* Avoid cutting headers or titles */
+  h1, h2, h3, h4, h5, h6 {
+    page-break-after: avoid;
+    break-after: avoid;
+  }
+
+  /* Fix for container widths */
+  .max-w-\[1400px\] {
+    max-width: none !important;
+  }
+  
+  /* Disable max-height scrolling on tables during print */
+  .max-h-\[600px\] {
+    max-height: none !important;
+  }
+  
+  .max-h-\[65vh\] {
+    max-height: none !important;
+  }
+}
+
+/* Fallback for JS-based HTML rendering matching the print classes */
+body.pdf-export {
+  background-color: #f8fafc !important;
+}
+
+body.pdf-export #root > div > div {
+  max-height: none !important;
+  overflow: visible !important;
+  display: block !important;
+}
+
+body.pdf-export #report-content-wrapper {
+  overflow: visible !important;
+  max-height: none !important;
+  display: block !important;
+}
+
+body.pdf-export .print\:hidden {
+  display: none !important;
+}
+
+body.pdf-export .print\:table-row-group {
+  display: table-row-group !important;
+}
+
+body.pdf-export .overflow-x-auto,
+body.pdf-export .overflow-y-auto,
+body.pdf-export .overflow-auto {
+  overflow: visible !important;
+  max-height: none !important;
+}
+
+body.pdf-export table {
+  width: 100% !important;
+  max-width: 100% !important;
+  table-layout: auto !important;
+}
+
+body.pdf-export .max-w-\[1400px\] {
+  max-width: 1400px !important;
+}
+
+body.pdf-export [class*="max-h-"] {
+  max-height: none !important;
+}
