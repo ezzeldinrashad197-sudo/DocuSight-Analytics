@@ -1,4 +1,9 @@
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+
 
 @layer components {
   .markdown-body {
@@ -31,9 +36,14 @@
   }
 
   /* Prevent page breaks inside rows and cards */
-  tr, .analysis-card, .chart-container, .break-inside-avoid {
-    page-break-inside: avoid;
-    break-inside: avoid;
+  tr, .analysis-card, .chart-container, .break-inside-avoid, .chart-card, .kpi-card, .presentation-slide {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+  
+  .page-break-after-always, .presentation-slide, .chart-card {
+    page-break-after: always !important;
+    break-after: page !important;
   }
 
   /* Force table wrappers to be visible and not truncate width */
@@ -42,7 +52,7 @@
   }
 
   /* Make tables adapt to paper width instead of cutting off */
-  table {
+  #export-container table {
     width: 100% !important;
     max-width: 100% !important;
     table-layout: auto !important;
@@ -74,6 +84,10 @@ body.pdf-export {
   background-color: #f8fafc !important;
 }
 
+body.pdf-export * {
+  box-shadow: none !important;
+}
+
 body.pdf-export #root > div > div {
   max-height: none !important;
   overflow: visible !important;
@@ -101,7 +115,7 @@ body.pdf-export .overflow-auto {
   max-height: none !important;
 }
 
-body.pdf-export table {
+body.pdf-export #export-container table {
   width: 100% !important;
   max-width: 100% !important;
   table-layout: auto !important;

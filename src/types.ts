@@ -1,3 +1,13 @@
+export interface SLASettings {
+  shopDrawings: number;
+  materialSubmittals: number;
+  rfi: number;
+  ncr: number;
+  sor: number;
+  letters: number;
+  default: number;
+}
+
 export interface ProjectSettings {
   id: string;
   projectName: string;
@@ -7,11 +17,14 @@ export interface ProjectSettings {
   consultantName: string;
   projectManager: string;
   documentControlManager: string;
+  slaDays?: SLASettings;
+  logoUrl?: string;
 }
 
 export interface SubmittalRow {
   id: string;
   logType: string;         // E.g. raw sheet name
+  sourceFile?: string;     // The original filename this row came from
   
   // Normalized Standard Fields
   documentType: string;    // 'MIR', 'WIR', 'RFI', 'SHD', 'MAR', 'DOC', 'SNA'
@@ -35,6 +48,35 @@ export interface SubmittalRow {
   remarks: string;
   area: string;
   tradeSystem: string;
+
+  // NCR/SOR Specific fields
+  ncrRef?: string;
+  ncrLastRev?: string;
+  ncrStatus?: string;
+  ncrAction?: string;
+  ncrSentDateCorrectiveAction?: string;
+
+  // New fields for SOR & Letters
+  sorStatus?: string;
+  sorAction?: string;
+  sorRef?: string;
+  sorSentDateCorrectiveAction?: string;
+
+  subject?: string;
+  sentDateCorrectiveAction?: string;
+  action?: string;           // e.g. Under Review, Open
+  recordStatus?: string;     // e.g. Waiting, Closed, Open
+  responseTime?: number;
+  reviewTime?: number;
+  totalDuration?: number;
+
+  // Letter specific fields
+  direction?: 'IN' | 'OUT';
+  stakeholder?: 'Archimid' | 'ACE' | 'IMKAN' | string;
+  normalizedRef?: string;
+  actionRequired?: boolean;
+  distributionStatus?: string;
+  hyperlink?: string;
 }
 
 export interface KPIStats {

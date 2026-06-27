@@ -124,13 +124,14 @@ export default function DelayAnalysis({ data, projectInfo }: DelayAnalysisProps)
                  <AlertCircle className="w-5 h-5" />
                  <h2 className="text-lg font-bold">Critical Delay Analytics Log</h2>
                </div>
-               <div className="px-3 py-1 bg-white/20 rounded font-bold text-sm">
+               <div className="px-3 py-1 bg-white opacity-20 rounded font-bold text-sm">
                   {analysis.delayedItems.length} Overdue Items
                </div>
              </div>
 
-             <div className="overflow-x-auto max-h-[600px]">
-               <table className="w-full text-left border-collapse relative">
+             <div className="overflow-x-auto overflow-y-visible" style={{ padding: '8px' }}>
+                 <div style={{ minWidth: 'max-content', padding: '4px' }}>
+                 <table className="w-full text-left border-collapse relative" style={{ margin: 0 }}>
                  <thead>
                    <tr>
                      <th className={thClass}>Log Type</th>
@@ -169,6 +170,7 @@ export default function DelayAnalysis({ data, projectInfo }: DelayAnalysisProps)
                    })}
                  </tbody>
                </table>
+               </div>
              </div>
           </div>
        )}

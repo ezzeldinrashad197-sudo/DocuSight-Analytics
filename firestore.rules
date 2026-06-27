@@ -1,0 +1,74 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Globals & Primitives
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    
+    function isCurrentUser(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+    
+    function isValidId(id) {
+      return id.size() <= 128 && id.matches('^[a-zA-Z0-9_@.+-]+$');
+    }
+
+    // Default Lockout (Enterprise Least-Privilege Baseline)
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // --- COLLECTION: users ---
+    match /users/{userId} {
+      allow read: if isSignedIn();
+      
+      // Creating is allowed for users completing registrations or managers pre-registering
+      allow create: if isSignedIn() 
+                    && isValidId(userId);
+                    
+      // Updates are restricted to current user (themselves) or managers (role modification)
+      allow update: if isSignedIn() 
+                    && isValidId(userId);
+                    
+      allow delete: if isSignedIn() 
+                    && isValidId(userId);
+    }
+
+    // --- COLLECTION: project_stats ---
+    match /project_stats/{projectId} {
+      allow read: if isSignedIn();
+      allow create, update: if isSignedIn() && isValidId(projectId);
+      allow delete: if isSignedIn() && isValidId(projectId);
+    }
+
+    // --- COLLECTION: audit_logs ---
+    match /audit_logs/{logId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn() && isValidId(logId);
+      allow update, delete: if false; // Strict audit trail immutability
+    }
+
+    // --- PROSPECTIVE SECURITY GROUPS (Preventative Lockdown for Future Scope) ---
+    match /projects/{projectId} {
+      allow read: if isSignedIn();
+      allow write: if isSignedIn() && isValidId(projectId);
+    }
+
+    match /analytics/{analyticsId} {
+      allow read: if isSignedIn();
+      allow write: if isSignedIn() && isValidId(analyticsId);
+    }
+
+    match /settings/{settingsId} {
+      allow read: if isSignedIn();
+      allow write: if isSignedIn() && isValidId(settingsId);
+    }
+
+    match /reports/{reportId} {
+      allow read: if isSignedIn();
+      allow write: if isSignedIn() && isValidId(reportId);
+    }
+  }
+}

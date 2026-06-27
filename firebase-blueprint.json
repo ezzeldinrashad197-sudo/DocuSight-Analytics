@@ -1,0 +1,94 @@
+{
+  "entities": {
+    "User": {
+      "title": "User Profile",
+      "description": "User profile with system role permission settings",
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string",
+          "description": "Registered user email address"
+        },
+        "role": {
+          "type": "string",
+          "description": "Granted system role permission roles"
+        }
+      },
+      "required": ["email", "role"]
+    },
+    "ProjectStats": {
+      "title": "Project Stats",
+      "description": "Consolidated metadata stats and configurations for project records",
+      "type": "object",
+      "properties": {
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp indicating document creation"
+        },
+        "disciplineAnalytics": {
+          "type": "object",
+          "description": "Discipline analytics data structure"
+        },
+        "healthScore": {
+          "type": "number",
+          "description": "Consolidated health score index numeric value"
+        },
+        "projectName": {
+          "type": "string",
+          "description": "Target project reference name identifier"
+        },
+        "stats": {
+          "type": "array",
+          "description": "Cumulative record state registers with trade definitions"
+        },
+        "totalRecords": {
+          "type": "number",
+          "description": "Total registers parsed for project scope"
+        }
+      },
+      "required": ["projectName", "totalRecords", "healthScore"]
+    },
+    "AuditLog": {
+      "title": "Audit Log",
+      "description": "System security audit trace register logs",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "Authenticated user Uid completing action"
+        },
+        "userEmail": {
+          "type": "string",
+          "description": "Email address corresponding to actions"
+        },
+        "action": {
+          "type": "string",
+          "description": "Action completed"
+        },
+        "details": {
+          "type": "string",
+          "description": "Shorthand description logs"
+        },
+        "timestamp": {
+          "type": "string",
+          "description": "Operational timestamp of trace register"
+        }
+      },
+      "required": ["userId", "action", "timestamp"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "Collection mapping registered team users and managers permissions"
+    },
+    "/project_stats/{projectId}": {
+      "schema": "ProjectStats",
+      "description": "Historical reporting registers of project analytics metrics"
+    },
+    "/audit_logs/{logId}": {
+      "schema": "AuditLog",
+      "description": "Read-only logs tracking secure access indicators"
+    }
+  }
+}
