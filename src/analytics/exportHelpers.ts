@@ -105,7 +105,7 @@ export const compileStatsForBaseType = (dataset: SubmittalRow[], bt: string, mon
     if (bt === 'LTR') {
        disciplinesInThisType = Array.from(new Set(typeData.map(d => d.stakeholder || 'GENERAL')));
     } else {
-      const predefinedDisciplines = bt === 'NCR' ? ['STR', 'Arch', 'Mech', 'Elec', 'Infra', 'Landscape', 'NCR-HSE'] : ['STR', 'Arch', 'Mech', 'Elec', 'Infra', 'Landscape', 'SURVEY'];
+      const predefinedDisciplines = bt === 'NCR' ? ['STR', 'Arch', 'Mech', 'Elec', 'Infra', 'Landscape', 'NCR-HSE'] : ['STR', 'Arch', 'Mech', 'Elec', 'Infra', 'Landscape', 'GENERAL'];
       disciplinesInThisType = [...predefinedDisciplines];
     }
 
@@ -122,7 +122,7 @@ export const compileStatsForBaseType = (dataset: SubmittalRow[], bt: string, mon
           else if (rDisc === 'LND' || rDisc === 'LAND' || rDisc.includes('LANDSCAP')) rDisc = 'Landscape';
           else if (rDisc === 'STR' || rDisc === 'STRUCT') rDisc = 'STR';
           else if (rDisc === 'HSE' || rDisc === 'NCR-HSE' || rDisc.includes('HSE') || rDisc.includes('SAFETY')) rDisc = 'NCR-HSE';
-          else rDisc = bt === 'NCR' ? 'NCR-HSE' : 'SURVEY';
+          else rDisc = bt === 'NCR' ? 'NCR-HSE' : 'GENERAL';
           
           return rDisc === disc;
       });

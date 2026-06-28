@@ -66,35 +66,47 @@ export const normalizeData = (rows: SubmittalRow[]): SubmittalRow[] => {
       let trade = 'General';
       let tradeShort = 'GEN';
       
-      const setTrade = (disc: string) => {
-          const w = disc.split(/[-_ \/(),]/);
-          if (docType === 'NCR' && (disc.includes('SURVEY') || disc.includes('SURV') || w.includes('SUR') || disc.includes('مساحة') || disc.includes('مساحه') || disc.includes('GENERAL') || disc.includes('GEN') || disc === '' || disc === 'NCR-HSE' || disc.includes('HSE') || disc.includes('SAFETY'))) {
+      const setTrade = (disc: any) => {
+          const safeDisc = typeof disc === 'string' ? disc : '';
+          const w = safeDisc.split(/[-_ \/(),]/);
+          if (docType === 'NCR' && (safeDisc.includes('SURVEY') || safeDisc.includes('SURV') || w.includes('SUR') || safeDisc.includes('مساحة') || safeDisc.includes('مساحه') || safeDisc.includes('GENERAL') || safeDisc.includes('GEN') || safeDisc === '' || safeDisc === 'NCR-HSE' || safeDisc.includes('HSE') || safeDisc.includes('SAFETY'))) {
               trade = 'NCR-HSE'; tradeShort = 'HSE'; return true;
           }
-          if (disc.includes('HSE') || disc.includes('SAFETY') || disc.includes('HEALTH') || disc.includes('ENVIRONMENT') || disc.includes('سلامة') || disc.includes('سلامه') || disc.includes('بيئة') || w.includes('HSE')) { trade = 'NCR-HSE'; tradeShort = 'HSE'; return true; }
-          if (disc.includes('INFRA') || disc.includes('INFR') || w.includes('INF') || disc.includes('UTILITIES')) { trade = 'Infrastructure'; tradeShort = 'INFRA'; return true; }
-          if (disc.includes('LAND') || w.includes('LND') || w.includes('LAN')) { trade = 'Landscape'; tradeShort = 'LND'; return true; }
-          if (disc.includes('ARCH') || w.includes('ARC')) { trade = 'Architectural'; tradeShort = 'ARC'; return true; }
-          if (disc.includes('STR') || disc.includes('CIVIL') || w.includes('CVL')) { trade = 'Structural'; tradeShort = 'STR'; return true; }
-          if (disc.includes('MECH') || w.includes('MEC')) { trade = 'Mechanical'; tradeShort = 'MEC'; return true; }
-          if (disc.includes('ELEC') || w.includes('ELE')) { trade = 'Electrical'; tradeShort = 'ELE'; return true; }
+          if (safeDisc.includes('HSE') || safeDisc.includes('SAFETY') || safeDisc.includes('HEALTH') || safeDisc.includes('ENVIRONMENT') || safeDisc.includes('سلامة') || safeDisc.includes('سلامه') || safeDisc.includes('بيئة') || w.includes('HSE')) { trade = 'NCR-HSE'; tradeShort = 'HSE'; return true; }
+          if (safeDisc.includes('INFRA') || safeDisc.includes('INFR') || w.includes('INF') || safeDisc.includes('UTILITIES')) { trade = 'Infrastructure'; tradeShort = 'INFRA'; return true; }
+          if (safeDisc.includes('LAND') || w.includes('LND') || w.includes('LAN')) { trade = 'Landscape'; tradeShort = 'LND'; return true; }
+          if (safeDisc.includes('ARCH') || w.includes('ARC')) { trade = 'Architectural'; tradeShort = 'ARC'; return true; }
+          if (safeDisc.includes('STR') || safeDisc.includes('CIVIL') || w.includes('CVL')) { trade = 'Structural'; tradeShort = 'STR'; return true; }
+          if (safeDisc.includes('MECH') || w.includes('MEC')) { trade = 'Mechanical'; tradeShort = 'MEC'; return true; }
+          if (safeDisc.includes('ELEC') || w.includes('ELE')) { trade = 'Electrical'; tradeShort = 'ELE'; return true; }
           if (isLtr) {
-              if (disc.includes('GENERAL') || disc.includes('GEN')) { trade = 'General'; tradeShort = 'GEN'; return true; }
+              if (safeDisc.includes('GENERAL') || safeDisc.includes('GEN')) { trade = 'General'; tradeShort = 'GEN'; return true; }
           } else {
-              if (disc.includes('SURVEY') || disc.includes('SURV') || w.includes('SUR') || disc.includes('مساحة') || disc.includes('مساحه')) { trade = 'SURVEY'; tradeShort = 'SUR'; return true; }
-              if (disc.includes('GENERAL') || disc.includes('GEN')) { trade = 'General'; tradeShort = 'GEN'; return true; }
+              if (safeDisc.includes('SURVEY') || safeDisc.includes('SURV') || w.includes('SUR') || safeDisc.includes('مساحة') || safeDisc.includes('مساحه')) { trade = 'SURVEY'; tradeShort = 'SUR'; return true; }
+              if (safeDisc.includes('GENERAL') || safeDisc.includes('GEN')) { trade = 'General'; tradeShort = 'GEN'; return true; }
           }
           return false;
       };
 
-      // 1. Prioritize explicit parsed discipline without polluting it with file names mapping
-      if (!setTrade(upperDiscipline)) {
-          // 2. If it's general/unknown, look at the logType (Sheet Name), but DO NOT use sourceFile
-          setTrade(upperLogType);
+      const isGenSheet = upperLogType === 'GEN' || upperLogType === 'GENERAL';
+      const isHseSheet = upperLogType === 'HSE' || upperLogType === 'SAFETY';
+
+      if (isGenSheet) {
+          trade = 'General';
+          tradeShort = 'GEN';
+      } else if (isHseSheet) {
+          trade = 'NCR-HSE';
+          tradeShort = 'HSE';
+      } else {
+          // 1. Prioritize explicit parsed discipline without polluting it with file names mapping
+          if (!setTrade(upperDiscipline)) {
+              // 2. If it's general/unknown, look at the logType (Sheet Name), but DO NOT use sourceFile
+              setTrade(upperLogType);
+          }
       }
 
       docType = `${docType}-${tradeShort}`;
-      let finalDiscipline = r.discipline || trade;
+      let finalDiscipline = isGenSheet ? 'GENERAL' : (isHseSheet ? 'NCR-HSE' : (r.discipline || trade));
 
       // DO NOT override GEN to HSE. The user explicitly requested to respect the parsed content.
 

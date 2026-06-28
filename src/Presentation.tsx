@@ -50,6 +50,7 @@ export default function Presentation({
     if (lower === 'LANDSCAPE' || lower === 'LND') return 'لاندسكيب';
     if (lower === 'NCR-HSE' || lower === 'HSE') return 'السلامة والبيئة (HSE)';
     if (lower === 'SURVEY' || lower === 'SUR') return 'المساحة';
+    if (lower === 'GENERAL' || lower === 'GEN') return 'عام';
     return d;
   };
 
@@ -291,7 +292,7 @@ export default function Presentation({
     if (bt === 'LTR') {
        disciplinesInThisType = Array.from(new Set(typeData.map(d => d.stakeholder || 'GENERAL')));
     } else {
-      const predefinedDisciplines = bt === 'NCR' ? ['STR', 'Arch', 'Mech', 'Elec', 'Infra', 'Landscape', 'NCR-HSE'] : ['STR', 'Arch', 'Mech', 'Elec', 'Infra', 'Landscape', 'SURVEY'];
+      const predefinedDisciplines = bt === 'NCR' ? ['STR', 'Arch', 'Mech', 'Elec', 'Infra', 'Landscape', 'NCR-HSE'] : ['STR', 'Arch', 'Mech', 'Elec', 'Infra', 'Landscape', 'GENERAL'];
       const hasGeneralData = typeData.some(d => {
           const docT = d.documentType || 'GENERAL';
           let disc = docT;
@@ -326,7 +327,7 @@ export default function Presentation({
           else if (rDisc === 'LND' || rDisc === 'LAND' || rDisc.includes('LANDSCAP')) rDisc = 'Landscape';
           else if (rDisc === 'STR' || rDisc.includes('STRUCT')) rDisc = 'STR';
           else if (rDisc === 'HSE' || rDisc === 'NCR-HSE' || rDisc.includes('HSE') || rDisc.includes('SAFETY')) rDisc = 'NCR-HSE';
-          else rDisc = bt === 'NCR' ? 'NCR-HSE' : 'SURVEY';
+          else rDisc = bt === 'NCR' ? 'NCR-HSE' : 'GENERAL';
           
           return rDisc === disc;
       });

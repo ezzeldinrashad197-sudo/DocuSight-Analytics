@@ -120,14 +120,23 @@ async function startServer() {
       directives: {
         defaultSrc: ["'self'"],
         scriptSrc: isProd
-          ? ["'self'", "https://cdn.jsdelivr.net", "https://apis.google.com", "https://accounts.google.com"]
-          : ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://cdn.jsdelivr.net", "https://apis.google.com", "https://accounts.google.com"],
-        styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+          ? ["'self'", "https://cdn.jsdelivr.net", "https://apis.google.com", "https://accounts.google.com", "https://*.firebaseapp.com"]
+          : ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://cdn.jsdelivr.net", "https://apis.google.com", "https://accounts.google.com", "https://*.firebaseapp.com"],
+        styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com", "https://accounts.google.com"],
         fontSrc: ["'self'", "https://fonts.gstatic.com", "data:"],
         imgSrc: ["'self'", "data:", "blob:", "https:", "*"], 
-        connectSrc: ["'self'", "https:", "wss:", "ws:", "https://*.googleapis.com", "https://*.firebaseapp.com"],
+        connectSrc: [
+          "'self'", 
+          "https:", 
+          "wss:", 
+          "ws:", 
+          "https://*.googleapis.com", 
+          "https://*.firebaseapp.com",
+          "https://identitytoolkit.googleapis.com",
+          "https://securetoken.googleapis.com"
+        ],
         frameAncestors: ["'self'", "https://*.google.com", "https://*.run.app"],
-        frameSrc: ["'self'", "https://accounts.google.com", "https://*.firebaseapp.com"],
+        frameSrc: ["'self'", "https://accounts.google.com", "https://*.firebaseapp.com", "https://*.google.com"],
         objectSrc: ["'none'"],
         upgradeInsecureRequests: isProd ? [] : null,
       }

@@ -291,42 +291,51 @@ export const parseExcelFile = (file: File): Promise<SubmittalRow[]> => {
               sheetName.toLowerCase().includes("safety") ||
               file.name.toLowerCase().includes("safety");
 
-            const contextDiscipline = extractDiscipline(sheetName) || extractDiscipline(file.name);
+            const isGenSheet = sheetName.toUpperCase() === "GEN" || sheetName.toUpperCase() === "GENERAL";
+            const isHseSheet = sheetName.toUpperCase() === "HSE" || sheetName.toUpperCase() === "SAFETY";
 
-            if (contextDiscipline) {
-              disciplineVal = contextDiscipline;
-            } else if (
-              rawDiscipline &&
-              rawDiscipline.length > 0 &&
-              !["YES", "NO", "N/A", "-"].includes(rawDiscipline)
-            ) {
-              disciplineVal = extractDiscipline(rawDiscipline) || rawDiscipline;
+            if (isGenSheet) {
+              disciplineVal = "GENERAL";
+            } else if (isHseSheet) {
+              disciplineVal = "NCR-HSE";
             } else {
-              const refString = (
-                colNcrRef >= 0
-                  ? String(r[colNcrRef])
-                  : colDocNo >= 0
-                    ? String(r[colDocNo])
-                    : ""
-              ).toUpperCase();
-              disciplineVal =
-                extractDiscipline(sheetName) ||
-                extractDiscipline(file.name) ||
-                extractDiscipline(refString) ||
-                (isLetter ? "GENERAL" : (isNcr ? "NCR-HSE" : "SURVEY"));
-            }
+              const contextDiscipline = extractDiscipline(sheetName) || extractDiscipline(file.name);
 
-            // Normalize common general/survey names (except for letters)
-            if (!isLetter) {
-              if (disciplineVal === "GEN" || disciplineVal === "GE" || disciplineVal === "GENERAL") {
-                disciplineVal = isNcr ? "NCR-HSE" : "SURVEY";
+              if (contextDiscipline) {
+                disciplineVal = contextDiscipline;
+              } else if (
+                rawDiscipline &&
+                rawDiscipline.length > 0 &&
+                !["YES", "NO", "N/A", "-"].includes(rawDiscipline)
+              ) {
+                disciplineVal = extractDiscipline(rawDiscipline) || rawDiscipline;
+              } else {
+                const refString = (
+                  colNcrRef >= 0
+                    ? String(r[colNcrRef])
+                    : colDocNo >= 0
+                      ? String(r[colDocNo])
+                      : ""
+                ).toUpperCase();
+                disciplineVal =
+                  extractDiscipline(sheetName) ||
+                  extractDiscipline(file.name) ||
+                  extractDiscipline(refString) ||
+                  (isLetter ? "GENERAL" : (isNcr ? "NCR-HSE" : "SURVEY"));
               }
-              if (isNcr && (disciplineVal === "SURVEY" || disciplineVal === "SURV" || disciplineVal === "SUR")) {
-                disciplineVal = "NCR-HSE";
+
+              // Normalize common general/survey names (except for letters)
+              if (!isLetter) {
+                if (disciplineVal === "GEN" || disciplineVal === "GE" || disciplineVal === "GENERAL") {
+                  disciplineVal = isNcr ? "NCR-HSE" : "SURVEY";
+                }
+                if (isNcr && (disciplineVal === "SURVEY" || disciplineVal === "SURV" || disciplineVal === "SUR")) {
+                  disciplineVal = "NCR-HSE";
+                }
+              } else {
+                if (disciplineVal === "GEN" || disciplineVal === "GE" || disciplineVal === "SURVEY")
+                  disciplineVal = "GENERAL";
               }
-            } else {
-              if (disciplineVal === "GEN" || disciplineVal === "GE" || disciplineVal === "SURVEY")
-                disciplineVal = "GENERAL";
             }
 
             const rawCode =

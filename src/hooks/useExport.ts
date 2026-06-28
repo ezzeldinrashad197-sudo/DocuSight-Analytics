@@ -269,7 +269,15 @@ export function useExport({ data, activeTab, filterMonthly, filterCumulative, ac
                 throw new Error(`Element #${elementId} was unmounted during export wait.`);
             }
 
-            const filename = `DocuSight-${activeTab}-${new Date().toISOString().split('T')[0]}.pdf`;
+            // Dynamic project-specific filename nomenclature
+            const rawProjName = activeProject?.projectName || "DocuSight";
+            const cleanProjName = rawProjName
+                .trim()
+                .replace(/[^a-zA-Z0-9\s_-]/g, '')
+                .replace(/\s+/g, '_');
+            const rawDocType = activeTab ? activeTab.toUpperCase() : "REPORT";
+            const timestamp = new Date().toISOString().split('T')[0];
+            const filename = `${cleanProjName}_${rawDocType}_Report_${timestamp}.pdf`;
 
             if (activeTab === 'presentation') {
                 const slides = Array.from(exportElement.querySelectorAll('.presentation-slide'));

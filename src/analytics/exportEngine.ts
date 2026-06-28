@@ -58,7 +58,7 @@ export const generatePptxReport = async (
     // Prepare Base Types
     const orderedPredefinedBaseTypes = ['SHD', 'SDW', 'MAR', 'QS', 'DOC', 'RFI', 'LTR', 'WIR', 'MIR', 'NCR', 'SOR'];
     const baseTypes = Array.from(new Set(data.map(d => {
-        let dt = d.documentType || "GENERAL";
+        let dt = d && d.documentType ? String(d.documentType) : "GENERAL";
         if (dt === 'NCR') dt = 'NCR-HSE'; 
         return dt.split('-')[0].trim().toUpperCase();
     }))).filter(Boolean)
@@ -511,8 +511,9 @@ export const generatePptxReport = async (
              };
          })
          .sort((a,b) => {
-             const getSortKey = (typeStr: string) => {
-                 const parts = typeStr.split('-');
+             const getSortKey = (typeStr: any) => {
+                 const safeStr = typeof typeStr === 'string' ? typeStr : '';
+                 const parts = safeStr.split('-');
                  const base = parts[0] ? parts[0].trim().toUpperCase() : '';
                  const disc = parts.slice(1).join('-').trim().toUpperCase() || '';
                  return { base, disc };
@@ -667,7 +668,7 @@ export const generatePptxReport = async (
 
             if (stats.length === 0) continue;
             
-            const catOrder = ['STR', 'ARCH', 'MECH', 'ELEC', 'INFRA', 'LAND', 'SURVEY', 'NCR-HSE'];
+            const catOrder = ['STR', 'ARCH', 'MECH', 'ELEC', 'INFRA', 'LAND', 'GENERAL', 'NCR-HSE'];
             stats.sort((a, b) => {
                 let ai = catOrder.indexOf(a.discipline);
                 let bi = catOrder.indexOf(b.discipline);

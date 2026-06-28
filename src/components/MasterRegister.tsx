@@ -30,6 +30,12 @@ export default function MasterRegister({ data, projectInfo }: Props) {
     const [viewMode, setViewMode] = useState<'kpi' | 'grid'>('kpi');
     const [filterDiscipline, setFilterDiscipline] = useState('All');
 
+    // Pagination & Page Range States
+    const [currentPage, setCurrentPage] = useState(1);
+    const [fromPageInput, setFromPageInput] = useState('1');
+    const [toPageInput, setToPageInput] = useState('');
+    const [usePageRange, setUsePageRange] = useState(false);
+
     // Advanced derived metrics
     const openRecords = useMemo(() => data.filter(d => getStatusCodeCategory(d.status) === 'PENDING').length, [data]);
     const closedRecords = data.length - openRecords;
@@ -48,6 +54,43 @@ export default function MasterRegister({ data, projectInfo }: Props) {
     }, [data, searchTerm, filterDiscipline]);
 
     const disciplines = Array.from(new Set(data.map(d => d.discipline).filter(Boolean)));
+
+    const itemsPerPage = 100;
+    const totalPages = Math.ceil(filteredData.length / itemsPerPage) || 1;
+
+    // Sync From/To Page Range limits when totalPages changes
+    React.useEffect(() => {
+        setToPageInput(String(totalPages));
+    }, [totalPages]);
+
+    // Reset current page when filters/search changes
+    React.useEffect(() => {
+        setCurrentPage(1);
+    }, [searchTerm, filterDiscipline]);
+
+    const parsedFrom = parseInt(fromPageInput, 10);
+    const parsedTo = parseInt(toPageInput, 10);
+    const isRangeValid = !isNaN(parsedFrom) && !isNaN(parsedTo) &&
+                         parsedFrom >= 1 && parsedTo <= totalPages &&
+                         parsedFrom <= parsedTo;
+
+    // Slice rows for display/export depending on Page Range Filter state
+    const rangedData = useMemo(() => {
+        if (usePageRange && isRangeValid) {
+            const startIdx = (parsedFrom - 1) * itemsPerPage;
+            const endIdx = parsedTo * itemsPerPage;
+            return filteredData.slice(startIdx, endIdx);
+        }
+        return filteredData;
+    }, [filteredData, usePageRange, isRangeValid, parsedFrom, parsedTo, itemsPerPage]);
+
+    const activeDisplayData = useMemo(() => {
+        if (usePageRange && isRangeValid) {
+            return rangedData;
+        }
+        const start = (currentPage - 1) * itemsPerPage;
+        return filteredData.slice(start, start + itemsPerPage);
+    }, [filteredData, rangedData, usePageRange, isRangeValid, currentPage, itemsPerPage]);
 
     return (
         <div className="p-6 max-w-[1600px] mx-auto space-y-6">
@@ -134,51 +177,102 @@ export default function MasterRegister({ data, projectInfo }: Props) {
 
             {viewMode === 'grid' && (
                 <div className="bg-white border border-slate-200 rounded-xl shadow-sm flex flex-col min-h-[600px]">
-                     <div className="p-4 border-b border-slate-200 bg-slate-50 flex flex-wrap gap-4 justify-between items-center">
-                         <div className="flex gap-4 items-center">
-                             <div className="relative">
-                                 <Search className="w-4 h-4 absolute left-3 top-2.5 text-slate-400" />
-                                 <input type="text" placeholder="Search reference..." value={searchTerm} onChange={e=>setSearchTerm(e.target.value)} className="pl-9 pr-4 py-2 border border-slate-300 rounded-lg text-sm outline-none focus:border-blue-500 w-64 focus:ring-1 focus:ring-blue-500"/>
-                             </div>
-                             <select className="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white outline-none focus:border-blue-500" value={filterDiscipline} onChange={e=>setFilterDiscipline(e.target.value)}>
-                                 <option value="All">All Disciplines</option>
-                                 {disciplines.map(d => <option key={d} value={d}>{d}</option>)}
-                             </select>
-                         </div>
-                         <button 
-                             onClick={() => {
-                                 // Sort data exactly as requested: SDW STR, SDW ARCH, etc...
-                                 const sorted = [...filteredData].sort((a,b) => {
-                                     const kA = (a.documentType || a.logType || '').split('-');
-                                     const kB = (b.documentType || b.logType || '').split('-');
-                                     const bA = kA[0] || ''; const bB = kB[0] || '';
-                                     const dA = kA[1] || a.discipline || ''; const dB = kB[1] || b.discipline || '';
-                                     
-                                     const bOrd = ['SDW', 'SHD', 'MAR', 'QS', 'DOC', 'WIR', 'MIR', 'RFI', 'NCR', 'SOR', 'LTR'];
-                                     let idxA = bOrd.indexOf(bA); let idxB = bOrd.indexOf(bB);
-                                     if(idxA!==-1 && idxB!==-1 && idxA!==idxB) return idxA - idxB;
-                                     if(idxA===-1 && idxB!==-1) return 1; if(idxA!==-1 && idxB===-1) return -1;
-                                     
-                                     const dOrd = ['STR','ARC','ARCH','ELE','MEC','MECH','LND','LAND','INFRA','SUR','GEN'];
-                                     let dixA = dOrd.indexOf(dA); let dixB = dOrd.indexOf(dB);
-                                     if(dixA!==-1 && dixB!==-1 && dixA!==dixB) return dixA - dixB;
-                                     if(dixA===-1 && dixB!==-1) return 1; if(dixA!==-1 && dixB===-1) return -1;
-                                     return 0;
-                                 });
-                                 let csv = 'Doc No,Rev,Type,Discipline,Submit Date,Status\n';
-                                 sorted.forEach(row => {
-                                     csv += `"${row.docNo||row.id}","${row.rev}","${row.documentType||row.logType}","${row.discipline}","${row.submissionDate}","${row.status}"\n`;
-                                 });
-                                 const blob = new Blob([new Uint8Array([0xEF, 0xBB, 0xBF]), csv], { type: 'text/csv;charset=utf-8;' });
-                                 const link = document.createElement("a");
-                                 link.href = URL.createObjectURL(blob);
-                                 link.download = `Master_Register_Export_${new Date().getTime()}.csv`;
-                                 link.click();
-                             }}
-                             className="flex items-center gap-2 px-4 py-2 bg-slate-900 text-white rounded-lg hover:bg-slate-800 transition-colors text-sm font-bold"
-                         >
-                             <Download className="w-4 h-4" /> Export CSV
-                         </button>
+                     <div className="p-4 border-b border-slate-200 bg-slate-50 flex flex-wrap gap-4 justify-between items-center print:hidden">
+                          <div className="flex flex-wrap gap-4 items-center">
+                              <div className="relative">
+                                  <Search className="w-4 h-4 absolute left-3 top-2.5 text-slate-400" />
+                                  <input type="text" placeholder="Search reference..." value={searchTerm} onChange={e=>setSearchTerm(e.target.value)} className="pl-9 pr-4 py-2 border border-slate-300 rounded-lg text-sm outline-none focus:border-blue-500 w-64 focus:ring-1 focus:ring-blue-500"/>
+                              </div>
+                              <select className="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white outline-none focus:border-blue-500" value={filterDiscipline} onChange={e=>setFilterDiscipline(e.target.value)}>
+                                  <option value="All">All Disciplines</option>
+                                  {disciplines.map(d => <option key={d} value={d}>{d}</option>)}
+                              </select>
+
+                              {/* Page Range Filter Controls */}
+                              <div className={`flex flex-wrap items-center gap-2.5 bg-white px-3 py-1.5 rounded-lg border shadow-sm text-xs transition-colors ${usePageRange && !isRangeValid ? 'border-red-300 bg-red-50/20' : 'border-slate-200'}`}>
+                                  <label className="flex items-center gap-1.5 font-bold text-slate-700 cursor-pointer select-none">
+                                      <input 
+                                          type="checkbox" 
+                                          checked={usePageRange} 
+                                          onChange={e => setUsePageRange(e.target.checked)} 
+                                          className="rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                                      />
+                                      <span className="flex items-center gap-1">
+                                          Page Range Filter <span className="text-slate-400 font-normal">/ تصفية نطاق الصفحات</span>:
+                                      </span>
+                                  </label>
+                                  <div className="flex items-center gap-1">
+                                      <span className="text-slate-500 text-[10px] font-medium uppercase">From</span>
+                                      <input 
+                                          type="number" 
+                                          min={1} 
+                                          max={totalPages} 
+                                          value={fromPageInput} 
+                                          onChange={e => {
+                                              setFromPageInput(e.target.value);
+                                              const val = parseInt(e.target.value, 10);
+                                              if (val >= 1 && val <= totalPages) {
+                                                  setCurrentPage(val);
+                                              }
+                                          }} 
+                                          disabled={!usePageRange}
+                                          className={`w-14 px-1.5 py-0.5 border rounded text-center outline-none font-medium text-xs ${usePageRange && !isRangeValid ? 'border-red-400 focus:border-red-500 focus:ring-1 focus:ring-red-500' : 'border-slate-300 focus:border-blue-500 disabled:opacity-50 disabled:bg-slate-50'}`}
+                                      />
+                                      <span className="text-slate-500 text-[10px] font-medium uppercase">To</span>
+                                      <input 
+                                          type="number" 
+                                          min={1} 
+                                          max={totalPages} 
+                                          value={toPageInput} 
+                                          onChange={e => setToPageInput(e.target.value)} 
+                                          disabled={!usePageRange}
+                                          className={`w-14 px-1.5 py-0.5 border rounded text-center outline-none font-medium text-xs ${usePageRange && !isRangeValid ? 'border-red-400 focus:border-red-500 focus:ring-1 focus:ring-red-500' : 'border-slate-300 focus:border-blue-500 disabled:opacity-50 disabled:bg-slate-50'}`}
+                                      />
+                                      <span className="text-slate-400 font-medium">of {totalPages}</span>
+                                  </div>
+                                  {usePageRange && !isRangeValid && (
+                                      <span className="text-red-600 font-bold animate-pulse text-[10px] bg-red-100/80 px-1.5 py-0.5 rounded border border-red-200">
+                                          Invalid Range (1 - {totalPages}) / نطاق غير صالح
+                                      </span>
+                                  )}
+                              </div>
+                          </div>
+                          
+                          <button 
+                              onClick={() => {
+                                  // Sort data exactly as requested: SDW STR, SDW ARCH, etc...
+                                  const sourceData = usePageRange && isRangeValid ? rangedData : filteredData;
+                                  const sorted = [...sourceData].sort((a,b) => {
+                                      const kA = (a.documentType || a.logType || '').split('-');
+                                      const kB = (b.documentType || b.logType || '').split('-');
+                                      const bA = kA[0] || ''; const bB = kB[0] || '';
+                                      const dA = kA[1] || a.discipline || ''; const dB = kB[1] || b.discipline || '';
+                                      
+                                      const bOrd = ['SDW', 'SHD', 'MAR', 'QS', 'DOC', 'WIR', 'MIR', 'RFI', 'NCR', 'SOR', 'LTR'];
+                                      let idxA = bOrd.indexOf(bA); let idxB = bOrd.indexOf(bB);
+                                      if(idxA!==-1 && idxB!==-1 && idxA!==idxB) return idxA - idxB;
+                                      if(idxA===-1 && idxB!==-1) return 1; if(idxA!==-1 && idxB===-1) return -1;
+                                      
+                                      const dOrd = ['STR','ARC','ARCH','ELE','MEC','MECH','LND','LAND','INFRA','SUR','GEN'];
+                                      let dixA = dOrd.indexOf(dA); let dixB = dOrd.indexOf(dB);
+                                      if(dixA!==-1 && dixB!==-1 && dixA!==dixB) return dixA - dixB;
+                                      if(dixA===-1 && dixB!==-1) return 1; if(dixA!==-1 && dixB===-1) return -1;
+                                      return 0;
+                                  });
+                                  let csv = 'Doc No,Rev,Type,Discipline,Submit Date,Status\n';
+                                  sorted.forEach(row => {
+                                      csv += `"${row.docNo||row.id}","${row.rev}","${row.documentType||row.logType}","${row.discipline}","${row.submissionDate}","${row.status}"\n`;
+                                  });
+                                  const blob = new Blob([new Uint8Array([0xEF, 0xBB, 0xBF]), csv], { type: 'text/csv;charset=utf-8;' });
+                                  const link = document.createElement("a");
+                                  link.href = URL.createObjectURL(blob);
+                                  link.download = `Master_Register_Export_${new Date().getTime()}.csv`;
+                                  link.click();
+                              }}
+                              className="flex items-center gap-2 px-4 py-2 bg-slate-900 text-white rounded-lg hover:bg-slate-800 transition-colors text-sm font-bold"
+                          >
+                              <Download className="w-4 h-4" /> Export CSV
+                          </button>
                      </div>
                      <div className="overflow-auto flex-1">
                         <table className="w-full text-sm text-left whitespace-nowrap">
@@ -193,7 +287,7 @@ export default function MasterRegister({ data, projectInfo }: Props) {
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-100">
-                                {filteredData.map((row, i) => {
+                                {activeDisplayData.map((row, i) => {
                                     const isMissingDocNo = !row.docNo && !row.ncrRef && !row.sorRef && !row.normalizedRef && !row.id;
                                     const isMissingRev = row.rev === undefined || row.rev === null || String(row.rev).trim() === '';
                                     const isMissingDate = !row.submissionDate;
@@ -218,12 +312,54 @@ export default function MasterRegister({ data, projectInfo }: Props) {
                                         </td>
                                     </tr>
                                 )})}
-                                {filteredData.length === 0 && (
+                                {activeDisplayData.length === 0 && (
                                     <tr><td colSpan={6} className="px-6 py-10 text-center text-slate-400">No records match the current filters.</td></tr>
                                 )}
                             </tbody>
                         </table>
                      </div>
+
+                     {/* Pagination Controls Footer */}
+                     {!usePageRange && totalPages > 1 && (
+                         <div className="p-4 border-t border-slate-200 bg-slate-50 flex items-center justify-between print:hidden">
+                             <span className="text-xs font-medium text-slate-500">
+                                 Showing {Math.min(filteredData.length, (currentPage - 1) * itemsPerPage + 1)}-{Math.min(filteredData.length, currentPage * itemsPerPage)} of {filteredData.length} records
+                             </span>
+                             <div className="flex items-center gap-1.5">
+                                 <button 
+                                     disabled={currentPage === 1}
+                                     onClick={() => setCurrentPage(1)}
+                                     className="px-2.5 py-1.5 text-xs font-bold border rounded bg-white hover:bg-slate-100 disabled:opacity-50 transition-colors cursor-pointer select-none"
+                                 >
+                                     &lt;&lt; First
+                                 </button>
+                                 <button 
+                                     disabled={currentPage === 1}
+                                     onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                                     className="px-2.5 py-1.5 text-xs font-bold border rounded bg-white hover:bg-slate-100 disabled:opacity-50 transition-colors cursor-pointer select-none"
+                                 >
+                                     &lt; Prev
+                                 </button>
+                                 <span className="px-3 text-xs font-semibold text-slate-700 select-none">
+                                     Page {currentPage} of {totalPages}
+                                 </span>
+                                 <button 
+                                     disabled={currentPage === totalPages}
+                                     onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                                     className="px-2.5 py-1.5 text-xs font-bold border rounded bg-white hover:bg-slate-100 disabled:opacity-50 transition-colors cursor-pointer select-none"
+                                 >
+                                     Next &gt;
+                                 </button>
+                                 <button 
+                                     disabled={currentPage === totalPages}
+                                     onClick={() => setCurrentPage(totalPages)}
+                                     className="px-2.5 py-1.5 text-xs font-bold border rounded bg-white hover:bg-slate-100 disabled:opacity-50 transition-colors cursor-pointer select-none"
+                                 >
+                                     Last &gt;&gt;
+                                 </button>
+                             </div>
+                         </div>
+                     )}
                 </div>
             )}
         </div>

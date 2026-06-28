@@ -35,8 +35,9 @@ export default function ReportTable({ data, filterFn, title, projectInfo }: Repo
              };
          })
          .sort((a,b) => {
-             const getSortKey = (typeStr: string) => {
-                 const parts = typeStr.split('-');
+             const getSortKey = (typeStr: any) => {
+                 const safeStr = typeof typeStr === 'string' ? typeStr : '';
+                 const parts = safeStr.split('-');
                  const base = parts[0] ? parts[0].trim().toUpperCase() : '';
                  const disc = parts.slice(1).join('-').trim().toUpperCase() || '';
                  return { base, disc };

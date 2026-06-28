@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { FileSpreadsheet, FileUp, LayoutDashboard, CalendarDays, Clock, Database, CheckCircle2, AlertCircle, Printer, Presentation as PresentationIcon, Filter, Settings, Bot, ChevronLeft, ChevronRight, BarChart, Loader2, FileText, CheckSquare, ShieldAlert, Network, Hexagon, LogOut, Globe } from 'lucide-react';
+import { FileSpreadsheet, FileUp, LayoutDashboard, CalendarDays, Clock, Database, CheckCircle2, AlertCircle, Printer, Presentation as PresentationIcon, Filter, Settings, Bot, ChevronLeft, ChevronRight, BarChart, Loader2, FileText, CheckSquare, ShieldAlert, Network, Hexagon, LogOut, Globe, X } from 'lucide-react';
 import { SubmittalRow, ProjectSettings } from './types';
 import MasterRegister from './components/MasterRegister';
+import MultiSelectDropdown from './components/MultiSelectDropdown';
 import ReportTable from './ReportTable';
 import DelayAnalysis from './DelayAnalysis';
 import Presentation from './Presentation';
@@ -596,19 +597,46 @@ export default function App() {
                     <div className="px-6 pt-4 pb-4 animate-in slide-in-from-top-2 border-t border-slate-100 mt-3 bg-slate-50/50 rounded-b-lg">
                         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-3 mb-4">
                             {Object.entries(uniqueOpts).map(([key, opts]) => (
-                                <div key={key} className="flex flex-col gap-1">
-                                    <label className="text-xs font-bold text-[#64748b] uppercase tracking-wider capitalize">{key.replace(/([A-Z])/g, ' $1').trim()}</label>
-                                    <select 
-                                        value={pendingFilters[key as keyof typeof pendingFilters]}
-                                        onChange={e => setPendingFilters(prev => ({...prev, [key]: e.target.value}))}
-                                        className="border border-[#cbd5e1] rounded px-2 py-1.5 text-sm bg-white focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37] outline-none"
-                                    >
-                                        <option value="All">All {key}</option>
-                                        {(opts as string[]).map(opt => <option key={opt} value={opt}>{opt}</option>)}
-                                    </select>
-                                </div>
+                                <MultiSelectDropdown
+                                    key={key}
+                                    label={key}
+                                    options={opts as string[]}
+                                    selected={pendingFilters[key as keyof typeof pendingFilters] || []}
+                                    onChange={(newSelected) => setPendingFilters(prev => ({ ...prev, [key]: newSelected }))}
+                                />
                             ))}
                         </div>
+
+                        {/* Interactive Chips/Tags for Selected Filters */}
+                        {Object.entries(pendingFilters).some(([_, val]) => Array.isArray(val) && val.length > 0) && (
+                            <div className="flex flex-wrap gap-1.5 mb-4 p-2.5 bg-white border border-slate-100 rounded-lg shadow-inner">
+                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center mr-1">Active Choices:</span>
+                                {Object.entries(pendingFilters).map(([key, val]) => {
+                                    if (!Array.isArray(val) || val.length === 0) return null;
+                                    const formattedLabel = key.replace(/([A-Z])/g, ' $1').trim();
+                                    return val.map(v => (
+                                        <span 
+                                            key={`${key}-${v}`} 
+                                            className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-blue-50 border border-blue-200 text-blue-800 text-xs font-semibold rounded-md uppercase tracking-wide shadow-sm"
+                                        >
+                                            <span className="text-[10px] text-blue-500 font-medium capitalize tracking-normal">{formattedLabel}:</span>
+                                            {v}
+                                            <button 
+                                                type="button" 
+                                                onClick={() => setPendingFilters(prev => ({
+                                                    ...prev, 
+                                                    [key]: (prev[key as keyof typeof pendingFilters] || []).filter(x => x !== v)
+                                                }))}
+                                                className="p-0.5 hover:bg-blue-100 rounded text-blue-600 hover:text-blue-800 transition-colors cursor-pointer"
+                                            >
+                                                <X className="w-3 h-3" />
+                                            </button>
+                                        </span>
+                                    ));
+                                })}
+                            </div>
+                        )}
+
                         <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-200">
                             {isDirty && (
                                 <span className="text-xs text-amber-600 font-medium animate-pulse flex items-center gap-1.5 bg-amber-50 px-2.5 py-1 rounded border border-amber-200">
@@ -617,13 +645,13 @@ export default function App() {
                             )}
                             <button
                                 onClick={resetFilters}
-                                className="px-4 py-1.5 rounded-md border border-slate-300 bg-white text-slate-700 text-xs font-bold hover:bg-slate-100 transition-colors"
+                                className="px-4 py-1.5 rounded-md border border-slate-300 bg-white text-slate-700 text-xs font-bold hover:bg-slate-100 transition-colors cursor-pointer"
                             >
                                   Reset Filters
                             </button>
                             <button
                                 onClick={applyFilters}
-                                className={`px-5 py-1.5 rounded-md text-xs font-bold transition-all ${isDirty ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-md shadow-blue-500/10' : 'bg-slate-200 text-slate-500 cursor-not-allowed'}`}
+                                className={`px-5 py-1.5 rounded-md text-xs font-bold transition-all cursor-pointer ${isDirty ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-md shadow-blue-500/10' : 'bg-slate-200 text-slate-500 cursor-not-allowed'}`}
                             >
                                 Apply Filters
                             </button>
@@ -653,14 +681,14 @@ export default function App() {
                     {/* Active Filters Display */}
                     <div className="w-full bg-slate-50 border border-slate-250 rounded-lg p-3 text-[10px] flex flex-wrap gap-x-5 gap-y-1 text-slate-755">
                         <div className="font-bold text-slate-700 mr-2 border-r border-slate-300 pr-3 uppercase tracking-wider">Report Filters:</div>
-                        <div><span className="font-semibold text-slate-500">Doc Type:</span> <span className="font-bold text-slate-800">{filters.documentType}</span></div>
-                        <div><span className="font-semibold text-slate-500">Discipline:</span> <span className="font-bold text-slate-800">{filters.discipline}</span></div>
-                        <div><span className="font-semibold text-slate-500">Contractor:</span> <span className="font-bold text-slate-800">{filters.contractor}</span></div>
-                        <div><span className="font-semibold text-slate-500">Consultant:</span> <span className="font-bold text-slate-800">{filters.consultant}</span></div>
-                        <div><span className="font-semibold text-slate-500">Log Type:</span> <span className="font-bold text-slate-800">{filters.logType}</span></div>
-                        <div><span className="font-semibold text-slate-500">Status:</span> <span className="font-bold text-slate-800">{filters.status}</span></div>
-                        <div><span className="font-semibold text-slate-500">Area:</span> <span className="font-bold text-slate-800">{filters.area}</span></div>
-                        <div><span className="font-semibold text-slate-500">Trade System:</span> <span className="font-bold text-slate-800">{filters.tradeSystem}</span></div>
+                        <div><span className="font-semibold text-slate-500">Doc Type:</span> <span className="font-bold text-slate-800">{(filters.documentType && filters.documentType.length > 0) ? filters.documentType.join(', ') : 'All'}</span></div>
+                        <div><span className="font-semibold text-slate-500">Discipline:</span> <span className="font-bold text-slate-800">{(filters.discipline && filters.discipline.length > 0) ? filters.discipline.join(', ') : 'All'}</span></div>
+                        <div><span className="font-semibold text-slate-500">Contractor:</span> <span className="font-bold text-slate-800">{(filters.contractor && filters.contractor.length > 0) ? filters.contractor.join(', ') : 'All'}</span></div>
+                        <div><span className="font-semibold text-slate-500">Consultant:</span> <span className="font-bold text-slate-800">{(filters.consultant && filters.consultant.length > 0) ? filters.consultant.join(', ') : 'All'}</span></div>
+                        <div><span className="font-semibold text-slate-500">Log Type:</span> <span className="font-bold text-slate-800">{(filters.logType && filters.logType.length > 0) ? filters.logType.join(', ') : 'All'}</span></div>
+                        <div><span className="font-semibold text-slate-500">Status:</span> <span className="font-bold text-slate-800">{(filters.status && filters.status.length > 0) ? filters.status.join(', ') : 'All'}</span></div>
+                        <div><span className="font-semibold text-slate-500">Area:</span> <span className="font-bold text-slate-800">{(filters.area && filters.area.length > 0) ? filters.area.join(', ') : 'All'}</span></div>
+                        <div><span className="font-semibold text-slate-500">Trade System:</span> <span className="font-bold text-slate-800">{(filters.tradeSystem && filters.tradeSystem.length > 0) ? filters.tradeSystem.join(', ') : 'All'}</span></div>
                     </div>
                 </div>
 

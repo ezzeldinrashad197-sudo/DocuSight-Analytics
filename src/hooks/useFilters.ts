@@ -2,25 +2,25 @@ import { useState, useMemo } from 'react';
 import { SubmittalRow } from '../types';
 
 export interface FilterState {
-  documentType: string;
-  discipline: string;
-  contractor: string;
-  consultant: string;
-  logType: string;
-  status: string;
-  area: string;
-  tradeSystem: string;
+  documentType: string[];
+  discipline: string[];
+  contractor: string[];
+  consultant: string[];
+  logType: string[];
+  status: string[];
+  area: string[];
+  tradeSystem: string[];
 }
 
 const defaultFilters: FilterState = {
-  documentType: 'All',
-  discipline: 'All',
-  contractor: 'All',
-  consultant: 'All',
-  logType: 'All',
-  status: 'All',
-  area: 'All',
-  tradeSystem: 'All'
+  documentType: [],
+  discipline: [],
+  contractor: [],
+  consultant: [],
+  logType: [],
+  status: [],
+  area: [],
+  tradeSystem: []
 };
 
 export function useFilters(data: SubmittalRow[], startDate: string, endDate: string) {
@@ -28,9 +28,11 @@ export function useFilters(data: SubmittalRow[], startDate: string, endDate: str
   const [pendingFilters, setPendingFilters] = useState<FilterState>(defaultFilters);
 
   const uniqueOpts = useMemo(() => {
+     const safeData = Array.isArray(data) ? data : [];
      const getUniques = (key: keyof SubmittalRow) => {
          const s = new Set<string>();
-         data.forEach(d => {
+         safeData.forEach(d => {
+             if (!d) return;
              const val = d[key];
              if (val && typeof val === 'string' && val.trim()) s.add(val.trim());
          });
@@ -40,7 +42,8 @@ export function useFilters(data: SubmittalRow[], startDate: string, endDate: str
      // Special logic for documentType (Register Type)
      const getRegisterTypes = () => {
          const s = new Set<string>();
-         data.forEach(d => {
+         safeData.forEach(d => {
+             if (!d) return;
              let dt = d.documentType || d.logType || "GENERAL";
              s.add(dt.split('-')[0].trim().toUpperCase());
          });
@@ -73,15 +76,16 @@ export function useFilters(data: SubmittalRow[], startDate: string, endDate: str
   }, [pendingFilters, filters]);
 
   const matchesFilters = (row: SubmittalRow) => {
-       const matchOpt = (rowVal: string | undefined | null, filterVal: string) => {
-           if (filterVal === 'All') return true;
+      if (!row) return false;
+       const matchOpt = (rowVal: string | undefined | null, filterArray: string[]) => {
+           if (!filterArray || filterArray.length === 0) return true;
            if (!rowVal) return false;
-           return String(rowVal).trim() === filterVal;
+           return filterArray.includes(String(rowVal).trim());
        };
 
-       if (filters.documentType !== 'All') {
+       if (filters.documentType && filters.documentType.length > 0) {
            let dt = row.documentType || row.logType || "GENERAL";
-           if (dt.split('-')[0].trim().toUpperCase() !== filters.documentType) return false;
+           if (!filters.documentType.includes(dt.split('-')[0].trim().toUpperCase())) return false;
        }
 
        if (!matchOpt(row.discipline, filters.discipline)) return false;
@@ -95,12 +99,13 @@ export function useFilters(data: SubmittalRow[], startDate: string, endDate: str
   };
 
   const filterMonthly = (row: SubmittalRow) => {
-     if (!row.submissionDate) return false;
+     if (!row || !row.submissionDate) return false;
      if (!matchesFilters(row)) return false;
      return row.submissionDate >= startDate && row.submissionDate <= endDate;
   };
 
   const filterCumulative = (row: SubmittalRow) => {
+     if (!row) return false;
      if (!matchesFilters(row)) return false;
      if (!row.submissionDate) return true;
      return row.submissionDate <= endDate;
