@@ -25,36 +25,55 @@ export type { StatusMapConfig };
 export { DEFAULT_STATUS_MAP, getProjectStatusMap, getNormalizedStatus, checkIfOverdueDynamically };
 
 // 1. REVISION SEQUENCE WEIGHT ENGINE (Priority 4)
-// Supporting formats: 0, 1, 2; A, B, C; AA, AB, AC; P01, P02, P03; C1, C2; IFC, AS-BUILT
+// Supporting formats: 0, 00, 01, 1, 2; Rev0, Rev 0, Rev.0, Rev 00, Rev 01, Rev.01; A, B, C; AA, AB; P01, P02; C01; IFA, IFC, AS-BUILT
 export const getRevisionWeight = (revStr: string | undefined): number => {
   if (!revStr) return 0;
-  const val = revStr.trim().toUpperCase();
-  if (val === '0' || val === '00') return 0;
-  
-  if (val === 'AS-BUILT' || val === 'ASBUILT') return 100000;
+  let val = revStr.trim().toUpperCase();
+  if (!val) return 0;
+
+  if (val === '0' || val === '00' || val === '0.0' || val === 'REV 0' || val === 'REV 00' || val === 'REV.0' || val === 'REV.00' || val === 'REV0' || val === 'REV00' || val === 'R0' || val === 'R00' || val === 'R0.0') return 0;
+
+  if (val.includes('AS-BUILT') || val.includes('AS BUILT') || val.includes('ASBUILT')) return 100000;
   if (val === 'IFC') return 90000;
-  
   if (val.startsWith('IFC')) {
-    const num = parseInt(val.replace(/[^\d]/g, '')) || 0;
+    const num = parseInt(val.replace(/[^\d]/g, ''), 10) || 0;
     return 90000 + num;
   }
-  
+  if (val === 'IFA') return 80000;
+  if (val.startsWith('IFA')) {
+    const num = parseInt(val.replace(/[^\d]/g, ''), 10) || 0;
+    return 80000 + num;
+  }
+
+  // Strip 'REV', 'REV.', 'REV-', 'R-', 'R ' prefixes if followed by number/letters
+  const revStripped = val.replace(/^(REV[.\-\s]?|R[.\-\s])/i, '').trim();
+  if (revStripped && revStripped !== val) {
+    if (revStripped === '0' || revStripped === '00' || revStripped === '0.0') return 0;
+    const num = parseInt(revStripped, 10);
+    if (!isNaN(num) && String(num) === revStripped.replace(/^0+/, '') || revStripped.match(/^0*\d+$/)) {
+      return num;
+    }
+    val = revStripped;
+  }
+
   if (val.startsWith('P')) {
-    const num = parseInt(val.substring(1)) || 0;
+    const num = parseInt(val.substring(1), 10);
+    if (num === 0) return 0;
     if (!isNaN(num)) return 1000 + num;
   }
-  
-  if (val.startsWith('C') && val.length > 1 && !isNaN(parseInt(val.substring(1)))) {
-    const num = parseInt(val.substring(1)) || 0;
+
+  if (val.startsWith('C') && val.length > 1 && !isNaN(parseInt(val.substring(1), 10))) {
+    const num = parseInt(val.substring(1), 10);
+    if (num === 0) return 0;
     return 2000 + num;
   }
-  
+
   // Numerical fallback
-  const numCheck = parseInt(val);
-  if (!isNaN(numCheck) && String(numCheck) === val) {
+  const numCheck = parseInt(val, 10);
+  if (!isNaN(numCheck) && (String(numCheck) === val || String(numCheck).padStart(val.length, '0') === val)) {
     return numCheck;
   }
-  
+
   // Letter sequence (A, B, C ... AA, AB, AC)
   if (/^[A-Z]+$/.test(val)) {
     let score = 0;
@@ -63,13 +82,14 @@ export const getRevisionWeight = (revStr: string | undefined): number => {
     }
     return 5000 + score; // Alphabetic safe offset buffer
   }
-  
+
   // Clean alphanumeric fallback
-  const cleanedNum = parseInt(val.replace(/[^\d]/g, ''));
+  const cleanedNum = parseInt(val.replace(/[^\d]/g, ''), 10);
   if (!isNaN(cleanedNum)) {
+    if (cleanedNum === 0) return 0;
     return 3000 + cleanedNum;
   }
-  
+
   let alphaSum = 0;
   for (let i = 0; i < Math.min(val.length, 5); i++) {
     alphaSum += val.charCodeAt(i) * Math.pow(10, (5 - i));
@@ -94,14 +114,29 @@ export const getStatusCategory = (rawStatus: string | undefined, config: StatusM
 
 // Determine layout register categories cleanly
 export const getDocRegisterType = (r: SubmittalRow): string => {
+  const family = r.workflowFamily?.toUpperCase() || '';
+  if (family === 'RFI') return 'RFI';
+  if (family === 'NCR') return 'NCR';
+  if (family === 'MIR') return 'MIR';
+  if (family === 'WIR') return 'WIR';
+  if (family === 'SDW') return 'Shop Drawings';
+  if (family === 'MAR') return 'Material Submittals';
+  if (family === 'DOC') return 'Document Submittals';
+  if (family === 'SOR') return 'SOR';
+  if (family === 'LETTER' || family === 'LTR') return 'Letters';
+  if (family === 'TRS') return 'Transmittals';
+
   const dt = (r.documentType || r.logType || 'GENERAL').toUpperCase();
   if (dt.includes('RFI')) return 'RFI';
   if (dt.includes('NCR')) return 'NCR';
   if (dt.includes('MIR')) return 'MIR';
+  if (dt.includes('WIR')) return 'WIR';
   if (dt.includes('SHD') || dt.includes('SDW') || dt.includes('SHOP')) return 'Shop Drawings';
   if (dt.includes('MAR') || dt.includes('MATERIAL')) return 'Material Submittals';
-  if (dt.includes('TEC') || dt.includes('TECHNICAL')) return 'Technical Submittals';
+  if (dt.includes('DOC') || dt.includes('DOCUMENT')) return 'Document Submittals';
   if (dt.includes('SOR')) return 'SOR';
+  if (dt.includes('LTR') || dt.includes('LETTER') || dt.includes('CORRESPONDENCE')) return 'Letters';
+  if (dt.includes('TRS') || dt.includes('TRANS')) return 'Transmittals';
   return 'General';
 };
 
@@ -244,7 +279,7 @@ export const calculateDocumentLifecycle = (docNo: string, revisions: SubmittalRo
 
 // 3. ENTERPRISE DATA QUALITY INDEX SCORING (Priority 5)
 export const scanDataIntegrity = (rows: SubmittalRow[], statusMap: StatusMapConfig = DEFAULT_STATUS_MAP): Record<string, RegisterHealth> => {
-  const registers = ['RFI', 'NCR', 'MIR', 'Shop Drawings', 'Material Submittals', 'Technical Submittals', 'General'];
+  const registers = ['RFI', 'NCR', 'MIR', 'WIR', 'Shop Drawings', 'As-Built Drawings', 'Material Submittals', 'Document Submittals', 'SOR', 'Letters', 'Transmittals', 'General'];
   const results: Record<string, RegisterHealth> = {};
 
   registers.forEach(reg => {

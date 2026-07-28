@@ -64,18 +64,18 @@
     break-after: avoid;
   }
 
-  /* Fix for container widths */
-  .max-w-\[1400px\] {
+  /* Fix for container widths and height restrictions in print */
+  .max-w-\[1400px\], .max-w-\[1600px\] {
     max-width: none !important;
   }
   
-  /* Disable max-height scrolling on tables during print */
-  .max-h-\[600px\] {
+  /* Disable max-height scrolling on tables and containers during print */
+  .max-h-\[600px\], .max-h-\[65vh\], [class*="max-h-"] {
     max-height: none !important;
   }
-  
-  .max-h-\[65vh\] {
-    max-height: none !important;
+
+  .print\:hidden {
+    display: none !important;
   }
 }
 

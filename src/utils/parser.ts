@@ -1,6 +1,8 @@
 import * as XLSX from "xlsx";
 import { SubmittalRow } from "../types";
 import { normalizeData } from "./calculations";
+import { classifyRegisterSheet, normalizeDiscipline } from "./classificationEngine";
+import { mapDocumentToWorkflow } from "./workflowMapping";
 
 export const parseExcelFile = (file: File): Promise<SubmittalRow[]> => {
   return new Promise((resolve, reject) => {
@@ -14,6 +16,7 @@ export const parseExcelFile = (file: File): Promise<SubmittalRow[]> => {
           dateNF: "yyyy-mm-dd",
         });
         const parsed: SubmittalRow[] = [];
+        const traces: any[] = [];
 
         wb.SheetNames.forEach((sheetName) => {
           const ws = wb.Sheets[sheetName];
@@ -54,48 +57,111 @@ export const parseExcelFile = (file: File): Promise<SubmittalRow[]> => {
             rawData[headerRowIdx] || [];
           const rows = rawData.slice(headerRowIdx + 1);
 
-          const getColIdx = (aliases: string[]) => {
+          const activeProjectId = typeof window !== 'undefined' ? (localStorage.getItem('docuCtrl_activeProjectId') || 'default_project') : 'default_project';
+          const classification = classifyRegisterSheet({
+            fileName: file.name,
+            sheetName: sheetName,
+            headers: headers.map(h => String(h || '')),
+            sampleRows: rows.slice(0, 20) as any[][],
+            projectId: activeProjectId
+          });
+
+          const detectedType = classification.detectedFamily;
+
+          const getColIdx = (aliases: string[], exclusions: string[] = []) => {
+            // Pass 1: Exact match priority
+            const exactIdx = headers.findIndex((h) => {
+              if (!h || typeof h !== "string") return false;
+              const lower = h.toLowerCase().trim();
+              if (exclusions.some((exc) => lower.includes(exc))) return false;
+              return aliases.some((alias) => lower === alias);
+            });
+            if (exactIdx !== -1) return exactIdx;
+
+            // Pass 2: Word boundary or distinct token match
             return headers.findIndex((h) => {
               if (!h || typeof h !== "string") return false;
               const lower = h.toLowerCase().trim();
-              return aliases.some(
-                (alias) => lower === alias || lower.includes(alias),
-              );
+              if (exclusions.some((exc) => lower.includes(exc))) return false;
+              return aliases.some((alias) => {
+                if (lower === alias) return true;
+                if (alias.length <= 4) {
+                  const escaped = alias.replace('.', '\\.');
+                  const regex = new RegExp(`(?:^|[^a-z0-9])${escaped}(?:$|[^a-z0-9])`, 'i');
+                  return regex.test(lower);
+                }
+                return lower.includes(alias);
+              });
             });
           };
 
           const colDocNo = getColIdx([
-            "document no",
-            "doc no",
+            "submittal ref.",
             "submittal ref",
+            "sub ref.",
             "sub ref",
-            "ref",
-            "letter ref",
+            "document no.",
+            "document no",
+            "doc no.",
+            "doc no",
+            "document number",
+            "submittal reference",
             "letter ref.",
-          ]);
-          const colRev = getColIdx(["rev", "revision"]);
-          const colSheet = getColIdx(["sheet no", "sheet", "drawing no", "dwg no", "drawing number", "dwg no."]);
+            "letter ref",
+            "ref.",
+            "doc. no.",
+            "doc. no"
+          ], ["drawing", "sheet", "cross", "client", "our", "your", "site", "area", "zone", "file"]);
+
+          const colRev = getColIdx([
+            "rev",
+            "revision",
+            "rev.",
+            "rev no",
+            "rev. no",
+            "rev no.",
+            "revision no",
+            "revision no.",
+            "revision number"
+          ], ["review", "received", "date", "time", "duration", "status", "by", "comment", "action", "corrective", "last"]);
+
+          const colSheet = getColIdx([
+            "sheet no",
+            "sheet no.",
+            "sheet number",
+            "sheet",
+            "dwg no",
+            "dwg no.",
+            "drawing no",
+            "drawing no.",
+            "drawing number",
+            "drawing"
+          ], ["submittal", "document", "letter", "ref"]);
+
           const colDiscipline = getColIdx([
             "discipline",
             "trade",
             "department",
-            "related discipline",
-          ]);
+            "related discipline"
+          ], ["system", "code"]);
+
           const colContractor = getColIdx(["contractor"]);
           const colConsultant = getColIdx(["consultant"]);
-          const colSubmissionDate = getColIdx([
-            "submission date",
-            "date sent",
-            "sent date",
-          ]);
+
+          const colSubmissionDate = getColIdx(
+            ["submission date", "date sent", "sent date", "issue date", "date issued", "date of receipt", "received date"],
+            ["corrective", "response", "action", "received corrective", "sent corrective", "consultant"]
+          );
+
           const colDueDate = getColIdx(["due date"]);
-          const colResponseDate = getColIdx([
-            "response date",
-            "received date",
-            "received date corrective action",
-          ]);
-          const colCode = getColIdx(["code", "approval code"]);
-          const colStatus = getColIdx(["status"]);
+
+          const colResponseDate = getColIdx(
+            ["received corrective", "received date corrective", "response date", "received date corrective action", "consultant response", "response date corrective action", "consultant response date"],
+            ["submission", "sent corrective", "sent date corrective"]
+          );
+
+          const colCode = getColIdx(["approval code", "code", "consultant code", "action code"], ["zip", "postal", "area", "type", "discipline"]);
+          const colStatus = getColIdx(["status", "consultant status", "current status", "approval status"], ["log", "file", "rev", "date"]);
           const colRemarks = getColIdx(["remarks", "comment"]);
           const colArea = getColIdx(["area", "zone"]);
           const colSystem = getColIdx(["system", "trade"]);
@@ -103,9 +169,10 @@ export const parseExcelFile = (file: File): Promise<SubmittalRow[]> => {
           // NCR & SOR Specific Columns
           const colNcrRef = getColIdx(["ncr ref"]);
           const colNcrLastRev = getColIdx(["last rev"]);
-          const colNcrSentDateCorrectiveAction = getColIdx([
-            "sent date corrective action",
-          ]);
+          const colNcrSentDateCorrectiveAction = getColIdx(
+            ["sent corrective", "sent date corrective", "sent corrective action", "sent date corrective action", "date sent corrective"],
+            ["received", "response", "submission"]
+          );
           const colNcrAction = getColIdx(["action"]);
           const colResponseTime = getColIdx(["response time"]);
           const colReviewTime = getColIdx(["review time"]);
@@ -257,7 +324,7 @@ export const parseExcelFile = (file: File): Promise<SubmittalRow[]> => {
                 t.includes("بيئة") ||
                 t.includes("بيئه")
               )
-                return "NCR-HSE";
+                return "HSE";
               if (
                 words.includes("SUR") ||
                 words.includes("SURV") ||
@@ -291,51 +358,42 @@ export const parseExcelFile = (file: File): Promise<SubmittalRow[]> => {
               sheetName.toLowerCase().includes("safety") ||
               file.name.toLowerCase().includes("safety");
 
-            const isGenSheet = sheetName.toUpperCase() === "GEN" || sheetName.toUpperCase() === "GENERAL";
-            const isHseSheet = sheetName.toUpperCase() === "HSE" || sheetName.toUpperCase() === "SAFETY";
+            const contextDiscipline = extractDiscipline(sheetName) || extractDiscipline(file.name);
 
-            if (isGenSheet) {
-              disciplineVal = "GENERAL";
-            } else if (isHseSheet) {
-              disciplineVal = "NCR-HSE";
+            if (contextDiscipline) {
+              disciplineVal = contextDiscipline;
+            } else if (
+              rawDiscipline &&
+              rawDiscipline.length > 0 &&
+              !["YES", "NO", "N/A", "-"].includes(rawDiscipline)
+            ) {
+              disciplineVal = extractDiscipline(rawDiscipline) || rawDiscipline;
             } else {
-              const contextDiscipline = extractDiscipline(sheetName) || extractDiscipline(file.name);
+              const refString = (
+                colNcrRef >= 0
+                  ? String(r[colNcrRef])
+                  : colDocNo >= 0
+                    ? String(r[colDocNo])
+                    : ""
+              ).toUpperCase();
+              disciplineVal =
+                extractDiscipline(sheetName) ||
+                extractDiscipline(file.name) ||
+                extractDiscipline(refString) ||
+                (isLetter ? "GENERAL" : (isNcr ? "HSE" : "SURVEY"));
+            }
 
-              if (contextDiscipline) {
-                disciplineVal = contextDiscipline;
-              } else if (
-                rawDiscipline &&
-                rawDiscipline.length > 0 &&
-                !["YES", "NO", "N/A", "-"].includes(rawDiscipline)
-              ) {
-                disciplineVal = extractDiscipline(rawDiscipline) || rawDiscipline;
-              } else {
-                const refString = (
-                  colNcrRef >= 0
-                    ? String(r[colNcrRef])
-                    : colDocNo >= 0
-                      ? String(r[colDocNo])
-                      : ""
-                ).toUpperCase();
-                disciplineVal =
-                  extractDiscipline(sheetName) ||
-                  extractDiscipline(file.name) ||
-                  extractDiscipline(refString) ||
-                  (isLetter ? "GENERAL" : (isNcr ? "NCR-HSE" : "SURVEY"));
+            // Normalize common general/survey names (except for letters)
+            if (!isLetter) {
+              if (disciplineVal === "GEN" || disciplineVal === "GE" || disciplineVal === "GENERAL") {
+                disciplineVal = isNcr ? "HSE" : "SURVEY";
               }
-
-              // Normalize common general/survey names (except for letters)
-              if (!isLetter) {
-                if (disciplineVal === "GEN" || disciplineVal === "GE" || disciplineVal === "GENERAL") {
-                  disciplineVal = isNcr ? "NCR-HSE" : "SURVEY";
-                }
-                if (isNcr && (disciplineVal === "SURVEY" || disciplineVal === "SURV" || disciplineVal === "SUR")) {
-                  disciplineVal = "NCR-HSE";
-                }
-              } else {
-                if (disciplineVal === "GEN" || disciplineVal === "GE" || disciplineVal === "SURVEY")
-                  disciplineVal = "GENERAL";
+              if (isNcr && (disciplineVal === "SURVEY" || disciplineVal === "SURV" || disciplineVal === "SUR")) {
+                disciplineVal = "HSE";
               }
+            } else {
+              if (disciplineVal === "GEN" || disciplineVal === "GE" || disciplineVal === "SURVEY")
+                disciplineVal = "GENERAL";
             }
 
             const rawCode =
@@ -358,9 +416,11 @@ export const parseExcelFile = (file: File): Promise<SubmittalRow[]> => {
                 : rawStatus;
             }
 
+            const finalDisciplineVal = normalizeDiscipline(disciplineVal, activeProjectId);
+
             parsed.push({
               id: `${sheetName}-${idx}`,
-              logType: sheetName.trim().toUpperCase(),
+              logType: detectedType !== 'UNKNOWN' ? detectedType : sheetName.trim().toUpperCase(),
               sourceFile: file.name.replace(/\.[^/.]+$/, ""),
               documentType: "", // Normalized later
               trade: "", // Normalized later
@@ -372,7 +432,7 @@ export const parseExcelFile = (file: File): Promise<SubmittalRow[]> => {
               docNo: colDocNo >= 0 ? String(r[colDocNo] || "").trim() : "",
               rev: colRev >= 0 ? String(r[colRev] || "").trim() : "",
               sheetNo: colSheet >= 0 ? String(r[colSheet] || "").trim() : "",
-              discipline: disciplineVal,
+              discipline: finalDisciplineVal,
               contractor:
                 colContractor >= 0 ? String(r[colContractor] || "").trim() : "",
               consultant:
@@ -457,7 +517,60 @@ export const parseExcelFile = (file: File): Promise<SubmittalRow[]> => {
                 colHyperlink >= 0 ? String(r[colHyperlink] || "").trim() : "",
             });
           });
+
+          // Compute trace for this worksheet
+          const assignedType = detectedType !== 'UNKNOWN' ? detectedType : sheetName.trim().toUpperCase();
+          const mapped = mapDocumentToWorkflow(assignedType);
+          let baseDocType = mapped.workflowFamily === 'LETTER' ? 'LTR' : mapped.workflowFamily;
+          const normalizedType = `${baseDocType}-GEN`;
+          const calculationType = mapped.engine;
+          
+          let reportType = "Monthly / Cumulative KPI Dashboards (General Stats)";
+          if (baseDocType.includes('RFI')) {
+            reportType = "RFI Analytics Tab";
+          } else if (baseDocType.includes('NCR')) {
+            reportType = "NCR Analytics (Excluded from General Stats)";
+          } else if (baseDocType.includes('SOR')) {
+            reportType = "SOR Analytics (Excluded from General Stats)";
+          } else if (baseDocType.includes('LTR') || baseDocType.includes('LETTER')) {
+            reportType = "Correspondence Analytics (Excluded from General Stats)";
+          } else if (baseDocType === 'UNKNOWN') {
+            reportType = "Workflow Mapping SSOT (Pending Action)";
+          }
+
+          traces.push({
+            fileName: file.name,
+            sheetName,
+            detectedType,
+            confidence: Math.round(classification.confidence * 100),
+            evidence: classification.evidence,
+            assignedType,
+            normalizedType,
+            calculationType,
+            reportType
+          });
         });
+
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('docuCtrl_last_upload_trace', JSON.stringify(traces));
+          // Dispatch a custom event to notify components that a new trace is available
+          window.dispatchEvent(new Event('docuCtrl_new_trace_loaded'));
+        }
+
+        // Print trace beautifully to console
+        console.group(`%c📊 [DocuSight Ingestion Trace Logs]`, "color: #D4AF37; font-weight: bold; font-size: 14px;");
+        traces.forEach(t => {
+          console.log(`%cWorksheet: %c${t.sheetName} %cin File: %c${t.fileName}`, "color: #94a3b8;", "color: #e2e8f0; font-weight: bold;", "color: #94a3b8;", "color: #cbd5e1;");
+          console.log(`%c  Detected Type : %c${t.detectedType} %c(Confidence: ${t.confidence}%)`, "color: #94a3b8;", "color: #38bdf8; font-weight: bold;", "color: #a7f3d0; font-style: italic;");
+          console.log(`%c  Assigned Type : %c${t.assignedType}`, "color: #94a3b8;", "color: #fbbf24; font-weight: bold;");
+          console.log(`%c  Normalized Type : %c${t.normalizedType}`, "color: #94a3b8;", "color: #a7f3d0; font-weight: bold;");
+          console.log(`%c  Calculation Type: %c${t.calculationType}`, "color: #94a3b8;", "color: #818cf8; font-weight: bold;");
+          console.log(`%c  Report Type     : %c${t.reportType}`, "color: #94a3b8;", "color: #34d399; font-weight: bold;");
+          console.groupCollapsed(`%c  Evidence Summary (${t.evidence.length} items)`, "color: #94a3b8; font-style: italic; cursor: pointer;");
+          t.evidence.forEach((ev: string) => console.log(`  - ${ev}`));
+          console.groupEnd();
+        });
+        console.groupEnd();
 
         resolve(normalizeData(parsed));
       } catch (err) {

@@ -5,11 +5,14 @@
   "type": "module",
   "scripts": {
     "dev": "NODE_ENV=development tsx server.ts",
-    "build": "vite build && esbuild server.ts --bundle --platform=node --format=cjs --packages=external --sourcemap --outfile=dist/server.cjs",
-    "start": "NODE_ENV=production node dist/server.cjs",
+    "build": "vite build && esbuild server.ts --bundle --platform=node --format=cjs --packages=external --sourcemap --outfile=dist/server.cjs && rm -rf build && cp -r dist build",
+    "start": "node dist/server.cjs",
     "preview": "vite preview",
     "clean": "rm -rf dist",
-    "lint": "tsc --noEmit"
+    "lint": "tsc --noEmit",
+    "architecture-audit": "tsx scripts/architecture-audit.ts",
+    "test": "tsx scripts/run-tests.ts",
+    "verify-all": "npm run lint && npm run test && tsx scripts/run-integration-tests.ts && tsx scripts/generate-evidence-report.ts && npm run architecture-audit && npm run build"
   },
   "dependencies": {
     "@google/genai": "^1.52.0",

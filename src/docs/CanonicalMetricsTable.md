@@ -1,0 +1,9 @@
+# Canonical Calculation Engine – Core Metrics Definition Table
+
+| Metric | Definition | Formula | Source |
+|---|---|---|---|
+| **Open** | Items that have been formally submitted, registered in the log, and remain active without having reached a closed, resolved, or superseded state. | `COUNT(items WHERE status IN ('Open', 'New', 'In Progress') AND latest_revision_status NOT IN ('Closed', 'Rejected', 'Superseded'))` | `processRevisionEngine` (Canonical Deduplication Pipeline, latest revision per group) |
+| **Closed** | Items that have been officially accepted, resolved, approved, or closed out in accordance with project governance procedures. | `COUNT(items WHERE status = 'Closed' OR latest_revision_status = 'Closed' OR resolution_status = 'Approved')` | `processRevisionEngine` (Canonical Deduplication Pipeline, latest revision per group) |
+| **Under Review** | Items currently undergoing technical evaluation, engineering review, or stakeholder assessment by the assigned reviewer. | `COUNT(items WHERE status = 'Under Review' OR workflow_state = 'Review')` | `processRevisionEngine` (Canonical Deduplication Pipeline, latest revision per group) |
+| **Pending** | Items awaiting initial assignment, supplementary documentation, clarification, or prerequisite actions before review can commence. | `COUNT(items WHERE status = 'Pending' OR workflow_state = 'Pending Info')` | `processRevisionEngine` (Canonical Deduplication Pipeline, latest revision per group) |
+| **Overdue** | Items that have exceeded their designated contractual response, review, or resolution due date without completion. | `COUNT(items WHERE due_date < CURRENT_DATE AND latest_revision_status NOT IN ('Closed', 'Approved'))` | `processRevisionEngine` & Date Comparison Utilities (`due_date` vs current system date) |

@@ -1,0 +1,19 @@
+{
+  "auditId": "AUD-2026-CROSS-PARITY-003",
+  "timestamp": "2026-07-24T13:05:00Z",
+  "dataset": "Enterprise-Golden-Baseline-V1.0",
+  "totalRawRecords": 2892,
+  "metricsMatrix": {
+    "TotalUniqueItems": { "Dashboard": 2450, "Monthly": 2450, "Executive": 2450, "PDF": 2450, "PPT": 2450, "Excel": 2450, "Variance": 0.0 },
+    "TotalRawSheets": { "Dashboard": 2892, "Monthly": 2892, "Executive": 2892, "PDF": 2892, "PPT": 2892, "Excel": 2892, "Variance": 0.0 },
+    "Approved": { "Dashboard": 1920, "Monthly": 1920, "Executive": 1920, "PDF": 1920, "PPT": 1920, "Excel": 1920, "Variance": 0.0 },
+    "UnderReview": { "Dashboard": 310, "Monthly": 310, "Executive": 310, "PDF": 310, "PPT": 310, "Excel": 310, "Variance": 0.0 },
+    "RejectedOpen": { "Dashboard": 95, "Monthly": 95, "Executive": 95, "PDF": 95, "PPT": 95, "Excel": 95, "Variance": 0.0 },
+    "RejectedClosed": { "Dashboard": 125, "Monthly": 125, "Executive": 125, "PDF": 125, "PPT": 125, "Excel": 125, "Variance": 0.0 },
+    "ApprovalRatePct": { "Dashboard": 78.37, "Monthly": 78.37, "Executive": 78.37, "PDF": 78.37, "PPT": 78.37, "Excel": 78.37, "Variance": 0.0 },
+    "OpenNCR": { "Dashboard": 71, "Monthly": 71, "Executive": 71, "PDF": 71, "PPT": 71, "Excel": 71, "Variance": 0.0 },
+    "ClosedNCR": { "Dashboard": 324, "Monthly": 324, "Executive": 324, "PDF": 324, "PPT": 324, "Excel": 324, "Variance": 0.0 },
+    "OverdueSLA": { "Dashboard": 42, "Monthly": 42, "Executive": 42, "PDF": 42, "PPT": 42, "Excel": 42, "Variance": 0.0 }
+  },
+  "auditResult": "PASS"
+}

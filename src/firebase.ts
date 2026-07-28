@@ -1,13 +1,28 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth, GoogleAuthProvider } from 'firebase/auth';
-import { getFirestore, initializeFirestore, collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { 
+  initializeFirestore, 
+  collection, 
+  addDoc, 
+  serverTimestamp,
+  persistentLocalCache,
+  persistentMultipleTabManager
+} from 'firebase/firestore';
 import firebaseConfig from '../firebase-applet-config.json';
 
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const googleAuthProvider = new GoogleAuthProvider();
-const databaseId = (firebaseConfig as any).firestoreDatabaseId || '(default)';
-export const db = initializeFirestore(app, { experimentalForceLongPolling: true }, databaseId);
+const databaseId = 
+  (firebaseConfig as any).firestoreDatabaseId || 
+  (import.meta as any).env.VITE_FIRESTORE_DATABASE_ID || 
+  ((import.meta as any).env.DEV ? 'ai-studio-b1fedb55-c17f-4221-b883-f1ee17f1362f' : '(default)');
+export const db = initializeFirestore(app, { 
+  experimentalForceLongPolling: true,
+  localCache: persistentLocalCache({
+    tabManager: persistentMultipleTabManager()
+  })
+}, databaseId);
 
 export enum OperationType {
   CREATE = 'create',

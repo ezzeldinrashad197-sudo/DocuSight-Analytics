@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { SubmittalRow, ProjectSettings } from '../types';
+import { SubmittalRow, ProjectSettings, SLASettings } from '../types';
 import { getStatusCodeCategory } from '../utils/calculations';
 import { Settings2, Clock, CheckCircle2, AlertTriangle, ShieldAlert } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, Cell } from 'recharts';
@@ -10,7 +10,7 @@ interface Props {
 }
 
 export default function SLAMonitoring({ data, projectInfo }: Props) {
-    const slas = useMemo(() => {
+    const slas = useMemo<SLASettings>(() => {
         return projectInfo?.slaDays || {
             shopDrawings: 14,
             materialSubmittals: 14,
@@ -18,6 +18,8 @@ export default function SLAMonitoring({ data, projectInfo }: Props) {
             ncr: 7,
             sor: 7,
             letters: 3,
+            wir: 7,
+            mir: 14,
             default: 14
         };
     }, [projectInfo]);
@@ -34,6 +36,8 @@ export default function SLAMonitoring({ data, projectInfo }: Props) {
             'NCR': { name: 'NCR', total: 0, breaches: 0, avgDelay: 0, sumDelay: 0, compliance: 0 },
             'SOR': { name: 'SOR', total: 0, breaches: 0, avgDelay: 0, sumDelay: 0, compliance: 0 },
             'Letters/Corr.': { name: 'Letters/Corr.', total: 0, breaches: 0, avgDelay: 0, sumDelay: 0, compliance: 0 },
+            'WIR': { name: 'WIR', total: 0, breaches: 0, avgDelay: 0, sumDelay: 0, compliance: 0 },
+            'MIR': { name: 'MIR', total: 0, breaches: 0, avgDelay: 0, sumDelay: 0, compliance: 0 },
             'Other': { name: 'Other', total: 0, breaches: 0, avgDelay: 0, sumDelay: 0, compliance: 0 }
         };
 
@@ -50,13 +54,16 @@ export default function SLAMonitoring({ data, projectInfo }: Props) {
             let cat = 'Other';
             let slaLimit = slas.default;
 
+            const family = d.workflowFamily?.toUpperCase() || '';
             const dtype = (d.documentType || d.logType || '').toUpperCase();
-            if (dtype.includes('SHD') || dtype.includes('SHOP')) { cat = 'Shop Drawings'; slaLimit = slas.shopDrawings; }
-            else if (dtype.includes('MAR') || dtype.includes('MAT')) { cat = 'Material Submittals'; slaLimit = slas.materialSubmittals; }
-            else if (dtype.includes('RFI')) { cat = 'RFI'; slaLimit = slas.rfi; }
-            else if (dtype.includes('NCR')) { cat = 'NCR'; slaLimit = slas.ncr; }
-            else if (dtype.includes('SOR')) { cat = 'SOR'; slaLimit = slas.sor; }
-            else if (dtype.includes('LTR') || dtype.includes('LET')) { cat = 'Letters/Corr.'; slaLimit = slas.letters; }
+            if (family === 'WIR' || dtype.includes('WIR')) { cat = 'WIR'; slaLimit = slas.wir ?? 7; }
+            else if (family === 'MIR' || dtype.includes('MIR')) { cat = 'MIR'; slaLimit = slas.mir ?? 14; }
+            else if (family === 'SDW' || dtype.includes('SHD') || dtype.includes('SHOP')) { cat = 'Shop Drawings'; slaLimit = slas.shopDrawings; }
+            else if (family === 'MAR' || dtype.includes('MAR') || dtype.includes('MAT')) { cat = 'Material Submittals'; slaLimit = slas.materialSubmittals; }
+            else if (family === 'RFI' || dtype.includes('RFI')) { cat = 'RFI'; slaLimit = slas.rfi; }
+            else if (family === 'NCR' || dtype.includes('NCR')) { cat = 'NCR'; slaLimit = slas.ncr; }
+            else if (family === 'SOR' || dtype.includes('SOR')) { cat = 'SOR'; slaLimit = slas.sor; }
+            else if (family === 'LETTER' || family === 'LTR' || dtype.includes('LTR') || dtype.includes('LET')) { cat = 'Letters/Corr.'; slaLimit = slas.letters; }
 
             totalClosed++;
             regMap[cat].total++;
@@ -147,6 +154,8 @@ export default function SLAMonitoring({ data, projectInfo }: Props) {
                                     if(r.name === 'NCR') target = slas.ncr;
                                     if(r.name === 'SOR') target = slas.sor;
                                     if(r.name === 'Letters/Corr.') target = slas.letters;
+                                    if(r.name === 'WIR') target = slas.wir ?? 7;
+                                    if(r.name === 'MIR') target = slas.mir ?? 14;
 
                                     return (
                                         <tr key={i} className="hover:bg-slate-50">

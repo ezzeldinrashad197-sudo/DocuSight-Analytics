@@ -24,27 +24,24 @@ export function useUpload(
     setIsLoading(true);
     try {
        const parsed = await processMultiUpload(files);
-       const safeParsed = Array.isArray(parsed) ? parsed : [];
        
-       if (safeParsed.length === 0) {
+       if (parsed.length === 0) {
            setParseMessage(t('upload_no_data'));
            setIsError(true);
            await logAuditContext("UPLOAD_FAILED", "log_file", { reason: "No matching data" });
        } else {
-           const dates = safeParsed
-               .map(d => d && d.submissionDate ? new Date(d.submissionDate).getTime() : NaN)
-               .filter(t => !isNaN(t));
+           const dates = parsed.map(d => new Date(d.submissionDate).getTime()).filter(t => !isNaN(t));
            if (dates.length > 0) {
                const maxDate = new Date(Math.max(...dates));
                setStartDate(format(startOfMonth(maxDate), 'yyyy-MM-dd'));
                setEndDate(format(endOfMonth(maxDate), 'yyyy-MM-dd'));
            }
 
-           setData(safeParsed);
-           setParseMessage(t('upload_success_params').replace('{count}', String(safeParsed.length)));
+           setData(parsed);
+           setParseMessage(t('upload_success_params').replace('{count}', String(parsed.length)));
            setIsError(false);
            setActiveTab('dashboard');
-           await logAuditContext("UPLOAD_SUCCESS", "log_file", { rows: safeParsed.length, fileNames: Array.from(files).map(f => f.name) });
+           await logAuditContext("UPLOAD_SUCCESS", "log_file", { rows: parsed.length, fileNames: Array.from(files).map(f => f.name) });
        }
     } catch (err: any) {
        setParseMessage(t('upload_error'));

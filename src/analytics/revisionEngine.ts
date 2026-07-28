@@ -14,13 +14,11 @@ export const runRevisionEngine = (records: AnyRecord[]): AnyRecord[] => {
         r.isLatestRev = false; // Reset first
     });
 
-    // Group by document number and sheet number
+    // Group by document number
     const grouped = new Map<string, AnyRecord[]>();
     processed.forEach(r => {
-        const docNo = r.docNo.trim().toUpperCase();
-        if (!docNo) return; // Ignore empty document numbers
-        const sheetNo = (r as any).sheetNo ? String((r as any).sheetNo).trim().toUpperCase() : '';
-        const key = sheetNo ? `${docNo}_${sheetNo}` : docNo;
+        const key = r.docNo.trim().toUpperCase();
+        if (!key) return; // Ignore empty document numbers
         if (!grouped.has(key)) grouped.set(key, []);
         grouped.get(key)!.push(r);
     });

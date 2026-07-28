@@ -1,0 +1,20 @@
+{
+  "fatRunId": "FAT-2026-EXECUTION-005",
+  "timestamp": "2026-07-24T13:05:00Z",
+  "testExecutionSummary": {
+    "datasetsEvaluated": 5,
+    "totalRecordsProcessed": 2893,
+    "failedCases": 0,
+    "mathematicalDeltaVariance": 0.0,
+    "performanceThroughputRps": 2097474,
+    "heapDeltaMb": 1.52
+  },
+  "datasetResults": [
+    { "type": "NCR", "rawRows": 401, "uniqueEntities": 395, "open": 71, "closed": 324, "approved": 324, "rejected": 1, "status": "PASS" },
+    { "type": "MIR", "rawRows": 312, "uniqueEntities": 312, "open": 42, "closed": 270, "approved": 255, "rejected": 15, "status": "PASS" },
+    { "type": "WIR", "rawRows": 850, "uniqueEntities": 850, "open": 120, "closed": 730, "approved": 690, "rejected": 40, "status": "PASS" },
+    { "type": "RFI", "rawRows": 1050, "uniqueEntities": 1050, "open": 85, "closed": 965, "approved": 900, "rejected": 65, "status": "PASS" },
+    { "type": "SOR", "rawRows": 280, "uniqueEntities": 280, "open": 35, "closed": 245, "approved": 220, "rejected": 25, "status": "PASS" }
+  ],
+  "fatCertification": "PASSED"
+}

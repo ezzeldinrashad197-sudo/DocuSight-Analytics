@@ -1,10 +1,14 @@
 import express from "express";
 import path from "path";
+import crypto from "crypto";
 import { GoogleGenAI } from "@google/genai";
 import helmet from "helmet";
 import cors from "cors";
 import rateLimit from "express-rate-limit";
 import NodeCache from "node-cache";
+import { runSecurityRegressionSuite } from './src/utils/securityRegressionSuite';
+import { runLoadTestingSuite } from './src/utils/loadTestingSuite';
+import { runExportTelemetrySuite } from './src/analytics/exportTelemetryTestSuite';
 
 // Initialize cache
 const cache = new NodeCache({ stdTTL: 600 }); // 10 minutes cache
@@ -103,7 +107,7 @@ async function startServer() {
   }
 
   const app = express();
-  const PORT = 3000;
+  const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
 
   const isProd = process.env.NODE_ENV === "production";
   const isDev = !isProd;
@@ -120,23 +124,14 @@ async function startServer() {
       directives: {
         defaultSrc: ["'self'"],
         scriptSrc: isProd
-          ? ["'self'", "https://cdn.jsdelivr.net", "https://apis.google.com", "https://accounts.google.com", "https://*.firebaseapp.com"]
-          : ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://cdn.jsdelivr.net", "https://apis.google.com", "https://accounts.google.com", "https://*.firebaseapp.com"],
-        styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com", "https://accounts.google.com"],
+          ? ["'self'", "https://cdn.jsdelivr.net", "https://apis.google.com", "https://accounts.google.com"]
+          : ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://cdn.jsdelivr.net", "https://apis.google.com", "https://accounts.google.com"],
+        styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
         fontSrc: ["'self'", "https://fonts.gstatic.com", "data:"],
         imgSrc: ["'self'", "data:", "blob:", "https:", "*"], 
-        connectSrc: [
-          "'self'", 
-          "https:", 
-          "wss:", 
-          "ws:", 
-          "https://*.googleapis.com", 
-          "https://*.firebaseapp.com",
-          "https://identitytoolkit.googleapis.com",
-          "https://securetoken.googleapis.com"
-        ],
+        connectSrc: ["'self'", "https:", "wss:", "ws:", "https://*.googleapis.com", "https://*.firebaseapp.com"],
         frameAncestors: ["'self'", "https://*.google.com", "https://*.run.app"],
-        frameSrc: ["'self'", "https://accounts.google.com", "https://*.firebaseapp.com", "https://*.google.com"],
+        frameSrc: ["'self'", "https://accounts.google.com", "https://*.firebaseapp.com"],
         objectSrc: ["'none'"],
         upgradeInsecureRequests: isProd ? [] : null,
       }
@@ -233,10 +228,73 @@ async function startServer() {
     });
   });
 
+  // --- CHAPTER 16 / ER-013 METRICS LAYER CALCULATION ENGINE ENDPOINT ---
+  app.post("/api/metrics/calculate", (req, res) => {
+    try {
+      const { filters, dataset } = req.body || {};
+      const rawData = Array.isArray(dataset) ? dataset : [];
+      
+      const filterOpt = (val: string | undefined, filterVal: string) => {
+        if (!filterVal || filterVal === 'All') return true;
+        if (!val) return false;
+        const rv = String(val).trim().toUpperCase();
+        const fv = String(filterVal).trim().toUpperCase();
+        return rv === fv || rv.startsWith(fv) || fv.startsWith(rv) || rv.includes(fv) || fv.includes(rv);
+      };
+
+      const filtered = rawData.filter((row: any) => {
+        if (filters?.documentType && filters.documentType !== 'All') {
+          const dt = (row.documentType || row.logType || '').toUpperCase();
+          if (!dt.includes(filters.documentType.toUpperCase())) return false;
+        }
+        if (filters?.discipline && !filterOpt(row.discipline, filters.discipline)) return false;
+        if (filters?.contractor && !filterOpt(row.contractor, filters.contractor)) return false;
+        if (filters?.consultant && !filterOpt(row.consultant, filters.consultant)) return false;
+        if (filters?.logType && !filterOpt(row.logType, filters.logType)) return false;
+        if (filters?.status && !filterOpt(row.status, filters.status)) return false;
+        if (filters?.area && !filterOpt(row.area, filters.area)) return false;
+        if (filters?.tradeSystem && !filterOpt(row.tradeSystem, filters.tradeSystem)) return false;
+        return true;
+      });
+
+      const totalCount = filtered.length;
+      let approvedCount = 0;
+      let pendingCount = 0;
+      let openCount = 0;
+      let closedCount = 0;
+
+      filtered.forEach((r: any) => {
+        const s = (r.status || '').toUpperCase();
+        if (s.includes('CLOSED') || s === 'A' || s === 'APPROVED' || s === 'B') {
+          closedCount++;
+          if (s.includes('A') || s.includes('APPROVED')) approvedCount++;
+        } else {
+          openCount++;
+          pendingCount++;
+        }
+      });
+
+      res.json({
+        status: "success",
+        filtersApplied: filters || {},
+        metrics: {
+          totalRecords: totalCount,
+          openRecords: openCount,
+          closedRecords: closedCount,
+          approvedRecords: approvedCount,
+          pendingRecords: pendingCount,
+          qualityScore: totalCount > 0 ? Number(((closedCount / totalCount) * 100).toFixed(1)) : 100
+        },
+        filteredCount: filtered.length
+      });
+    } catch (err: any) {
+      res.status(500).json({ status: "error", message: err.message });
+    }
+  });
+
   // --- AUTOMATED REGRESSION & COMPLIANCE ENDPOINT ---
   app.get("/api/security-regression-tests", async (req, res) => {
     try {
-      const { runSecurityRegressionSuite } = await import('./src/utils/securityRegressionSuite');
       const testReport = await runSecurityRegressionSuite();
       
       logSecurityEvent('SECURITY_REGRESSION_RUN', 'INFO', `Security regression test suite finished execution. Passed: ${testReport.passedTests}/${testReport.totalTests}`, { version: testReport.version, commit: testReport.commitHash });
@@ -251,7 +309,6 @@ async function startServer() {
   // --- PRODUCTION LOAD & WORKLOAD CONCURRENCY TESTER ---
   app.get("/api/load-stress-tests", async (req, res) => {
     try {
-      const { runLoadTestingSuite } = await import('./src/utils/loadTestingSuite');
       const loadReport = await runLoadTestingSuite();
       
       logSecurityEvent('LOAD_TESTS_RUN', 'INFO', `Production load and simulation suites executed. Overall heap: ${loadReport.heapAllocationsMegaBytes} MB`, { simulationsCount: loadReport.totalSimulationsExecuted });
@@ -301,7 +358,6 @@ async function startServer() {
   // --- EXPORT TELEMETRY UNIT AND STRESS TEST ROUTE (Issue #6) ---
   app.get("/api/export-performance-tests", async (req, res) => {
     try {
-      const { runExportTelemetrySuite } = await import('./src/analytics/exportTelemetryTestSuite');
       const testCases = await runExportTelemetrySuite();
       res.json({
         timestamp: new Date().toISOString(),

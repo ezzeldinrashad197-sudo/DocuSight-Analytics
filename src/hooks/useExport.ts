@@ -114,6 +114,127 @@ const prepareChartsForCapture = (clonedContainer: HTMLElement, originalContainer
     });
 };
 
+// Standardized High-Fidelity PDF Header/Footer Overlay Generator
+const drawPdfHeaderFooter = (pdf: any, projectInfo: ProjectSettings | null, activeTab: string, startDate?: string, endDate?: string, options?: any) => {
+    const totalPages = pdf.internal.getNumberOfPages();
+    const pdfWidth = pdf.internal.pageSize.getWidth();
+    const pdfHeight = pdf.internal.pageSize.getHeight();
+    const dateStr = new Date().toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' });
+    
+    // Helper to parse hex colors
+    const hexToRgb = (hex: string) => {
+        const cleanHex = hex.replace('#', '');
+        const num = parseInt(cleanHex, 16);
+        return {
+            r: (num >> 16) & 255,
+            g: (num >> 8) & 255,
+            b: num & 255
+        };
+    };
+
+    const primaryColor = options?.primaryColor || "#0A192F";
+    const accentColor = options?.accentColor || "#D4AF37";
+    const primRgb = hexToRgb(primaryColor);
+    const accRgb = hexToRgb(accentColor);
+    const showProjectInfo = options?.showProjectInfo !== false;
+
+    // Format reporting period cleanly
+    let periodStr = "Cumulative Period";
+    if (activeTab === 'monthly') {
+        periodStr = "Monthly Period";
+    }
+    if (startDate && endDate) {
+        const start = new Date(startDate).toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+        const end = new Date(endDate).toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+        periodStr = `${start} - ${end}`;
+    }
+
+    const projName = (projectInfo?.projectName || "No Project Configured").substring(0, 30);
+    const projCode = projectInfo?.projectCode || "P1.17";
+    const contractor = projectInfo?.contractorName || "INNOVO";
+    const consultant = projectInfo?.consultantName || "ACE";
+    const reportName = activeTab.toUpperCase() + " PERFORMANCE REPORT";
+
+    for (let i = 1; i <= totalPages; i++) {
+        pdf.setPage(i);
+        
+        // --- DRAW HEADER BAR ---
+        // Header background (Custom Primary)
+        pdf.setFillColor(primRgb.r, primRgb.g, primRgb.b);
+        pdf.rect(0, 0, pdfWidth, 14, 'F');
+        
+        // Custom Accent bottom line
+        pdf.setFillColor(accRgb.r, accRgb.g, accRgb.b);
+        pdf.rect(0, 14, pdfWidth, 0.8, 'F');
+        
+        // Title on the left
+        pdf.setTextColor(255, 255, 255);
+        pdf.setFont("helvetica", "bold");
+        pdf.setFontSize(9);
+        const headerTitle = options?.customHeader || "DOCUSIGHT ENTERPRISE ANALYTICS";
+        pdf.text(headerTitle.toUpperCase(), 10, 6);
+        
+        pdf.setFont("helvetica", "normal");
+        pdf.setFontSize(7.5);
+        pdf.setTextColor(accRgb.r, accRgb.g, accRgb.b);
+        pdf.text(reportName, 10, 10.5);
+        
+        // Metadata on the right
+        if (showProjectInfo) {
+            pdf.setTextColor(255, 255, 255);
+            pdf.setFont("helvetica", "normal");
+            pdf.setFontSize(6.5);
+            
+            // Draw elegant metadata columns
+            let metaX = pdfWidth - 215; // default start pos
+            if (metaX < 120) metaX = 120; // safe bounds
+            
+            // Column 1: Project & Code
+            pdf.setTextColor(148, 163, 184); // silver/slate
+            pdf.text("PROJECT:", metaX, 5.5);
+            pdf.text("PARCEL/CODE:", metaX, 10);
+            pdf.setTextColor(255, 255, 255);
+            pdf.setFont("helvetica", "bold");
+            pdf.text(projName, metaX + 22, 5.5);
+            pdf.text(projCode, metaX + 22, 10);
+            
+            // Column 2: Contractor & Consultant
+            pdf.setFont("helvetica", "normal");
+            pdf.setTextColor(148, 163, 184);
+            pdf.text("CONTRACTOR:", metaX + 70, 5.5);
+            pdf.text("CONSULTANT:", metaX + 70, 10);
+            pdf.setTextColor(255, 255, 255);
+            pdf.setFont("helvetica", "bold");
+            pdf.text(contractor, metaX + 92, 5.5);
+            pdf.text(consultant, metaX + 92, 10);
+
+            // Column 3: Period & Generated Date
+            pdf.setFont("helvetica", "normal");
+            pdf.setTextColor(148, 163, 184);
+            pdf.text("PERIOD:", metaX + 140, 5.5);
+            pdf.text("GENERATED:", metaX + 140, 10);
+            pdf.setTextColor(255, 255, 255);
+            pdf.setFont("helvetica", "bold");
+            pdf.text(periodStr, metaX + 158, 5.5);
+            pdf.text(dateStr, metaX + 158, 10);
+        }
+
+        // --- DRAW FOOTER BAR ---
+        // Top line for footer
+        pdf.setDrawColor(226, 232, 240); // light slate border
+        pdf.setLineWidth(0.2);
+        pdf.line(10, pdfHeight - 12, pdfWidth - 10, pdfHeight - 12);
+        
+        // Footer texts
+        pdf.setFont("helvetica", "normal");
+        pdf.setFontSize(7);
+        pdf.setTextColor(100, 116, 139); // slate-500
+        const footerText = options?.customFooter || `DocuSight Enterprise Document Control Platform | CONCEPT & PRODUCT VISION BY EZZ RASHAD`;
+        pdf.text(footerText, 10, pdfHeight - 7);
+        pdf.text(`Page ${i} of ${totalPages}`, pdfWidth - 30, pdfHeight - 7);
+    }
+};
+
 interface UseExportProps {
     data: SubmittalRow[];
     activeTab: string;
@@ -123,85 +244,33 @@ interface UseExportProps {
     setParseMessage: (msg: string) => void;
     setIsError: (err: boolean) => void;
     startDate?: string;
+    endDate?: string;
 }
 
-export function useExport({ data, activeTab, filterMonthly, filterCumulative, activeProject, setParseMessage, setIsError, startDate }: UseExportProps) {
+export function useExport({ data, activeTab, filterMonthly, filterCumulative, activeProject, setParseMessage, setIsError, startDate, endDate }: UseExportProps) {
     const [isExporting, setIsExporting] = useState(false);
 
-    const handleDownloadPPTX = async () => {
+    const handleDownloadPPTX = async (options?: any) => {
         setIsExporting(true);
-        console.log("[Export Diagnostics] Starting PPTX export...");
+        console.log("[Export Diagnostics] Starting PPTX export with options:", options);
         const startTime = Date.now();
         
         try {
             await new Promise(r => setTimeout(r, 100));
-
-            const elementId = activeTab === 'presentation' ? 'presentation-container' : 'export-container';
-            const element = document.getElementById(elementId);
-
-            if (!element) {
-                console.error(`Export container #${elementId} not found`);
-                setParseMessage(`Error: Could not find report container ${elementId} to export.`);
-                setIsError(true);
-                setIsExporting(false);
-                return;
-            }
-
-            if (activeTab !== 'presentation') {
-                document.body.classList.add('pdf-export');
-                const headersFooters = element.querySelectorAll('.pdf-only-header, .pdf-only-footer');
-                headersFooters.forEach(el => {
-                    (el as HTMLElement).classList.remove('hidden');
-                    (el as HTMLElement).classList.add('flex');
-                });
-            }
-
-            const htmlFinalEl = element as HTMLElement;
-            const originalWidth = htmlFinalEl.style.width;
-            const originalPadding = htmlFinalEl.style.padding;
-            const originalMaxWidth = htmlFinalEl.style.maxWidth;
-
-            htmlFinalEl.style.width = '1500px';
-            htmlFinalEl.style.maxWidth = '1500px';
-            htmlFinalEl.style.padding = activeTab === 'presentation' ? '0' : '20px';
-
-            await new Promise(r => setTimeout(r, 2500));
-            
-            const exportElement = document.getElementById(elementId);
-            if (!exportElement) {
-                throw new Error(`Element #${elementId} was unmounted during export wait.`);
-            }
-
             const filename = `DocuSight-${activeTab}-${new Date().toISOString().split('T')[0]}.pptx`;
 
             if (activeTab === 'presentation') {
-                const pendingPageSize = Number(localStorage.getItem('docuCtrl_pres_pendingPageSize') || '15');
-                const rejectedPageSize = Number(localStorage.getItem('docuCtrl_pres_rejectedPageSize') || '15');
-                const showRefCol = localStorage.getItem('docuCtrl_pres_showRefCol') !== 'false';
-                const showTradeCol = localStorage.getItem('docuCtrl_pres_showTradeCol') !== 'false';
-                const showRemarksCol = localStorage.getItem('docuCtrl_pres_showRemarksCol') !== 'false';
-
-                await generatePptxReport(
-                    data,
-                    activeProject,
-                    'presentation',
-                    { filterMonthly, filterCumulative },
-                    { pendingPageSize, rejectedPageSize, showRefCol, showTradeCol, showRemarksCol, monthlyStart: startDate }
-                );
-
-                const exportDuration = Date.now() - startTime;
-                console.log(`[Export Diagnostics] PPTX Programmatic Natively Editable Export successful! Duration: ${exportDuration}ms`);
-
+                // Programmatic, native slide-by-slide generator for presentation mode
+                // This builds native tables, text blocks, and vector shapes that are 100% editable
+                await generatePptxReport(data, activeProject, 'presentation', { filterMonthly, filterCumulative }, { monthlyStart: startDate, ...options });
             } else {
                 // Standard flow for other tabs using programmatic report generator
                 const filteredData = data.filter(activeTab === 'monthly' ? filterMonthly : filterCumulative);
-                await generatePptxReport(filteredData, activeProject, activeTab === 'monthly' ? 'monthly' : 'cumulative', undefined, { monthlyStart: startDate });
+                await generatePptxReport(filteredData, activeProject, activeTab === 'monthly' ? 'monthly' : 'cumulative', undefined, { monthlyStart: startDate, ...options });
             }
 
-            // Restore dimensions immediately after imaging
-            htmlFinalEl.style.width = originalWidth;
-            htmlFinalEl.style.maxWidth = originalMaxWidth;
-            htmlFinalEl.style.padding = originalPadding;
+            const exportDuration = Date.now() - startTime;
+            console.log(`[Export Diagnostics] PPTX Programmatic Native Export successful! Duration: ${exportDuration}ms`);
             
         } catch (e: unknown) {
             console.error(e);
@@ -212,21 +281,13 @@ export function useExport({ data, activeTab, filterMonthly, filterCumulative, ac
             }
             setIsError(true);
         } finally {
-            const element = document.getElementById(activeTab === 'presentation' ? 'presentation-container' : 'export-container');
-            if (element && activeTab !== 'presentation') {
-                const headersFooters = element.querySelectorAll('.pdf-only-header, .pdf-only-footer');
-                headersFooters.forEach(el => {
-                    (el as HTMLElement).classList.add('hidden');
-                    (el as HTMLElement).classList.remove('flex');
-                });
-            }
             setIsExporting(false);
         }
     };
 
-    const handleDownloadPDF = async () => {
+    const handleDownloadPDF = async (options?: any) => {
         setIsExporting(true);
-        console.log("[Export Diagnostics] Starting PDF export...");
+        console.log("[Export Diagnostics] Starting PDF export with options:", options);
         const startTime = Date.now();
 
         try {
@@ -269,21 +330,47 @@ export function useExport({ data, activeTab, filterMonthly, filterCumulative, ac
                 throw new Error(`Element #${elementId} was unmounted during export wait.`);
             }
 
-            // Dynamic project-specific filename nomenclature
-            const rawProjName = activeProject?.projectName || "DocuSight";
-            const cleanProjName = rawProjName
-                .trim()
-                .replace(/[^a-zA-Z0-9\s_-]/g, '')
-                .replace(/\s+/g, '_');
-            const rawDocType = activeTab ? activeTab.toUpperCase() : "REPORT";
-            const timestamp = new Date().toISOString().split('T')[0];
-            const filename = `${cleanProjName}_${rawDocType}_Report_${timestamp}.pdf`;
+            const filename = `DocuSight-${activeTab}-${new Date().toISOString().split('T')[0]}.pdf`;
 
             if (activeTab === 'presentation') {
                 const slides = Array.from(exportElement.querySelectorAll('.presentation-slide'));
                 console.log(`[Export Diagnostics] Rendered slide count: ${slides.length}`);
                 if (slides.length === 0) throw new Error("No presentation slides found.");
                 
+                // Filter slides based on selected sections and slide ranges
+                let filteredSlides = [...slides];
+                const isArabic = !!options?.arabicEnabled;
+
+                if (options?.selectedSections) {
+                    filteredSlides = filteredSlides.filter((slideEl: any) => {
+                        const sec = slideEl.getAttribute('data-section') || '';
+                        if (!sec) {
+                            const txt = (slideEl.textContent || '').toUpperCase();
+                            if (txt.includes('DOCUMENT CONTROL') && txt.includes('INDEX')) return options.selectedSections.includes('cover');
+                            if (txt.includes('DOCUMENT CONTROL') || txt.includes('MONTHLY REPORT') || txt.includes('PERFORMANCE REPORT')) return options.selectedSections.includes('cover');
+                            if (txt.includes('TEAM MEMBERS') || txt.includes('PROJECT INFORMATION')) return options.selectedSections.includes('info');
+                            if (txt.includes('REJECTED ITEMS')) return options.selectedSections.includes('rejected');
+                            if (txt.includes('PENDING ITEMS')) return options.selectedSections.includes('pending');
+                            if (txt.includes('THANK YOU') || txt.includes('THANKS')) return options.selectedSections.includes('thanks');
+                            if (txt.includes('METRICS') || txt.includes('DASHBOARD')) return options.selectedSections.includes('metrics');
+                            if (txt.includes('LOG') || txt.includes('REGISTER') || txt.includes('MASTER DATA')) return options.selectedSections.includes('logs');
+                            return true;
+                        }
+                        return options.selectedSections.includes(sec);
+                    });
+                }
+
+                if (options?.slideRangeStart !== undefined || options?.slideRangeEnd !== undefined) {
+                    const startIdx = Math.max(1, options.slideRangeStart || 1) - 1;
+                    const endIdx = Math.min(filteredSlides.length, options.slideRangeEnd || filteredSlides.length);
+                    if (startIdx < endIdx) {
+                        filteredSlides = filteredSlides.slice(startIdx, endIdx);
+                    }
+                }
+
+                console.log(`[Export Diagnostics] Sliced/Filtered slide count: ${filteredSlides.length}`);
+                if (filteredSlides.length === 0) throw new Error("No presentation slides remaining after Smart Export filters.");
+
                 const charts = Array.from(exportElement.querySelectorAll('.recharts-wrapper'));
                 console.log(`[Export Diagnostics] Charts detected: ${charts.length}`);
                 const invalidCharts = charts.filter(c => {
@@ -320,8 +407,27 @@ export function useExport({ data, activeTab, filterMonthly, filterCumulative, ac
                     console.warn("[Export Validation Warn] Rendered charts & SVG mismatch:", totalRenderedCharts, "vs", totalRenderedSVGs);
                 }
 
-                for (let i = 0; i < slides.length; i++) {
-                    const slide = slides[i] as HTMLElement;
+                // Add outlines/bookmarks dynamically for high-fidelity interactive navigation
+                const safeAddOutline = (pdfInstance: any, parentNode: any, nodeTitle: string, targetPage: number) => {
+                    try {
+                        if (pdfInstance.outline && typeof pdfInstance.outline.add === 'function') {
+                            return pdfInstance.outline.add(parentNode, nodeTitle, { pageNumber: targetPage });
+                        }
+                    } catch (err) {
+                        console.warn("Failed to add PDF bookmark:", err);
+                    }
+                    return null;
+                };
+
+                let rootOutline: any = null;
+                try {
+                    rootOutline = safeAddOutline(pdf, null, isArabic ? "تقرير تحليلات دوكوسايت" : "DocuSight Analytics Report", 1);
+                } catch (oe) {
+                    console.warn(oe);
+                }
+
+                for (let i = 0; i < filteredSlides.length; i++) {
+                    const slide = filteredSlides[i] as HTMLElement;
                     try {
                         const canvas = await html2canvas(slide, {
                             scale: 2,
@@ -341,7 +447,6 @@ export function useExport({ data, activeTab, filterMonthly, filterCumulative, ac
                                 `;
                                 clonedDoc.head.appendChild(style);
                                 
-                                // Clean up all root-level Recharts portals and absolute tooltips from cloned doc body to prevent floating rectangles
                                 clonedDoc.body.querySelectorAll('.recharts-portal, .recharts-tooltip-wrapper, .recharts-legend-wrapper, .recharts-default-tooltip').forEach(p => {
                                     p.remove();
                                 });
@@ -351,7 +456,6 @@ export function useExport({ data, activeTab, filterMonthly, filterCumulative, ac
                                 if (clonedSlide) {
                                     prepareChartsForCapture(clonedSlide, slide);
                                     
-                                    // Local page-break validator checks
                                     const origChartsCount = slide.querySelectorAll('.recharts-wrapper').length;
                                     const clonedChartsCount = clonedSlide.querySelectorAll('.recharts-wrapper').length;
                                     const origSvgsCount = slide.querySelectorAll('.recharts-wrapper svg').length;
@@ -378,18 +482,50 @@ export function useExport({ data, activeTab, filterMonthly, filterCumulative, ac
                         const yOffset = (pdfHeight - imgHeight) / 2;
 
                         pdf.addImage(imgData, 'JPEG', 0, yOffset, imgWidth, imgHeight);
+
+                        // Safe bookmark generation for the current slide
+                        if (rootOutline) {
+                            try {
+                                const sec = slide.getAttribute('data-section') || '';
+                                let titleText = `Page ${i + 1}`;
+                                const txt = (slide.textContent || '').toUpperCase();
+                                
+                                if (sec === 'cover' || (txt.includes('DOCUMENT CONTROL') && !txt.includes('INDEX'))) {
+                                    titleText = isArabic ? "صفحة الغلاف" : "Cover Page";
+                                } else if (sec === 'cover' || txt.includes('INDEX')) {
+                                    titleText = isArabic ? "الفهرس" : "Table of Contents";
+                                } else if (sec === 'info' || txt.includes('PROJECT INFORMATION')) {
+                                    titleText = isArabic ? "بيانات المشروع" : "Project Information";
+                                } else if (sec === 'rejected' || txt.includes('REJECTED ITEMS')) {
+                                    titleText = isArabic ? "المرفوضات المتأخرة" : "Rejected Items";
+                                } else if (sec === 'pending' || txt.includes('PENDING ITEMS')) {
+                                    titleText = isArabic ? "المعلقات المتأخرة" : "Pending Items";
+                                } else if (sec === 'thanks' || txt.includes('THANK YOU') || txt.includes('THANKS')) {
+                                    titleText = isArabic ? "خاتمة" : "Closure / Thank You";
+                                } else if (sec === 'metrics' || txt.includes('METRICS') || txt.includes('DASHBOARD')) {
+                                    const headerText = slide.querySelector('h3')?.textContent || '';
+                                    titleText = headerText ? `${isArabic ? "مؤشرات" : "Metrics"}: ${headerText}` : (isArabic ? "مؤشرات الأداء" : "Performance Metrics");
+                                } else if (sec === 'logs' || txt.includes('LOG') || txt.includes('REGISTER') || txt.includes('MASTER DATA')) {
+                                    const headerText = slide.querySelector('h3')?.textContent || '';
+                                    titleText = headerText ? `${isArabic ? "سجلات" : "Register"}: ${headerText}` : (isArabic ? "سجلات الوثائق" : "Submittal Registers");
+                                }
+                                
+                                safeAddOutline(pdf, rootOutline, titleText, i + 1);
+                            } catch (bmErr) {
+                                console.warn("Failed creating bookmark for slide index:", i, bmErr);
+                            }
+                        }
+
                         capturedCount++;
                     } catch (e) {
                          failedCount++;
                          console.error(`[Export Diagnostics] Failed to capture slide ${i+1}:`, e);
                          
-                         // If we hit our own validation error, bubble it up to block the export immediately
                          if (e instanceof Error && e.message === "PDF Export Validation Failed") {
                              throw e;
                          }
 
-                         // Draw a beautifully designed enterprise recovery page in jsPDF
-                         pdf.setFillColor(30, 56, 100); // stable deep slate brand color
+                         pdf.setFillColor(30, 56, 100);
                          pdf.rect(0, 0, pdfWidth, pdfHeight, 'F');
                          
                          pdf.setTextColor(255, 255, 255);
@@ -398,33 +534,33 @@ export function useExport({ data, activeTab, filterMonthly, filterCumulative, ac
                          pdf.text(slideTitle.toUpperCase().trim(), pdfWidth / 2, 50, { align: 'center' });
                          
                          pdf.setFontSize(14);
-                         pdf.setTextColor(234, 179, 8); // nice safety amber indicator color
+                         pdf.setTextColor(234, 179, 8);
                          pdf.text("DIGITAL PREVIEW PLACEMENT RECORD", pdfWidth / 2, 70, { align: 'center' });
                          
-                         pdf.setTextColor(203, 213, 225); // muted text color
+                         pdf.setTextColor(203, 213, 225);
                          pdf.setFontSize(12);
                          pdf.text("This visual slice could not be dynamically encoded to a vector canvas preview.", pdfWidth / 2, 100, { align: 'center' });
                          pdf.text("However, all underlying tabular registers, timelines, and metrics remain intact", pdfWidth / 2, 110, { align: 'center' });
                          pdf.text("and accessible in the live dashboards.", pdfWidth / 2, 120, { align: 'center' });
                          
                          pdf.setFontSize(10);
-                         pdf.setTextColor(148, 163, 184); // slate metal text
+                         pdf.setTextColor(148, 163, 184);
                          pdf.text(`[Trace: ERR_SLD_IMG_${i+1}] • Generated cleanly by export fallback routines`, pdfWidth / 2, 160, { align: 'center' });
                          
                          capturedCount++;
                     }
-                    if (i < slides.length - 1) {
+                    if (i < filteredSlides.length - 1) {
                         pdf.addPage();
                     }
                 }
                 
-                // Final full-presentation validator assertion (warn only to prevent export failures)
                 if (totalRenderedCharts !== totalCapturedCharts || totalRenderedSVGs !== totalCapturedSVGs) {
                     console.warn("[Export Validation Warn] Presentation final count mismatch. Charts:", totalRenderedCharts, "captured:", totalCapturedCharts, "; SVGs:", totalRenderedSVGs, "captured:", totalCapturedSVGs);
                 }
 
                 console.log(`[Export Diagnostics] Captured slide count: ${capturedCount}, Failed slide count: ${failedCount}`);
                 
+                drawPdfHeaderFooter(pdf, activeProject, activeTab, startDate, endDate, options);
                 pdf.save(filename);
                 const exportDuration = Date.now() - startTime;
                 console.log(`[Export Diagnostics] PDF Export successful! Duration: ${exportDuration}ms`);
@@ -488,11 +624,13 @@ export function useExport({ data, activeTab, filterMonthly, filterCumulative, ac
                             }
                         }
                     },
-                    jsPDF:        { unit: 'mm', format: 'a3', orientation: (isLandscape ? 'landscape' : 'portrait') as 'landscape' | 'portrait' },
+                    jsPDF:        { unit: 'mm', format: options?.pageSize?.toLowerCase() || 'a3', orientation: options?.orientation?.toLowerCase() || (isLandscape ? 'landscape' : 'portrait') },
                     pagebreak:    { mode: ['css', 'legacy'], avoid: ['tr', '.page-break-inside-avoid', '.chart-card', '.kpi-card', 'h1', 'h2', 'h3'], after: ['.page-break-after-always', '.chart-card'] }
                 };
 
-                await html2pdf().set(opt).from(exportElement).save();
+                await (html2pdf().set(opt).from(exportElement).toPdf().get('pdf').then((pdf: any) => {
+                    drawPdfHeaderFooter(pdf, activeProject, activeTab, startDate, endDate, options);
+                }) as any).save();
             }
 
             // Restore dimensions immediately after imaging
@@ -527,5 +665,5 @@ export function useExport({ data, activeTab, filterMonthly, filterCumulative, ac
         }
     };
 
-    return { isExporting, handleDownloadPPTX, handleDownloadPDF };
+    return { isExporting, setIsExporting, handleDownloadPPTX, handleDownloadPDF };
 }

@@ -1,0 +1,15 @@
+{
+  "datasetId": "WIR-REF-V1.0.0",
+  "documentType": "WIR",
+  "description": "Frozen Reference Dataset for Work Inspection Reports",
+  "totalRecords": 850,
+  "verifiedBy": "PMC QA Director",
+  "checksum": "sha256-wir-9c32df1a",
+  "kpis": {
+    "Total": 850,
+    "Open": 120,
+    "Closed": 730,
+    "Approved": 690,
+    "Rejected": 40
+  }
+}

@@ -1,0 +1,978 @@
+{
+  "unusedSymbols": [
+    {
+      "file": "src/EnterpriseDashboard.tsx",
+      "exportName": "AuditLogEntry",
+      "type": "Type/Interface",
+      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+      "reason": "No incoming imports of 'AuditLogEntry' detected in any active source modules.",
+      "referencedBy": []
+    },
+    {
+      "file": "src/analytics/analyticsCore.ts",
+      "exportName": "NormalizedStatus",
+      "type": "Type/Interface",
+      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+      "reason": "No incoming imports of 'NormalizedStatus' detected in any active source modules.",
+      "referencedBy": []
+    },
+    {
+      "file": "src/analytics/analyticsCore.ts",
+      "exportName": "isStatusOpenCore",
+      "type": "Function",
+      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+      "reason": "No incoming imports of 'isStatusOpenCore' detected in any active source modules.",
+      "referencedBy": []
+    },
+    {
+      "file": "src/analytics/analyticsCore.ts",
+      "exportName": "isStatusClosedCore",
+      "type": "Function",
+      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+      "reason": "No incoming imports of 'isStatusClosedCore' detected in any active source modules.",
+      "referencedBy": []
+    },
+    {
+      "file": "src/analytics/analyticsCore.ts",
+      "exportName": "isStatusRejectedCore",
+      "type": "Function",
+      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+      "reason": "No incoming imports of 'isStatusRejectedCore' detected in any active source modules.",
+      "referencedBy": []
+    },
+    {
+      "file": "src/analytics/analyticsCore.ts",
+      "exportName": "isStatusOverdueCore",
+      "type": "Function",
+      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+      "reason": "No incoming imports of 'isStatusOverdueCore' detected in any active source modules.",
+      "referencedBy": []
+    },
+    {
+      "file": "src/analytics/analyticsCore.ts",
+      "exportName": "sortRevisions",
+      "type": "Function",
+      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+      "reason": "No incoming imports of 'sortRevisions' detected in any active source modules.",
+      "referencedBy": []
+    },
+    {
+      "file": "src/analytics/analyticsCore.ts",
+      "exportName": "LifecycleValidationResult",
+      "type": "Type/Interface",
+      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+      "reason": "No incoming imports of 'LifecycleValidationResult' detected in any active source modules.",
+      "referencedBy": []
+    },
+    {
+      "file": "src/analytics/analyticsCore.ts",
+      "exportName": "DocumentMetrics",
+      "type": "Type/Interface",
+      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+      "reason": "No incoming imports of 'DocumentMetrics' detected in any active source modules.",
+      "referencedBy": []
+    },
+    {
+      "file": "src/analytics/analyticsCore.ts",
+      "exportName": "getDocumentMetrics",
+      "type": "Function",
+      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+      "reason": "No incoming imports of 'getDocumentMetrics' detected in any active source modules.",
+      "referencedBy": []
+    },
+    {
+      "file": "src/analytics/analyticsService.ts",
+      "exportName": "BaseAnalytics",
+      "type": "Type/Interface",
+      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+      "reason": "No incoming imports of 'BaseAnalytics' detected in any active source modules.",
+      "referencedBy": []
+    },
+    {
+      "file": "src/analytics/analyticsService.ts",
+      "exportName": "generateGlobalAnalytics",
+      "type": "Function",
+      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+      "reason": "No incoming imports of 'generateGlobalAnalytics' detected in any active source modules.",
+      "referencedBy": []
+    },
+    {
+      "file": "src/analytics/calculationFoundation.ts",
+      "exportName": "SubmissionLayerResult",
+      "type": "Type/Interface",
+      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+      "reason": "No incoming imports of 'SubmissionLayerResult' detected in any active source modules.",
+      "referencedBy": []
+    },
+    {
+      "file": "src/analytics/calculationFoundation.ts",
+      "exportName": "PerformanceLayerResult",
+      "type": "Type/Interface",
+      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+      "reason": "No incoming imports of 'PerformanceLayerResult' detected in any active source modules.",
+      "referencedBy": []
+    },
+    {
+      "file": "src/analytics/calculationFoundation.ts",
+      "exportName": "getBusinessEntityKey",
+      "type": "Function",
+      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+      "reason": "No incoming imports of 'getBusinessEntityKey' detected in any active source modules.",
+      "referencedBy": []
+    },
+    {
+      "file": "src/analytics/calculationFoundation.ts",
+      "exportName": "EngineeringItemClassification",
+      "type": "Type/Interface",
+      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+      "reason": "No incoming imports of 'EngineeringItemClassification' detected in any active source modules.",
+      "referencedBy": []
+    },
+    {
+      "file": "src/analytics/calculationFoundation.ts",
+      "exportName": "PerformanceValidationRow",
+      "type": "Type/Interface",
+      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+      "reason": "No incoming imports of 'PerformanceValidationRow' detected in any active source modules.",
+      "referencedBy": []
+    },
+    {
+      "file": "src/analytics/dataValidator.ts",
+      "exportName": "validateDataset",
+      "type": "Function",
+      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+      "reason": "No incoming imports of 'validateDataset' detected in any active source modules.",
+      "referencedBy": []
+    },
+    {
+      "file": "src/analytics/exportTelemetryTestSuite.ts",
+      "exportName": "runExportTelemetrySuite",
+      "type": "Function",
+      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+      "reason": "No incoming imports of 'runExportTelemetrySuite' detected in any active source modules.",
+      "referencedBy": []
+    },
+    {
+      "file": "src/analytics/governance/auditFramework.ts",
+      "exportName": "AuditLogEntry",
+      "type": "Type/Interface",
+      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+      "reason": "No incoming imports of 'AuditLogEntry' detected in any active source modules.",
+      "referencedBy": []
+    },
+    {
+      "file": "src/analytics/governance/auditFramework.ts",
+      "exportName": "getAuditLogs",
+      "type": "Function",
+      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+      "reason": "No incoming imports of 'getAuditLogs' detected in any active source modules.",
+      "referencedBy": []
+    },
+    {
+      "file": "src/analytics/governance/auditFramework.ts",
+      "exportName": "clearAuditLogs",
+      "type": "Function",
+      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+      "reason": "No incoming imports of 'clearAuditLogs' detected in any active source modules.",
+      "referencedBy": []
+    },
+    {
+      "file": "src/analytics/governance/canonicalEngineAdapter.ts",
+      "exportName": "AdaptedCalculationResult",
+      "type": "Type/Interface",
+      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+      "reason": "No incoming imports of 'AdaptedCalculationResult' detected in any active source modules.",
+      "referencedBy": []
+    },
+    {
+      "file": "src/analytics/governance/canonicalEngineAdapter.ts",
+      "exportName": "executeAdaptedCalculationPipeline",
+      "type": "Function",
+      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+      "reason": "No incoming imports of 'executeAdaptedCalculationPipeline' detected in any active source modules.",
+      "referencedBy": []
+    },
+    {
+      "file": "src/analytics/governance/configurationRepository.ts",
+      "exportName": "SystemConfiguration",
+      "type": "Type/Interface",
+      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+      "reason": "No incoming imports of 'SystemConfiguration' detected in any active source modules.",
+      "referencedBy": []
+    },
+    {
+      "file": "src/analytics/governance/configurationRepository.ts",
+      "exportName": "DEFAULT_SYSTEM_CONFIGURATION",
+      "type": "Component",
+      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+      "reason": "No incoming imports of 'DEFAULT_SYSTEM_CONFIGURATION' detected in any active source modules.",
+      "referencedBy": []
+    },
+    {
+      "file": "src/analytics/governance/configurationRepository.ts",
+      "exportName": "getSystemConfiguration",
+      "type": "Function",
+      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+      "reason": "No incoming imports of 'getSystemConfiguration' detected in any active source modules.",
+      "referencedBy": []
+    },
+    {
+      "file": "src/analytics/governance/configurationRepository.ts",
+      "exportName": "updateSystemConfiguration",
+      "type": "Function",
+      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+      "reason": "No incoming imports of 'updateSystemConfiguration' detected in any active source modules.",
+      "referencedBy": []
+    },
+    {
+      "file": "src/analytics/governance/validationFramework.ts",
+      "exportName": "RuleVerificationResult",
+      "type": "Type/Interface",
+      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+      "reason": "No incoming imports of 'RuleVerificationResult' detected in any active source modules.",
+      "referencedBy": []
+    },
+    {
+      "file": "src/analytics/governance/validationFramework.ts",
+      "exportName": "FormulaVerificationResult",
+      "type": "Type/Interface",
+      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+      "reason": "No incoming imports of 'FormulaVerificationResult' detected in any active source modules.",
+      "referencedBy": []
+    },
+    {
+      "file": "src/analytics/governance/validationFramework.ts",
+      "exportName": "ParallelEquivalenceResult",
+      "type": "Type/Interface",
+      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+      "reason": "No incoming imports of 'ParallelEquivalenceResult' detected in any active source modules.",
+      "referencedBy": []
+    },
+    {
+      "file": "src/analytics/kpiEngine.ts",
+      "exportName": "RegisterStats",
+      "type": "Type/Interface",
+      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+      "reason": "No incoming imports of 'RegisterStats' detected in any active source modules.",
+      "referencedBy": []
+    },
+    {
+      "file": "src/analytics/kpiEngine.ts",
+      "exportName": "CorrespondenceStats",
+      "type": "Type/Interface",
+      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+      "reason": "No incoming imports of 'CorrespondenceStats' detected in any active source modules.",
+      "referencedBy": []
+    },
+    {
+      "file": "src/analytics/kpiEngine.ts",
+      "exportName": "KPIReport",
+      "type": "Type/Interface",
+      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+      "reason": "No incoming imports of 'KPIReport' detected in any active source modules.",
+      "referencedBy": []
+    },
+    {
+      "file": "src/analytics/kpiEngine.ts",
+      "exportName": "generateKpiReport",
+      "type": "Function",
+      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+      "reason": "No incoming imports of 'generateKpiReport' detected in any active source modules.",
+      "referencedBy": []
+    },
+    {
+      "file": "src/analytics/models.ts",
+      "exportName": "BaseRecord",
+      "type": "Type/Interface",
+      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+      "reason": "No incoming imports of 'BaseRecord' detected in any active source modules.",
+      "referencedBy": []
+    },
+    {
+      "file": "src/analytics/models.ts",
+      "exportName": "DocumentRecord",
+      "type": "Type/Interface",
+      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+      "reason": "No incoming imports of 'DocumentRecord' detected in any active source modules.",
+      "referencedBy": []
+    },
+    {
+      "file": "src/analytics/models.ts",
+      "exportName": "RFIRecord",
+      "type": "Type/Interface",
+      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+      "reason": "No incoming imports of 'RFIRecord' detected in any active source modules.",
+      "referencedBy": []
+    },
+    {
+      "file": "src/analytics/models.ts",
+      "exportName": "NCRRecord",
+      "type": "Type/Interface",
+      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+      "reason": "No incoming imports of 'NCRRecord' detected in any active source modules.",
+      "referencedBy": []
+    },
+    {
+      "file": "src/analytics/models.ts",
+      "exportName": "WIRRecord",
+      "type": "Type/Interface",
+      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+      "reason": "No incoming imports of 'WIRRecord' detected in any active source modules.",
+      "referencedBy": []
+    },
+    {
+      "file": "src/analytics/models.ts",
+      "exportName": "MIRRecord",
+      "type": "Type/Interface",
+      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+      "reason": "No incoming imports of 'MIRRecord' detected in any active source modules.",
+      "referencedBy": []
+    },
+    {
+      "file": "src/analytics/models.ts",
+      "exportName": "LetterInRecord",
+      "type": "Type/Interface",
+      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+      "reason": "No incoming imports of 'LetterInRecord' detected in any active source modules.",
+      "referencedBy": []
+    },
+    {
+      "file": "src/analytics/models.ts",
+      "exportName": "LetterOutRecord",
+      "type": "Type/Interface",
+      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+      "reason": "No incoming imports of 'LetterOutRecord' detected in any active source modules.",
+      "referencedBy": []
+    },
+    {
+      "file": "src/analytics/models.ts",
+      "exportName": "SiteInstructionRecord",
+      "type": "Type/Interface",
+      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+      "reason": "No incoming imports of 'SiteInstructionRecord' detected in any active source modules.",
+      "referencedBy": []
+    },
+    {
+      "file": "src/analytics/models.ts",
+      "exportName": "MeetingMinutesRecord",
+      "type": "Type/Interface",
+      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+      "reason": "No incoming imports of 'MeetingMinutesRecord' detected in any active source modules.",
+      "referencedBy": []
+    },
+    {
+      "file": "src/analytics/models.ts",
+      "exportName": "ImportResult",
+      "type": "Type/Interface",
+      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+      "reason": "No incoming imports of 'ImportResult' detected in any active source modules.",
+      "referencedBy": []
+    },
+    {
+      "file": "src/analytics/ncr/ncrEngine.ts",
+      "exportName": "isYes",
+      "type": "Function",
+      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+      "reason": "No incoming imports of 'isYes' detected in any active source modules.",
+      "referencedBy": []
+    },
+    {
+      "file": "src/analytics/ncr/ncrEngine.ts",
+      "exportName": "getLatestRev",
+      "type": "Function",
+      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+      "reason": "No incoming imports of 'getLatestRev' detected in any active source modules.",
+      "referencedBy": []
+    },
+    {
+      "file": "src/analytics/ncr/ncrEngine.ts",
+      "exportName": "NCRStats",
+      "type": "Type/Interface",
+      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+      "reason": "No incoming imports of 'NCRStats' detected in any active source modules.",
+      "referencedBy": []
+    },
+    {
+      "file": "src/analytics/ncr/ncrEngine.ts",
+      "exportName": "NCRClassificationStats",
+      "type": "Type/Interface",
+      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+      "reason": "No incoming imports of 'NCRClassificationStats' detected in any active source modules.",
+      "referencedBy": []
+    },
+    {
+      "file": "src/analytics/ncr/ncrEngine.ts",
+      "exportName": "normalizeDiscipline",
+      "type": "Function",
+      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+      "reason": "No incoming imports of 'normalizeDiscipline' detected in any active source modules.",
+      "referencedBy": []
+    },
+    {
+      "file": "src/analytics/ncr/ncrEngine.ts",
+      "exportName": "normalizeNCRData",
+      "type": "Function",
+      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+      "reason": "No incoming imports of 'normalizeNCRData' detected in any active source modules.",
+      "referencedBy": []
+    },
+    {
+      "file": "src/analytics/ncr/ncrEngine.ts",
+      "exportName": "groupNCRByReference",
+      "type": "Function",
+      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+      "reason": "No incoming imports of 'groupNCRByReference' detected in any active source modules.",
+      "referencedBy": []
+    },
+    {
+      "file": "src/analytics/ncr/ncrEngine.ts",
+      "exportName": "NCREvidence",
+      "type": "Type/Interface",
+      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+      "reason": "No incoming imports of 'NCREvidence' detected in any active source modules.",
+      "referencedBy": []
+    },
+    {
+      "file": "src/analytics/ncr/ncrEngine.ts",
+      "exportName": "NCRIntegrityReport",
+      "type": "Type/Interface",
+      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+      "reason": "No incoming imports of 'NCRIntegrityReport' detected in any active source modules.",
+      "referencedBy": []
+    },
+    {
+      "file": "src/analytics/ncr/ncrEngine.ts",
+      "exportName": "calculateCumulativeSnapshot",
+      "type": "Function",
+      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+      "reason": "No incoming imports of 'calculateCumulativeSnapshot' detected in any active source modules.",
+      "referencedBy": []
+    },
+    {
+      "file": "src/analytics/ncr/ncrEngine.ts",
+      "exportName": "calculateMonthlyEvents",
+      "type": "Function",
+      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+      "reason": "No incoming imports of 'calculateMonthlyEvents' detected in any active source modules.",
+      "referencedBy": []
+    },
+    {
+      "file": "src/analytics/recordTransformer.ts",
+      "exportName": "transformRecords",
+      "type": "Function",
+      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+      "reason": "No incoming imports of 'transformRecords' detected in any active source modules.",
+      "referencedBy": []
+    },
+    {
+      "file": "src/analytics/sor/sorEngine.ts",
+      "exportName": "isYes",
+      "type": "Function",
+      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+      "reason": "No incoming imports of 'isYes' detected in any active source modules.",
+      "referencedBy": []
+    },
+    {
+      "file": "src/analytics/sor/sorEngine.ts",
+      "exportName": "getLatestRev",
+      "type": "Function",
+      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+      "reason": "No incoming imports of 'getLatestRev' detected in any active source modules.",
+      "referencedBy": []
+    },
+    {
+      "file": "src/analytics/sor/sorEngine.ts",
+      "exportName": "SORStats",
+      "type": "Type/Interface",
+      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+      "reason": "No incoming imports of 'SORStats' detected in any active source modules.",
+      "referencedBy": []
+    },
+    {
+      "file": "src/analytics/sor/sorEngine.ts",
+      "exportName": "SORClassificationStats",
+      "type": "Type/Interface",
+      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+      "reason": "No incoming imports of 'SORClassificationStats' detected in any active source modules.",
+      "referencedBy": []
+    },
+    {
+      "file": "src/db/index.ts",
+      "exportName": "createPool",
+      "type": "Function",
+      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+      "reason": "No incoming imports of 'createPool' detected in any active source modules.",
+      "referencedBy": []
+    },
+    {
+      "file": "src/db/index.ts",
+      "exportName": "db",
+      "type": "Constant/Enum/Class",
+      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+      "reason": "No incoming imports of 'db' detected in any active source modules.",
+      "referencedBy": []
+    },
+    {
+      "file": "src/db/schema.ts",
+      "exportName": "users",
+      "type": "Constant/Enum/Class",
+      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+      "reason": "No incoming imports of 'users' detected in any active source modules.",
+      "referencedBy": []
+    },
+    {
+      "file": "src/db/schema.ts",
+      "exportName": "roles",
+      "type": "Constant/Enum/Class",
+      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+      "reason": "No incoming imports of 'roles' detected in any active source modules.",
+      "referencedBy": []
+    },
+    {
+      "file": "src/db/schema.ts",
+      "exportName": "permissions",
+      "type": "Constant/Enum/Class",
+      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+      "reason": "No incoming imports of 'permissions' detected in any active source modules.",
+      "referencedBy": []
+    },
+    {
+      "file": "src/db/schema.ts",
+      "exportName": "projects",
+      "type": "Constant/Enum/Class",
+      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+      "reason": "No incoming imports of 'projects' detected in any active source modules.",
+      "referencedBy": []
+    },
+    {
+      "file": "src/db/schema.ts",
+      "exportName": "projectMembers",
+      "type": "Constant/Enum/Class",
+      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+      "reason": "No incoming imports of 'projectMembers' detected in any active source modules.",
+      "referencedBy": []
+    },
+    {
+      "file": "src/db/schema.ts",
+      "exportName": "registers",
+      "type": "Constant/Enum/Class",
+      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+      "reason": "No incoming imports of 'registers' detected in any active source modules.",
+      "referencedBy": []
+    },
+    {
+      "file": "src/db/schema.ts",
+      "exportName": "documents",
+      "type": "Constant/Enum/Class",
+      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+      "reason": "No incoming imports of 'documents' detected in any active source modules.",
+      "referencedBy": []
+    },
+    {
+      "file": "src/db/schema.ts",
+      "exportName": "documentRevisions",
+      "type": "Constant/Enum/Class",
+      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+      "reason": "No incoming imports of 'documentRevisions' detected in any active source modules.",
+      "referencedBy": []
+    },
+    {
+      "file": "src/db/schema.ts",
+      "exportName": "documentStatusHistory",
+      "type": "Constant/Enum/Class",
+      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+      "reason": "No incoming imports of 'documentStatusHistory' detected in any active source modules.",
+      "referencedBy": []
+    },
+    {
+      "file": "src/db/schema.ts",
+      "exportName": "rfiRecords",
+      "type": "Constant/Enum/Class",
+      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+      "reason": "No incoming imports of 'rfiRecords' detected in any active source modules.",
+      "referencedBy": []
+    },
+    {
+      "file": "src/db/schema.ts",
+      "exportName": "mirRecords",
+      "type": "Constant/Enum/Class",
+      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+      "reason": "No incoming imports of 'mirRecords' detected in any active source modules.",
+      "referencedBy": []
+    },
+    {
+      "file": "src/db/schema.ts",
+      "exportName": "irRecords",
+      "type": "Constant/Enum/Class",
+      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+      "reason": "No incoming imports of 'irRecords' detected in any active source modules.",
+      "referencedBy": []
+    },
+    {
+      "file": "src/db/schema.ts",
+      "exportName": "ncrRecords",
+      "type": "Constant/Enum/Class",
+      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+      "reason": "No incoming imports of 'ncrRecords' detected in any active source modules.",
+      "referencedBy": []
+    },
+    {
+      "file": "src/db/schema.ts",
+      "exportName": "sdwRecords",
+      "type": "Constant/Enum/Class",
+      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+      "reason": "No incoming imports of 'sdwRecords' detected in any active source modules.",
+      "referencedBy": []
+    },
+    {
+      "file": "src/db/schema.ts",
+      "exportName": "analyticsSnapshots",
+      "type": "Constant/Enum/Class",
+      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+      "reason": "No incoming imports of 'analyticsSnapshots' detected in any active source modules.",
+      "referencedBy": []
+    },
+    {
+      "file": "src/db/schema.ts",
+      "exportName": "aiInsights",
+      "type": "Constant/Enum/Class",
+      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+      "reason": "No incoming imports of 'aiInsights' detected in any active source modules.",
+      "referencedBy": []
+    },
+    {
+      "file": "src/db/schema.ts",
+      "exportName": "auditLogs",
+      "type": "Constant/Enum/Class",
+      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+      "reason": "No incoming imports of 'auditLogs' detected in any active source modules.",
+      "referencedBy": []
+    },
+    {
+      "file": "src/db/schema.ts",
+      "exportName": "notifications",
+      "type": "Constant/Enum/Class",
+      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+      "reason": "No incoming imports of 'notifications' detected in any active source modules.",
+      "referencedBy": []
+    },
+    {
+      "file": "src/db/schema.ts",
+      "exportName": "savedFilters",
+      "type": "Constant/Enum/Class",
+      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+      "reason": "No incoming imports of 'savedFilters' detected in any active source modules.",
+      "referencedBy": []
+    },
+    {
+      "file": "src/db/schema.ts",
+      "exportName": "reports",
+      "type": "Constant/Enum/Class",
+      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+      "reason": "No incoming imports of 'reports' detected in any active source modules.",
+      "referencedBy": []
+    },
+    {
+      "file": "src/db/schema.ts",
+      "exportName": "reportExports",
+      "type": "Constant/Enum/Class",
+      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+      "reason": "No incoming imports of 'reportExports' detected in any active source modules.",
+      "referencedBy": []
+    },
+    {
+      "file": "src/db/schema.ts",
+      "exportName": "kpiResults",
+      "type": "Constant/Enum/Class",
+      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+      "reason": "No incoming imports of 'kpiResults' detected in any active source modules.",
+      "referencedBy": []
+    },
+    {
+      "file": "src/db/schema.ts",
+      "exportName": "reviewCycles",
+      "type": "Constant/Enum/Class",
+      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+      "reason": "No incoming imports of 'reviewCycles' detected in any active source modules.",
+      "referencedBy": []
+    },
+    {
+      "file": "src/db/schema.ts",
+      "exportName": "reviewComments",
+      "type": "Constant/Enum/Class",
+      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+      "reason": "No incoming imports of 'reviewComments' detected in any active source modules.",
+      "referencedBy": []
+    },
+    {
+      "file": "src/db/schema.ts",
+      "exportName": "rejectionReasons",
+      "type": "Constant/Enum/Class",
+      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+      "reason": "No incoming imports of 'rejectionReasons' detected in any active source modules.",
+      "referencedBy": []
+    },
+    {
+      "file": "src/db/schema.ts",
+      "exportName": "workflowEvents",
+      "type": "Constant/Enum/Class",
+      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+      "reason": "No incoming imports of 'workflowEvents' detected in any active source modules.",
+      "referencedBy": []
+    },
+    {
+      "file": "src/db/schema.ts",
+      "exportName": "auditLogsRelations",
+      "type": "Constant/Enum/Class",
+      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+      "reason": "No incoming imports of 'auditLogsRelations' detected in any active source modules.",
+      "referencedBy": []
+    },
+    {
+      "file": "src/hooks/useFilters.ts",
+      "exportName": "FilterState",
+      "type": "Type/Interface",
+      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+      "reason": "No incoming imports of 'FilterState' detected in any active source modules.",
+      "referencedBy": []
+    },
+    {
+      "file": "src/utils/calculations.ts",
+      "exportName": "getUniqueNCRs",
+      "type": "Function",
+      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+      "reason": "No incoming imports of 'getUniqueNCRs' detected in any active source modules.",
+      "referencedBy": []
+    },
+    {
+      "file": "src/utils/calculations.ts",
+      "exportName": "getUniqueSORs",
+      "type": "Function",
+      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+      "reason": "No incoming imports of 'getUniqueSORs' detected in any active source modules.",
+      "referencedBy": []
+    },
+    {
+      "file": "src/utils/classificationEngine.ts",
+      "exportName": "ClassificationResult",
+      "type": "Type/Interface",
+      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+      "reason": "No incoming imports of 'ClassificationResult' detected in any active source modules.",
+      "referencedBy": []
+    },
+    {
+      "file": "src/utils/enterpriseUpgradeEngine.ts",
+      "exportName": "ContractorPerformance",
+      "type": "Type/Interface",
+      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+      "reason": "No incoming imports of 'ContractorPerformance' detected in any active source modules.",
+      "referencedBy": []
+    },
+    {
+      "file": "src/utils/enterpriseUpgradeEngine.ts",
+      "exportName": "getProjectStatusMap",
+      "type": "Constant/Enum/Class",
+      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+      "reason": "No incoming imports of 'getProjectStatusMap' detected in any active source modules.",
+      "referencedBy": []
+    },
+    {
+      "file": "src/utils/enterpriseUpgradeEngine.ts",
+      "exportName": "getNormalizedStatus",
+      "type": "Constant/Enum/Class",
+      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+      "reason": "No incoming imports of 'getNormalizedStatus' detected in any active source modules.",
+      "referencedBy": []
+    },
+    {
+      "file": "src/utils/enterpriseUpgradeEngine.ts",
+      "exportName": "ValidationIssue",
+      "type": "Type/Interface",
+      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+      "reason": "No incoming imports of 'ValidationIssue' detected in any active source modules.",
+      "referencedBy": []
+    },
+    {
+      "file": "src/utils/enterpriseUpgradeEngine.ts",
+      "exportName": "RegisterQualityScorecard",
+      "type": "Type/Interface",
+      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+      "reason": "No incoming imports of 'RegisterQualityScorecard' detected in any active source modules.",
+      "referencedBy": []
+    },
+    {
+      "file": "src/utils/enterpriseUpgradeEngine.ts",
+      "exportName": "RegisterHealth",
+      "type": "Type/Interface",
+      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+      "reason": "No incoming imports of 'RegisterHealth' detected in any active source modules.",
+      "referencedBy": []
+    },
+    {
+      "file": "src/utils/enterpriseUpgradeEngine.ts",
+      "exportName": "DocLifecycleInfo",
+      "type": "Type/Interface",
+      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+      "reason": "No incoming imports of 'DocLifecycleInfo' detected in any active source modules.",
+      "referencedBy": []
+    },
+    {
+      "file": "src/utils/enterpriseUpgradeEngine.ts",
+      "exportName": "RootCauseStat",
+      "type": "Type/Interface",
+      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+      "reason": "No incoming imports of 'RootCauseStat' detected in any active source modules.",
+      "referencedBy": []
+    },
+    {
+      "file": "src/utils/enterpriseUpgradeEngine.ts",
+      "exportName": "ExecutiveInsightEntry",
+      "type": "Type/Interface",
+      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+      "reason": "No incoming imports of 'ExecutiveInsightEntry' detected in any active source modules.",
+      "referencedBy": []
+    },
+    {
+      "file": "src/utils/enterpriseUpgradeEngine.ts",
+      "exportName": "CrossRegisterLink",
+      "type": "Type/Interface",
+      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+      "reason": "No incoming imports of 'CrossRegisterLink' detected in any active source modules.",
+      "referencedBy": []
+    },
+    {
+      "file": "src/utils/i18n.tsx",
+      "exportName": "Language",
+      "type": "Type/Interface",
+      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+      "reason": "No incoming imports of 'Language' detected in any active source modules.",
+      "referencedBy": []
+    },
+    {
+      "file": "src/utils/loadTestingSuite.ts",
+      "exportName": "SimulationMetrics",
+      "type": "Type/Interface",
+      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+      "reason": "No incoming imports of 'SimulationMetrics' detected in any active source modules.",
+      "referencedBy": []
+    },
+    {
+      "file": "src/utils/loadTestingSuite.ts",
+      "exportName": "PerformanceSnapshot",
+      "type": "Type/Interface",
+      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+      "reason": "No incoming imports of 'PerformanceSnapshot' detected in any active source modules.",
+      "referencedBy": []
+    },
+    {
+      "file": "src/utils/loadTestingSuite.ts",
+      "exportName": "runLoadTestingSuite",
+      "type": "Function",
+      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+      "reason": "No incoming imports of 'runLoadTestingSuite' detected in any active source modules.",
+      "referencedBy": []
+    },
+    {
+      "file": "src/utils/ncrAnalytics.ts",
+      "exportName": "NCRStats",
+      "type": "Type/Interface",
+      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+      "reason": "No incoming imports of 'NCRStats' detected in any active source modules.",
+      "referencedBy": []
+    },
+    {
+      "file": "src/utils/ncrAnalytics.ts",
+      "exportName": "calculateNCRStats",
+      "type": "Function",
+      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+      "reason": "No incoming imports of 'calculateNCRStats' detected in any active source modules.",
+      "referencedBy": []
+    },
+    {
+      "file": "src/utils/rfiAnalytics.ts",
+      "exportName": "RFITradeStat",
+      "type": "Type/Interface",
+      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+      "reason": "No incoming imports of 'RFITradeStat' detected in any active source modules.",
+      "referencedBy": []
+    },
+    {
+      "file": "src/utils/rfiAnalytics.ts",
+      "exportName": "RFIStats",
+      "type": "Type/Interface",
+      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+      "reason": "No incoming imports of 'RFIStats' detected in any active source modules.",
+      "referencedBy": []
+    },
+    {
+      "file": "src/utils/rfiAnalytics.ts",
+      "exportName": "calculateRFIStats",
+      "type": "Function",
+      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+      "reason": "No incoming imports of 'calculateRFIStats' detected in any active source modules.",
+      "referencedBy": []
+    },
+    {
+      "file": "src/utils/securityRegressionSuite.ts",
+      "exportName": "RegressionTestResult",
+      "type": "Type/Interface",
+      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+      "reason": "No incoming imports of 'RegressionTestResult' detected in any active source modules.",
+      "referencedBy": []
+    },
+    {
+      "file": "src/utils/securityRegressionSuite.ts",
+      "exportName": "SuiteSummary",
+      "type": "Type/Interface",
+      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+      "reason": "No incoming imports of 'SuiteSummary' detected in any active source modules.",
+      "referencedBy": []
+    },
+    {
+      "file": "src/utils/securityRegressionSuite.ts",
+      "exportName": "runSecurityRegressionSuite",
+      "type": "Function",
+      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+      "reason": "No incoming imports of 'runSecurityRegressionSuite' detected in any active source modules.",
+      "referencedBy": []
+    },
+    {
+      "file": "src/utils/statusMatrixEngine.ts",
+      "exportName": "saveProjectStatusMap",
+      "type": "Function",
+      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+      "reason": "No incoming imports of 'saveProjectStatusMap' detected in any active source modules.",
+      "referencedBy": []
+    },
+    {
+      "file": "src/utils/statusMatrixEngine.ts",
+      "exportName": "NormalizedStatus",
+      "type": "Type/Interface",
+      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+      "reason": "No incoming imports of 'NormalizedStatus' detected in any active source modules.",
+      "referencedBy": []
+    },
+    {
+      "file": "src/utils/workflowMapping.ts",
+      "exportName": "CalculationEngineType",
+      "type": "Type/Interface",
+      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+      "reason": "No incoming imports of 'CalculationEngineType' detected in any active source modules.",
+      "referencedBy": []
+    }
+  ],
+  "legacyModules": [
+    "src/analytics/analyticsService.ts",
+    "src/analytics/dataValidator.ts",
+    "src/analytics/exportTelemetryTestSuite.ts",
+    "src/analytics/governance/canonicalEngineAdapter.ts",
+    "src/analytics/governance/configurationRepository.ts",
+    "src/analytics/kpiEngine.ts",
+    "src/analytics/recordTransformer.ts",
+    "src/db/index.ts",
+    "src/db/schema.ts",
+    "src/utils/loadTestingSuite.ts",
+    "src/utils/ncrAnalytics.ts",
+    "src/utils/securityRegressionSuite.ts"
+  ]
+}

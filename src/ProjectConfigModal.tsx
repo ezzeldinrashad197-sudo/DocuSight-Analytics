@@ -17,6 +17,8 @@ const defaultSLA: SLASettings = {
   ncr: 7,
   sor: 7,
   letters: 3,
+  wir: 7,
+  mir: 14,
   default: 14
 };
 
@@ -227,6 +229,14 @@ export default function ProjectConfigModal({ projects, activeProjectId, onSave, 
                            <div className="flex flex-col gap-1 mt-2">
                                <label className="text-xs font-bold text-[#64748b] uppercase tracking-widest">Letters</label>
                                <input type="number" className="bg-[#f8fafc] border border-[#e2e8f0] rounded px-3 py-2 text-[#1e293b] focus:border-[#D4AF37] outline-none" value={project.slaDays?.letters || 3} onChange={e => handleSlaChange(project.id, 'letters', e.target.value)} />
+                           </div>
+                           <div className="flex flex-col gap-1 mt-2">
+                               <label className="text-xs font-bold text-[#64748b] uppercase tracking-widest">WIR (Works)</label>
+                               <input type="number" className="bg-[#f8fafc] border border-[#e2e8f0] rounded px-3 py-2 text-[#1e293b] focus:border-[#D4AF37] outline-none" value={project.slaDays?.wir ?? 7} onChange={e => handleSlaChange(project.id, 'wir', e.target.value)} />
+                           </div>
+                           <div className="flex flex-col gap-1 mt-2">
+                               <label className="text-xs font-bold text-[#64748b] uppercase tracking-widest">MIR (Materials)</label>
+                               <input type="number" className="bg-[#f8fafc] border border-[#e2e8f0] rounded px-3 py-2 text-[#1e293b] focus:border-[#D4AF37] outline-none" value={project.slaDays?.mir ?? 14} onChange={e => handleSlaChange(project.id, 'mir', e.target.value)} />
                            </div>
                            <div className="flex flex-col gap-1 mt-2">
                                <label className="text-xs font-bold text-[#64748b] uppercase tracking-widest">Default/Other</label>

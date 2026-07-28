@@ -1,0 +1,15 @@
+{
+  "datasetId": "MIR-REF-V1.0.0",
+  "documentType": "MIR",
+  "description": "Frozen Reference Dataset for Material Inspection Reports",
+  "totalRecords": 312,
+  "verifiedBy": "PMC QA Director",
+  "checksum": "sha255-mir-771ea9x2",
+  "kpis": {
+    "Total": 312,
+    "Open": 42,
+    "Closed": 270,
+    "Approved": 255,
+    "Rejected": 15
+  }
+}

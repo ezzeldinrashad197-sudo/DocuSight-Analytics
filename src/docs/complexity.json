@@ -1,0 +1,58 @@
+[
+  {
+    "functionName": "getStatusCodeCategory",
+    "cyclomatic": 28,
+    "loc": 34,
+    "halsteadVolume": 687.89,
+    "maintainabilityIndex": 124.87,
+    "normalizedMi": 73
+  },
+  {
+    "functionName": "getDelayDays",
+    "cyclomatic": 6,
+    "loc": 23,
+    "halsteadVolume": 343.38,
+    "maintainabilityIndex": 134.18,
+    "normalizedMi": 78
+  },
+  {
+    "functionName": "classifyNcrStatus",
+    "cyclomatic": 37,
+    "loc": 187,
+    "halsteadVolume": 2173.74,
+    "maintainabilityIndex": 114.06,
+    "normalizedMi": 67
+  },
+  {
+    "functionName": "calculateLTRStats",
+    "cyclomatic": 7,
+    "loc": 40,
+    "halsteadVolume": 393.46,
+    "maintainabilityIndex": 132.34,
+    "normalizedMi": 77
+  },
+  {
+    "functionName": "calculateSORStats",
+    "cyclomatic": 27,
+    "loc": 73,
+    "halsteadVolume": 1463.77,
+    "maintainabilityIndex": 119.94,
+    "normalizedMi": 70
+  },
+  {
+    "functionName": "calculateNCRStats",
+    "cyclomatic": 19,
+    "loc": 69,
+    "halsteadVolume": 1217.49,
+    "maintainabilityIndex": 122.83,
+    "normalizedMi": 72
+  },
+  {
+    "functionName": "calculateStats",
+    "cyclomatic": 23,
+    "loc": 84,
+    "halsteadVolume": 1458.77,
+    "maintainabilityIndex": 120.65,
+    "normalizedMi": 71
+  }
+]

@@ -1,0 +1,59 @@
+{
+  "specificationsVersion": "CR-0001",
+  "lastFrozenDate": "2026-07-14T11:34:00-07:00",
+  "frozenBy": "Enterprise Technical Acceptance Board",
+  "rulesFrozen": [
+    {
+      "id": "BR-0101",
+      "name": "NCR Status Classification Rule",
+      "description": "Standardizes the exact matching sequence of statuses for open, closed, under review, and approved NCR items."
+    },
+    {
+      "id": "BR-0102",
+      "name": "SLA Response Validation Metric",
+      "description": "Enforces a maximum 14-day consultant turnaround. Items older than 14 days without responses are classified as overdue."
+    },
+    {
+      "id": "BR-0103",
+      "name": "Revision Control Uniqueness Sequence",
+      "description": "Determines the latest revision weight using alphanumeric sequence order and excludes duplicates."
+    }
+  ],
+  "formulasFrozen": [
+    {
+      "id": "FORM-0101",
+      "name": "NCR Approval Rate Percentage",
+      "formula": "(Approved NCRs / Total Monthly NCR Submissions) * 100"
+    },
+    {
+      "id": "FORM-0102",
+      "name": "SLA Delayed Ratio Velocity",
+      "formula": "(Overdue Pending NCRs + Overdue Closed NCRs) / Total Monthly Submissions"
+    },
+    {
+      "id": "FORM-0210",
+      "name": "Approval Rate",
+      "formula": "Approved Monthly / Monthly Total Submission * 100"
+    },
+    {
+      "id": "FORM-0211",
+      "name": "Carry Forward Pending",
+      "formula": "COUNT(Pending where Submission Date < Reporting Period Start)"
+    },
+    {
+      "id": "FORM-0212",
+      "name": "Current Month Pending",
+      "formula": "COUNT(Pending where Submission Date >= Reporting Period Start)"
+    },
+    {
+      "id": "FORM-0213",
+      "name": "Open Status Deconstruction",
+      "formula": "Open = Under Review + Pending + Workflow Waiting + Other Active States"
+    },
+    {
+      "id": "FORM-0214",
+      "name": "Total Pending Balance",
+      "formula": "Pending = Carry Forward Pending + Current Month Pending"
+    }
+  ]
+}

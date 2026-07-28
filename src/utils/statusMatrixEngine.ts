@@ -31,30 +31,40 @@ export const getNormalizedStatus = (
 ): NormalizedStatus => {
   const isOverdue = checkIfOverdueDynamically(row, projectSettings);
   
-  const rawStatus = (row.status || '').trim().toUpperCase();
+  const rawStatus = (row.status || (row as any).recordStatus || (row as any).ncrStatus || '').trim().toUpperCase();
   if (!rawStatus) {
     return isOverdue ? 'OVERDUE' : 'OPEN';
   }
   
   const config = getProjectStatusMap(projectId);
+  const cleanStatus = rawStatus.replace(/["':\-\s]+/g, ' ').trim();
   
-  // Strict EXACT matching only - absolutely no partial string or wildcard includes() matching.
-  const isClosed = config.closed.some(s => s.toUpperCase() === rawStatus);
+  // Flexible token/prefix matching against configured status map
+  const isClosed = config.closed.some(s => {
+    const sClean = s.toUpperCase().trim();
+    return cleanStatus === sClean || cleanStatus.startsWith(sClean + ' ') || cleanStatus.endsWith(' ' + sClean) || (sClean.length >= 3 && cleanStatus.includes(sClean));
+  });
   if (isClosed) return 'CLOSED';
   
-  const isRejected = config.rejected.some(s => s.toUpperCase() === rawStatus);
+  const isRejected = config.rejected.some(s => {
+    const sClean = s.toUpperCase().trim();
+    return cleanStatus === sClean || cleanStatus.startsWith(sClean + ' ') || cleanStatus.endsWith(' ' + sClean) || (sClean.length >= 3 && cleanStatus.includes(sClean));
+  });
   if (isRejected) return 'REJECTED';
   
-  const isOpen = config.open.some(s => s.toUpperCase() === rawStatus);
+  const isOpen = config.open.some(s => {
+    const sClean = s.toUpperCase().trim();
+    return cleanStatus === sClean || cleanStatus.startsWith(sClean + ' ') || cleanStatus.endsWith(' ' + sClean) || (sClean.length >= 3 && cleanStatus.includes(sClean));
+  });
   if (isOpen) {
     return isOverdue ? 'OVERDUE' : 'OPEN';
   }
 
-  // Exact fallback protections for safety
-  if (['A', 'B', 'CODE A', 'CODE B', 'APPROVED', 'CLOSED', 'ACCEPTED'].includes(rawStatus)) {
+  // Fallback protections for standard codes A, B, D -> CLOSED; C -> REJECTED
+  if (['A', 'B', 'D'].some(code => cleanStatus === code || cleanStatus.startsWith(code + ' ') || cleanStatus.includes('CODE ' + code) || cleanStatus.includes('APP') || cleanStatus.includes('CLOS'))) {
     return 'CLOSED';
   }
-  if (['C', 'CODE C', 'REJECTED', 'RETURNED', 'REJ'].includes(rawStatus)) {
+  if (cleanStatus === 'C' || cleanStatus.startsWith('C ') || cleanStatus.includes('CODE C') || cleanStatus.includes('REJ') || cleanStatus.includes('RET')) {
     return 'REJECTED';
   }
   
@@ -85,6 +95,8 @@ export const checkIfOverdueDynamically = (
     if (docType.includes('RFI')) days = sla.rfi;
     else if (docType.includes('NCR')) days = sla.ncr;
     else if (docType.includes('SOR')) days = sla.sor;
+    else if (docType.includes('WIR')) days = sla.wir ?? sla.default ?? 14;
+    else if (docType.includes('MIR')) days = sla.mir ?? sla.default ?? 14;
     else if (docType.includes('SHD') || docType.includes('SHOP')) days = sla.shopDrawings;
     else if (docType.includes('MAR') || docType.includes('MATERIAL')) days = sla.materialSubmittals;
     else if (docType.includes('LET') || docType.includes('LETTER')) days = sla.letters;

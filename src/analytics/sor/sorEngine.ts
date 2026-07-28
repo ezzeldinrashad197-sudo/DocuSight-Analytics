@@ -1,4 +1,5 @@
 import { SubmittalRow } from '../../types';
+import { classifyNcrStatus } from '../../utils/calculations';
 
 export const isYes = (v: unknown) => typeof v === 'string' ? v.toUpperCase() === 'YES' || v.toUpperCase() === 'Y' : !!v;
 
@@ -89,27 +90,17 @@ export const processSORData = (safeData: SubmittalRow[], monthlyStart: string | 
 
        st.totalUnique++;
 
-       const rawStatus = (latest.sorStatus || latest.status || '').toUpperCase();
-       const rawAction = (latest.sorAction || latest.status || '').toUpperCase();
-
-       let isUnderReview = rawAction.includes('UNDER REVIEW') || rawStatus.includes('UNDER REVIEW') || (rawStatus.includes('WAITING') && rawAction.includes('UNDER REVIEW'));
-       let isClosed = rawStatus.includes('CLOSED') || (rawStatus.includes('CLOSED') && !isUnderReview);
-       let isOpen = rawStatus.includes('OPEN') || (!isClosed && !isUnderReview && rawStatus.includes('WAITING'));
-       if (!isClosed && !isOpen && !isUnderReview) isOpen = true;
-
-       if ((latest.sorRef || latest.docNo || '').includes('INN-ARC-SOR-MEC-000034')) {
-          isUnderReview = true; isClosed = false; isOpen = false;
-       }
-
-       if (isUnderReview) { isOpen = false; isClosed = false; }
+       const cStatus = classifyNcrStatus(latest);
+       const isUnderReview = cStatus.isUnderReview;
+       const isClosed = cStatus.isClosed;
+       const isOpen = cStatus.isOpen;
 
        if (isOpen) st.open++;
        if (isClosed) st.closed++;
        if (isUnderReview) st.underReview++;
 
-       let isApp = rawAction.includes('APPROVED') || rawAction.includes('APP') || (isClosed && !rawAction.includes('REJECTED'));
-       if (rawAction.includes('REJECTED') || rawAction.includes('REJ')) isApp = false;
-       let isRej = rawAction.includes('REJECTED') || rawAction.includes('REJ');
+       const isApp = cStatus.isApprovedClosed;
+       const isRej = cStatus.isRejected;
 
        if (isApp) st.approved++;
        if (isRej) st.rejected++;
@@ -127,29 +118,14 @@ export const processSORData = (safeData: SubmittalRow[], monthlyStart: string | 
            isSentInMonth = `${dSent.getFullYear()}-${dSent.getMonth()}` === tMonthStr;
        }
 
-       const rawStatus = (latestOfMon.sorStatus || latestOfMon.status || '').toUpperCase();
-       const rawAction = (latestOfMon.sorAction || latestOfMon.status || '').toUpperCase();
+       const cStatus = classifyNcrStatus(latestOfMon);
+       const isUnderReview = cStatus.isUnderReview;
+       const isClosed = cStatus.isClosed;
+       const isOpen = cStatus.isOpen;
+       const isApp = cStatus.isApprovedClosed;
+       const isRej = cStatus.isRejected;
 
-       let isUnderReview = rawAction.includes('UNDER REVIEW') || rawStatus.includes('UNDER REVIEW') || (rawStatus.includes('WAITING') && rawAction.includes('UNDER REVIEW'));
-       let isClosed = rawStatus.includes('CLOSED') || (rawStatus.includes('CLOSED') && !isUnderReview);
-       let isOpen = rawStatus.includes('OPEN') || (!isClosed && !isUnderReview && rawStatus.includes('WAITING'));
-       if (!isClosed && !isOpen && !isUnderReview) isOpen = true;
-
-       if ((latestOfMon.sorRef || latestOfMon.docNo || '').includes('INN-ARC-SOR-MEC-000034')) {
-          isUnderReview = true; isClosed = false; isOpen = false;
-       }
-
-       let isApp = rawAction.includes('APPROVED') || rawAction.includes('APP') || (isClosed && !rawAction.includes('REJECTED'));
-       if (rawAction.includes('REJECTED') || rawAction.includes('REJ')) isApp = false;
-       let isRej = rawAction.includes('REJECTED') || rawAction.includes('REJ');
-
-       let classification = 'Open';
-       if (isClosed && isApp) classification = 'Approved Closed';
-       else if (isClosed && isRej) classification = 'Rejected Closed';
-       else if (isOpen && isRej) classification = 'Rejected Open';
-       else if (isUnderReview) classification = 'Under Review';
-       else if (isClosed) classification = 'Closed';
-       else classification = 'Open'; // fallback
+       let classification = cStatus.status;
 
        let disc = (latestOfMon.discipline || latestOfMon.trade || 'GENERAL').toUpperCase().trim();
        if (disc === 'MECHANICAL') disc = 'MECH';

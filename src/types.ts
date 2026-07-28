@@ -5,6 +5,8 @@ export interface SLASettings {
   ncr: number;
   sor: number;
   letters: number;
+  wir: number;
+  mir: number;
   default: number;
 }
 
@@ -77,6 +79,12 @@ export interface SubmittalRow {
   actionRequired?: boolean;
   distributionStatus?: string;
   hyperlink?: string;
+
+  // Mapping Spec Fields (SSOT)
+  workflowFamily?: string;
+  displayDocType?: string;
+  isUnknownWorkflow?: boolean;
+  calculationEngine?: string;
 }
 
 export interface KPIStats {
@@ -85,6 +93,7 @@ export interface KPIStats {
   totalDrawingsFurtherRev: number;
   totalSheetsRev0: number;
   totalSheetsFurtherRev: number;
+  totalUniqueDrawings?: number;
   
   approved: number;
   rejectedOpen: number;

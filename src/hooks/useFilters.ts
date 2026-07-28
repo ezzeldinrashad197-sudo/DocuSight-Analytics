@@ -1,26 +1,27 @@
 import { useState, useMemo } from 'react';
 import { SubmittalRow } from '../types';
+import { parseDateTimestamp } from '../analytics/calculationFoundation';
 
 export interface FilterState {
-  documentType: string[];
-  discipline: string[];
-  contractor: string[];
-  consultant: string[];
-  logType: string[];
-  status: string[];
-  area: string[];
-  tradeSystem: string[];
+  documentType: string;
+  discipline: string;
+  contractor: string;
+  consultant: string;
+  logType: string;
+  status: string;
+  area: string;
+  tradeSystem: string;
 }
 
 const defaultFilters: FilterState = {
-  documentType: [],
-  discipline: [],
-  contractor: [],
-  consultant: [],
-  logType: [],
-  status: [],
-  area: [],
-  tradeSystem: []
+  documentType: 'All',
+  discipline: 'All',
+  contractor: 'All',
+  consultant: 'All',
+  logType: 'All',
+  status: 'All',
+  area: 'All',
+  tradeSystem: 'All'
 };
 
 export function useFilters(data: SubmittalRow[], startDate: string, endDate: string) {
@@ -28,24 +29,26 @@ export function useFilters(data: SubmittalRow[], startDate: string, endDate: str
   const [pendingFilters, setPendingFilters] = useState<FilterState>(defaultFilters);
 
   const uniqueOpts = useMemo(() => {
-     const safeData = Array.isArray(data) ? data : [];
      const getUniques = (key: keyof SubmittalRow) => {
          const s = new Set<string>();
-         safeData.forEach(d => {
-             if (!d) return;
+         data.forEach(d => {
              const val = d[key];
              if (val && typeof val === 'string' && val.trim()) s.add(val.trim());
          });
          return Array.from(s).sort();
      };
      
-     // Special logic for documentType (Register Type)
+     // Special logic for documentType (Register Type & Workflow Family)
      const getRegisterTypes = () => {
          const s = new Set<string>();
-         safeData.forEach(d => {
-             if (!d) return;
+         data.forEach(d => {
+             if (d.workflowFamily && d.workflowFamily !== 'UNKNOWN') {
+               const wf = d.workflowFamily.toUpperCase().trim();
+               s.add(wf);
+             }
              let dt = d.documentType || d.logType || "GENERAL";
-             s.add(dt.split('-')[0].trim().toUpperCase());
+             const prefix = dt.split('-')[0].trim().toUpperCase();
+             if (prefix) s.add(prefix);
          });
          return Array.from(s).sort();
      };
@@ -64,6 +67,24 @@ export function useFilters(data: SubmittalRow[], startDate: string, endDate: str
 
   const applyFilters = () => {
      setFilters(pendingFilters);
+     // Chapter 16 / ER-013 Compliance: Send request to Server Metrics Layer
+     try {
+       fetch('/api/metrics/calculate', {
+         method: 'POST',
+         headers: { 'Content-Type': 'application/json' },
+         body: JSON.stringify({
+           filters: pendingFilters,
+           dataset: data.slice(0, 500)
+         })
+       }).then(res => res.json())
+         .then(metricsResult => {
+           console.info('[Metrics Layer] Server recalculated metrics for active filters:', metricsResult);
+         }).catch(err => {
+           console.warn('[Metrics Layer] Server call fallback notice:', err);
+         });
+     } catch (e) {
+       console.warn('[Metrics Layer] Request dispatch deferred:', e);
+     }
   };
 
   const resetFilters = () => {
@@ -76,16 +97,47 @@ export function useFilters(data: SubmittalRow[], startDate: string, endDate: str
   }, [pendingFilters, filters]);
 
   const matchesFilters = (row: SubmittalRow) => {
-      if (!row) return false;
-       const matchOpt = (rowVal: string | undefined | null, filterArray: string[]) => {
-           if (!filterArray || filterArray.length === 0) return true;
+       const matchOpt = (rowVal: string | undefined | null, filterVal: string) => {
+           if (filterVal === 'All') return true;
            if (!rowVal) return false;
-           return filterArray.includes(String(rowVal).trim());
+           const rv = String(rowVal).trim();
+           const fv = String(filterVal).trim();
+           if (rv === fv) return true;
+           if (rv.toUpperCase() === fv.toUpperCase()) return true;
+           
+           const rvUpper = rv.toUpperCase();
+           const fvUpper = fv.toUpperCase();
+           if (rvUpper.startsWith(fvUpper) || fvUpper.startsWith(rvUpper)) return true;
+           if (rvUpper.includes(fvUpper) || fvUpper.includes(rvUpper)) return true;
+           
+           return false;
        };
 
-       if (filters.documentType && filters.documentType.length > 0) {
-           let dt = row.documentType || row.logType || "GENERAL";
-           if (!filters.documentType.includes(dt.split('-')[0].trim().toUpperCase())) return false;
+       if (filters.documentType !== 'All') {
+           const target = filters.documentType.toUpperCase().trim();
+           const wf = (row.workflowFamily || '').toUpperCase().trim();
+           let dt = (row.documentType || row.logType || "GENERAL").toUpperCase().trim();
+           const docNo = (row.docNo || '').toUpperCase().trim();
+           const prefix = dt.split('-')[0].trim();
+
+           const isRowABD = wf === 'ABD' || dt.startsWith('ABD') || dt.includes('AS-BUILT') || dt.includes('AS BUILT') || docNo.startsWith('ABD-');
+
+           if (target === 'ABD') {
+               if (!isRowABD) return false;
+           } else if (target === 'SDW' || target === 'SHD') {
+               if (isRowABD) return false;
+               const matchesWf = wf === 'SDW' || wf === 'SHD';
+               const matchesPrefix = prefix === 'SDW' || prefix === 'SHD' || docNo.startsWith('SDW-') || docNo.startsWith('SHD-');
+               const matchesDt = dt.includes('SDW') || dt.includes('SHD') || dt.includes('SHOP');
+               if (!matchesWf && !matchesPrefix && !matchesDt) return false;
+           } else {
+               const matchesWf = wf === target || (target === "LTR" && wf === "LETTER");
+               const matchesPrefix = prefix === target || docNo.startsWith(`${target}-`);
+               const matchesDt = dt.startsWith(target) || dt.includes(target);
+               const matchesKeywords = (target === 'LTR' && (dt.includes('CORRES') || dt.includes('LETTER')));
+
+               if (!matchesWf && !matchesPrefix && !matchesDt && !matchesKeywords) return false;
+           }
        }
 
        if (!matchOpt(row.discipline, filters.discipline)) return false;
@@ -99,15 +151,35 @@ export function useFilters(data: SubmittalRow[], startDate: string, endDate: str
   };
 
   const filterMonthly = (row: SubmittalRow) => {
-     if (!row || !row.submissionDate) return false;
+     if (!row.submissionDate) return false;
      if (!matchesFilters(row)) return false;
+
+     const subTime = parseDateTimestamp(row.submissionDate);
+     const startTime = parseDateTimestamp(startDate);
+     const endTime = parseDateTimestamp(endDate);
+
+     if (subTime > 0 && startTime > 0 && endTime > 0) {
+       return subTime >= startTime && subTime <= (endTime + 86400000 - 1);
+     }
+     if (subTime > 0 && startTime > 0) {
+       return subTime >= startTime;
+     }
+     if (subTime > 0 && endTime > 0) {
+       return subTime <= (endTime + 86400000 - 1);
+     }
      return row.submissionDate >= startDate && row.submissionDate <= endDate;
   };
 
   const filterCumulative = (row: SubmittalRow) => {
-     if (!row) return false;
      if (!matchesFilters(row)) return false;
      if (!row.submissionDate) return true;
+
+     const subTime = parseDateTimestamp(row.submissionDate);
+     const endTime = parseDateTimestamp(endDate);
+
+     if (subTime > 0 && endTime > 0) {
+       return subTime <= (endTime + 86400000 - 1);
+     }
      return row.submissionDate <= endDate;
   };
 

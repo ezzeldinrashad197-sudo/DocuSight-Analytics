@@ -1,8 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { FileSpreadsheet, FileUp, LayoutDashboard, CalendarDays, Clock, Database, CheckCircle2, AlertCircle, Printer, Presentation as PresentationIcon, Filter, Settings, Bot, ChevronLeft, ChevronRight, BarChart, Loader2, FileText, CheckSquare, ShieldAlert, Network, Hexagon, LogOut, Globe, X } from 'lucide-react';
+import { FileSpreadsheet, FileUp, LayoutDashboard, CalendarDays, Clock, Database, CheckCircle2, AlertCircle, Printer, Presentation as PresentationIcon, Filter, Settings, Bot, ChevronLeft, ChevronRight, BarChart, Loader2, FileText, CheckSquare, ShieldAlert, ShieldCheck, Network, Hexagon, LogOut, Globe, Cpu, Building2 } from 'lucide-react';
 import { SubmittalRow, ProjectSettings } from './types';
 import MasterRegister from './components/MasterRegister';
-import MultiSelectDropdown from './components/MultiSelectDropdown';
 import ReportTable from './ReportTable';
 import DelayAnalysis from './DelayAnalysis';
 import Presentation from './Presentation';
@@ -20,8 +19,10 @@ import SLAMonitoring from './components/SLAMonitoring';
 import ActionTracker from './components/ActionTracker';
 import TrendAndForecastEngine from './components/TrendAndForecastEngine';
 import HistoricalDataWarehouse from './components/HistoricalDataWarehouse';
+import EngineeringItemDatasetView from './components/EngineeringItemDatasetView';
 import { format, startOfMonth, endOfMonth } from 'date-fns';
 import Logo from './Logo';
+import SmartExportModal from './components/SmartExportModal';
 
 import { useExport } from './hooks/useExport';
 import { useUpload } from './hooks/useUpload';
@@ -31,11 +32,16 @@ import { useLanguage } from './utils/i18n';
 import LoginScreen from './LoginScreen';
 import { syncProjectStats } from './firebase';
 import EnterpriseMonitoringDashboard from './components/EnterpriseMonitoringDashboard';
+import FinalAcceptanceAuditView from './components/FinalAcceptanceAuditView';
+import WorkflowMappingCenter from './components/WorkflowMappingCenter';
+import { CalculationAuditCenter } from './components/CalculationAuditCenter';
+import { CorporateReportsView } from './components/CorporateReportsView';
+import { normalizeData } from './utils/calculations';
 
 export default function App() {
   const { t, language, setLanguage, isRtl } = useLanguage();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [activeTab, setActiveTab] = useState<'enterprise_dashboard' | 'portfolio' | 'master_register' | 'validation' | 'aging' | 'sla' | 'actions' | 'monthly' | 'cumulative' | 'delay' | 'rfi' | 'presentation' | 'insights' | 'ncr' | 'sor' | 'ltr' | 'trend_forecast' | 'warehouse' | 'monitoring'>('portfolio');
+  const [activeTab, setActiveTab] = useState<'enterprise_dashboard' | 'portfolio' | 'master_register' | 'validation' | 'aging' | 'sla' | 'actions' | 'monthly' | 'cumulative' | 'delay' | 'rfi' | 'presentation' | 'corporate_reports' | 'insights' | 'ncr' | 'sor' | 'ltr' | 'trend_forecast' | 'warehouse' | 'monitoring' | 'engineering_dataset' | 'final_audit' | 'mapping' | 'calc_audit'>('portfolio');
   const [activeRole, setActiveRole] = useState<string>('all');
 
   const activeRoleRef = useRef(activeRole);
@@ -272,7 +278,7 @@ export default function App() {
     }
   }, [data, activeProjectId]);
 
-  const { isExporting, handleDownloadPPTX, handleDownloadPDF } = useExport({
+  const { isExporting, setIsExporting, handleDownloadPPTX, handleDownloadPDF } = useExport({
       data,
       activeTab,
       filterMonthly,
@@ -280,8 +286,17 @@ export default function App() {
       activeProject,
       setParseMessage,
       setIsError,
-      startDate
+      startDate,
+      endDate
   });
+
+  const [showExportModal, setShowExportModal] = useState(false);
+  const [pendingExportType, setPendingExportType] = useState<'pdf' | 'pptx' | null>(null);
+
+  const triggerExportFlow = (type: 'pdf' | 'pptx') => {
+    setPendingExportType(type);
+    setShowExportModal(true);
+  };
 
   const isExcludedFromGeneralStats = (row: SubmittalRow) => {
     const docT = row.documentType ? row.documentType.toUpperCase() : '';
@@ -400,9 +415,14 @@ export default function App() {
             )}
         
         <TabButton id="master_register" label="Master Register" icon={LayoutDashboard} />
+        <TabButton id="mapping" label="Workflow Mapping SSOT" icon={Network} />
             
             {hasPermission(['executive', 'pd', 'pm']) && (
                 <TabButton id="presentation" label="Executive Monthly Report" icon={PresentationIcon} />
+            )}
+            
+            {hasPermission(['executive', 'pd', 'pm', 'dc', 'qaqc', 'em']) && (
+                <TabButton id="corporate_reports" label="Corporate Reports" icon={Building2} />
             )}
             
             {hasPermission(['executive', 'pd', 'pm']) && (
@@ -429,6 +449,17 @@ export default function App() {
             
             {hasPermission(['dc', 'qaqc', 'em']) && (
                 <TabButton id="validation" label="Data Validation Engine" icon={CheckSquare} />
+            )}
+
+            {hasPermission(['dc', 'qaqc', 'em', 'pd']) && (
+                <TabButton id="engineering_dataset" label="Engineering Item Dataset" icon={ShieldCheck} />
+            )}
+
+            {hasPermission(['executive', 'pd', 'dc']) && (
+                <>
+                  <TabButton id="final_audit" label="Final Production Audit" icon={ShieldCheck} />
+                  <TabButton id="calc_audit" label="Calculation Audit Center" icon={Cpu} />
+                </>
             )}
             
             {hasPermission(['dc', 'pm', 'pd', 'em']) && (
@@ -548,7 +579,7 @@ export default function App() {
                 {data.length > 0 && (
                   <div className="flex items-center gap-2">
                     <button 
-                        onClick={handleDownloadPPTX}
+                        onClick={() => triggerExportFlow('pptx')}
                         disabled={isExporting}
                         className="bg-[#D4AF37] hover:bg-[#eab308] text-[#0A192F] font-bold px-4 py-2.5 rounded-lg flex items-center gap-2 transition-colors disabled:opacity-50"
                     >
@@ -556,7 +587,7 @@ export default function App() {
                         {isExporting ? t('btn_exporting') : t('btn_export_pptx')}
                     </button>
                     <button 
-                        onClick={handleDownloadPDF}
+                        onClick={() => triggerExportFlow('pdf')}
                         disabled={isExporting}
                         className="bg-[#334155] hover:bg-[#475569] text-white font-bold px-4 py-2.5 rounded-lg flex items-center gap-2 transition-colors disabled:opacity-50"
                     >
@@ -597,46 +628,19 @@ export default function App() {
                     <div className="px-6 pt-4 pb-4 animate-in slide-in-from-top-2 border-t border-slate-100 mt-3 bg-slate-50/50 rounded-b-lg">
                         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-3 mb-4">
                             {Object.entries(uniqueOpts).map(([key, opts]) => (
-                                <MultiSelectDropdown
-                                    key={key}
-                                    label={key}
-                                    options={opts as string[]}
-                                    selected={pendingFilters[key as keyof typeof pendingFilters] || []}
-                                    onChange={(newSelected) => setPendingFilters(prev => ({ ...prev, [key]: newSelected }))}
-                                />
+                                <div key={key} className="flex flex-col gap-1">
+                                    <label className="text-xs font-bold text-[#64748b] uppercase tracking-wider capitalize">{key.replace(/([A-Z])/g, ' $1').trim()}</label>
+                                    <select 
+                                        value={pendingFilters[key as keyof typeof pendingFilters]}
+                                        onChange={e => setPendingFilters(prev => ({...prev, [key]: e.target.value}))}
+                                        className="border border-[#cbd5e1] rounded px-2 py-1.5 text-sm bg-white focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37] outline-none"
+                                    >
+                                        <option value="All">All {key}</option>
+                                        {(opts as string[]).map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                                    </select>
+                                </div>
                             ))}
                         </div>
-
-                        {/* Interactive Chips/Tags for Selected Filters */}
-                        {Object.entries(pendingFilters).some(([_, val]) => Array.isArray(val) && val.length > 0) && (
-                            <div className="flex flex-wrap gap-1.5 mb-4 p-2.5 bg-white border border-slate-100 rounded-lg shadow-inner">
-                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center mr-1">Active Choices:</span>
-                                {Object.entries(pendingFilters).map(([key, val]) => {
-                                    if (!Array.isArray(val) || val.length === 0) return null;
-                                    const formattedLabel = key.replace(/([A-Z])/g, ' $1').trim();
-                                    return val.map(v => (
-                                        <span 
-                                            key={`${key}-${v}`} 
-                                            className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-blue-50 border border-blue-200 text-blue-800 text-xs font-semibold rounded-md uppercase tracking-wide shadow-sm"
-                                        >
-                                            <span className="text-[10px] text-blue-500 font-medium capitalize tracking-normal">{formattedLabel}:</span>
-                                            {v}
-                                            <button 
-                                                type="button" 
-                                                onClick={() => setPendingFilters(prev => ({
-                                                    ...prev, 
-                                                    [key]: (prev[key as keyof typeof pendingFilters] || []).filter(x => x !== v)
-                                                }))}
-                                                className="p-0.5 hover:bg-blue-100 rounded text-blue-600 hover:text-blue-800 transition-colors cursor-pointer"
-                                            >
-                                                <X className="w-3 h-3" />
-                                            </button>
-                                        </span>
-                                    ));
-                                })}
-                            </div>
-                        )}
-
                         <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-200">
                             {isDirty && (
                                 <span className="text-xs text-amber-600 font-medium animate-pulse flex items-center gap-1.5 bg-amber-50 px-2.5 py-1 rounded border border-amber-200">
@@ -645,13 +649,13 @@ export default function App() {
                             )}
                             <button
                                 onClick={resetFilters}
-                                className="px-4 py-1.5 rounded-md border border-slate-300 bg-white text-slate-700 text-xs font-bold hover:bg-slate-100 transition-colors cursor-pointer"
+                                className="px-4 py-1.5 rounded-md border border-slate-300 bg-white text-slate-700 text-xs font-bold hover:bg-slate-100 transition-colors"
                             >
                                   Reset Filters
                             </button>
                             <button
                                 onClick={applyFilters}
-                                className={`px-5 py-1.5 rounded-md text-xs font-bold transition-all cursor-pointer ${isDirty ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-md shadow-blue-500/10' : 'bg-slate-200 text-slate-500 cursor-not-allowed'}`}
+                                className={`px-5 py-1.5 rounded-md text-xs font-bold transition-all ${isDirty ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-md shadow-blue-500/10' : 'bg-slate-200 text-slate-500 cursor-not-allowed'}`}
                             >
                                 Apply Filters
                             </button>
@@ -663,32 +667,18 @@ export default function App() {
             <div id="export-container" className="relative w-full print:m-0 print:p-0 max-w-[1600px] mx-auto min-h-screen bg-[#f8fafc]">
                 
                 {/* PDF Only Header */}
-                <div className="pdf-only-header hidden w-full p-6 pt-10 pb-4 border-b border-[#e2e8f0] bg-white flex-col gap-4">
-                    <div className="flex items-center justify-between w-full">
-                        <div className="flex items-center gap-6">
-                            {activeProject?.logoUrl && (
-                                <img src={activeProject.logoUrl} alt="Company Logo" className="h-16 w-auto object-contain" />
-                            )}
-                            <Logo className="h-12" />
-                        </div>
-                        <div className="text-right">
-                            <h2 className="text-xl font-bold tracking-tight text-[#0A192F]">DocuSight Analytics Form</h2>
-                            <p className="text-xs text-[#64748b] font-medium tracking-widest uppercase mt-0.5">
-                                {activeProject ? `${activeProject.projectName} - ${activeProject.projectCode}` : 'No Project Configured'}
-                            </p>
-                        </div>
+                <div className="pdf-only-header hidden w-full p-6 pt-10 pb-4 border-b border-[#e2e8f0] bg-white items-center justify-between">
+                    <div className="flex items-center gap-6">
+                        {activeProject?.logoUrl && (
+                            <img src={activeProject.logoUrl} alt="Company Logo" className="h-16 w-auto object-contain" />
+                        )}
+                        <Logo className="h-12" />
                     </div>
-                    {/* Active Filters Display */}
-                    <div className="w-full bg-slate-50 border border-slate-250 rounded-lg p-3 text-[10px] flex flex-wrap gap-x-5 gap-y-1 text-slate-755">
-                        <div className="font-bold text-slate-700 mr-2 border-r border-slate-300 pr-3 uppercase tracking-wider">Report Filters:</div>
-                        <div><span className="font-semibold text-slate-500">Doc Type:</span> <span className="font-bold text-slate-800">{(filters.documentType && filters.documentType.length > 0) ? filters.documentType.join(', ') : 'All'}</span></div>
-                        <div><span className="font-semibold text-slate-500">Discipline:</span> <span className="font-bold text-slate-800">{(filters.discipline && filters.discipline.length > 0) ? filters.discipline.join(', ') : 'All'}</span></div>
-                        <div><span className="font-semibold text-slate-500">Contractor:</span> <span className="font-bold text-slate-800">{(filters.contractor && filters.contractor.length > 0) ? filters.contractor.join(', ') : 'All'}</span></div>
-                        <div><span className="font-semibold text-slate-500">Consultant:</span> <span className="font-bold text-slate-800">{(filters.consultant && filters.consultant.length > 0) ? filters.consultant.join(', ') : 'All'}</span></div>
-                        <div><span className="font-semibold text-slate-500">Log Type:</span> <span className="font-bold text-slate-800">{(filters.logType && filters.logType.length > 0) ? filters.logType.join(', ') : 'All'}</span></div>
-                        <div><span className="font-semibold text-slate-500">Status:</span> <span className="font-bold text-slate-800">{(filters.status && filters.status.length > 0) ? filters.status.join(', ') : 'All'}</span></div>
-                        <div><span className="font-semibold text-slate-500">Area:</span> <span className="font-bold text-slate-800">{(filters.area && filters.area.length > 0) ? filters.area.join(', ') : 'All'}</span></div>
-                        <div><span className="font-semibold text-slate-500">Trade System:</span> <span className="font-bold text-slate-800">{(filters.tradeSystem && filters.tradeSystem.length > 0) ? filters.tradeSystem.join(', ') : 'All'}</span></div>
+                    <div className="text-right">
+                        <h2 className="text-xl font-bold tracking-tight text-[#0A192F]">DocuSight Analytics Form</h2>
+                        <p className="text-xs text-[#64748b] font-medium tracking-widest uppercase mt-0.5">
+                            {activeProject ? `${activeProject.projectName} - ${activeProject.projectCode}` : 'No Project Configured'}
+                        </p>
                     </div>
                 </div>
 
@@ -710,7 +700,7 @@ export default function App() {
                 </div>
                 )}
 
-                {data.length === 0 && activeTab !== 'portfolio' && activeTab !== 'monitoring' ? (
+                {data.length === 0 && activeTab !== 'portfolio' && activeTab !== 'monitoring' && activeTab !== 'mapping' ? (
                 <div className="h-[50vh] flex flex-col items-center justify-center text-[#94a3b8] border-2 border-dashed border-[#e2e8f0] rounded-2xl mx-10 mt-10">
                     <FileSpreadsheet className="w-20 h-20 text-slate-300 mb-4" />
                     <h2 className="text-xl font-bold text-[#475569] mb-2">No Data Available</h2>
@@ -720,25 +710,24 @@ export default function App() {
                 <div className="transition-all">
                   {activeTab === 'portfolio' && <PortfolioCenter projects={projects} />}
                   {activeTab === 'monitoring' && <EnterpriseMonitoringDashboard />}
+                  {activeTab === 'mapping' && <WorkflowMappingCenter data={data} onDataRefreshNeeded={() => setData(prev => normalizeData(prev))} />}
                   {activeTab === 'enterprise_dashboard' && data.length > 0 && <EnterpriseDashboard data={data.filter(matchesFilters)} />}
                   {activeTab === 'master_register' && data.length > 0 && <MasterRegister data={data.filter(matchesFilters)} projectInfo={activeProject} />}
-                  {activeTab === 'validation' && (
-                    <DataValidationEngine 
-                      data={data.filter(matchesFilters)} 
-                      onUpdateData={setData} 
-                      onExportPDF={handleDownloadPDF} 
-                    />
-                  )}
+                  {activeTab === 'validation' && <DataValidationEngine data={data.filter(matchesFilters)} />}
+                  {activeTab === 'engineering_dataset' && <EngineeringItemDatasetView data={data.filter(matchesFilters)} />}
                   {activeTab === 'aging' && <AdvancedAgingAnalysis data={data.filter(filterCumulative)} projectInfo={activeProject} />}
-                  {activeTab === 'sla' && <SLAMonitoring data={data} projectInfo={activeProject} />}
-                  {activeTab === 'actions' && <ActionTracker data={data} projectInfo={activeProject} />}
-                  {activeTab === 'trend_forecast' && <TrendAndForecastEngine data={data} projectInfo={activeProject} />}
+                  {activeTab === 'sla' && <SLAMonitoring data={data.filter(matchesFilters)} projectInfo={activeProject} />}
+                  {activeTab === 'actions' && <ActionTracker data={data.filter(matchesFilters)} projectInfo={activeProject} />}
+                  {activeTab === 'trend_forecast' && <TrendAndForecastEngine data={data.filter(matchesFilters)} projectInfo={activeProject} />}
                   {activeTab === 'warehouse' && <HistoricalDataWarehouse data={data.filter(matchesFilters)} projects={projects} />}
-                  {activeTab === 'monthly' && <ReportTable data={data.filter(d => !isExcludedFromGeneralStats(d))} filterFn={filterMonthly} title="Monthly KPI Analytics" projectInfo={activeProject} />}
-                  {activeTab === 'cumulative' && <ReportTable data={data.filter(d => !isExcludedFromGeneralStats(d))} filterFn={filterCumulative} title="Cumulative Performance Analytics" projectInfo={activeProject} />}
+                  {activeTab === 'final_audit' && <FinalAcceptanceAuditView data={data.filter(matchesFilters)} filterMonthly={filterMonthly} filterCumulative={filterCumulative} projectInfo={activeProject} />}
+                  {activeTab === 'calc_audit' && <CalculationAuditCenter data={data.filter(matchesFilters)} projectInfo={activeProject} />}
+                  {activeTab === 'monthly' && <ReportTable data={data.filter(d => !isExcludedFromGeneralStats(d))} filterFn={filterMonthly} title="Monthly KPI Analytics" projectInfo={activeProject} rawDataset={data} />}
+                  {activeTab === 'cumulative' && <ReportTable data={data.filter(d => !isExcludedFromGeneralStats(d))} filterFn={filterCumulative} title="Cumulative Performance Analytics" projectInfo={activeProject} rawDataset={data} />}
                   {activeTab === 'delay' && <DelayAnalysis data={data.filter(filterCumulative)} projectInfo={activeProject} />}
                   {activeTab === 'rfi' && <RFIAnalytics data={data.filter(matchesFilters)} projectInfo={activeProject} monthlyStart={startDate} monthlyEnd={endDate} />}
                   {activeTab === 'presentation' && <Presentation data={data.filter(matchesFilters)} filterMonthly={filterMonthly} filterCumulative={filterCumulative} projectInfo={activeProject} startDate={startDate} />}
+                  {activeTab === 'corporate_reports' && <CorporateReportsView data={data.filter(matchesFilters)} filterMonthly={filterMonthly} filterCumulative={filterCumulative} projectInfo={activeProject} startDate={startDate} endDate={endDate} />}
                   {activeTab === 'insights' && <AIInsights data={data.filter(matchesFilters)} projectInfo={activeProject} />}
                   {activeTab === 'ncr' && <NCRAnalytics data={data.filter(matchesFilters)} projectInfo={activeProject} monthlyStart={startDate} monthlyEnd={endDate} />}
                   {activeTab === 'sor' && <SORAnalytics data={data.filter(matchesFilters)} projectInfo={activeProject} monthlyStart={startDate} monthlyEnd={endDate} />}
@@ -769,6 +758,27 @@ export default function App() {
             </div>
         </div>
       </div>
+      
+      {showExportModal && (
+        <SmartExportModal 
+          isOpen={showExportModal}
+          onClose={() => setShowExportModal(false)}
+          exportType={pendingExportType || 'pptx'}
+          data={data}
+          activeTab={activeTab}
+          activeProject={activeProject}
+          filterMonthly={filterMonthly}
+          filterCumulative={filterCumulative}
+          startDate={startDate}
+          endDate={endDate}
+          isExcludedFromGeneralStats={isExcludedFromGeneralStats}
+          matchesFilters={matchesFilters}
+          isExporting={isExporting}
+          setIsExporting={setIsExporting}
+          setParseMessage={setParseMessage}
+          setIsError={setIsError}
+        />
+      )}
     </div>
   );
 }

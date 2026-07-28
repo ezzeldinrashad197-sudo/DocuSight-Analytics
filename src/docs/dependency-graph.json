@@ -1,0 +1,994 @@
+{
+  "nodes": [
+    {
+      "id": "src/AIInsights.tsx",
+      "layer": 3
+    },
+    {
+      "id": "src/App.tsx",
+      "layer": 3
+    },
+    {
+      "id": "src/CorrespondenceAnalytics.tsx",
+      "layer": 3
+    },
+    {
+      "id": "src/DelayAnalysis.tsx",
+      "layer": 3
+    },
+    {
+      "id": "src/EnterpriseDashboard.tsx",
+      "layer": 3
+    },
+    {
+      "id": "src/LoginScreen.tsx",
+      "layer": 3
+    },
+    {
+      "id": "src/Logo.tsx",
+      "layer": 3
+    },
+    {
+      "id": "src/NCRAnalytics.tsx",
+      "layer": 3
+    },
+    {
+      "id": "src/PortfolioCenter.tsx",
+      "layer": 3
+    },
+    {
+      "id": "src/Presentation.tsx",
+      "layer": 3
+    },
+    {
+      "id": "src/ProjectConfigModal.tsx",
+      "layer": 3
+    },
+    {
+      "id": "src/RFIAnalytics.tsx",
+      "layer": 3
+    },
+    {
+      "id": "src/ReportTable.tsx",
+      "layer": 3
+    },
+    {
+      "id": "src/SORAnalytics.tsx",
+      "layer": 3
+    },
+    {
+      "id": "src/SettingsCenter.tsx",
+      "layer": 3
+    },
+    {
+      "id": "src/analytics/analyticsCore.ts",
+      "layer": 2
+    },
+    {
+      "id": "src/analytics/analyticsService.ts",
+      "layer": 2
+    },
+    {
+      "id": "src/analytics/calculationFoundation.ts",
+      "layer": 2
+    },
+    {
+      "id": "src/analytics/dataValidator.ts",
+      "layer": 2
+    },
+    {
+      "id": "src/analytics/exportEngine.ts",
+      "layer": 2
+    },
+    {
+      "id": "src/analytics/exportHelpers.ts",
+      "layer": 2
+    },
+    {
+      "id": "src/analytics/exportTelemetryTestSuite.ts",
+      "layer": 2
+    },
+    {
+      "id": "src/analytics/governance/auditFramework.ts",
+      "layer": 2
+    },
+    {
+      "id": "src/analytics/governance/businessRuleRegistry.ts",
+      "layer": 2
+    },
+    {
+      "id": "src/analytics/governance/canonicalEngineAdapter.ts",
+      "layer": 2
+    },
+    {
+      "id": "src/analytics/governance/configurationRepository.ts",
+      "layer": 2
+    },
+    {
+      "id": "src/analytics/governance/formulaRegistry.ts",
+      "layer": 2
+    },
+    {
+      "id": "src/analytics/governance/validationFramework.ts",
+      "layer": 2
+    },
+    {
+      "id": "src/analytics/kpiEngine.ts",
+      "layer": 2
+    },
+    {
+      "id": "src/analytics/models.ts",
+      "layer": 2
+    },
+    {
+      "id": "src/analytics/ncr/ncrEngine.ts",
+      "layer": 2
+    },
+    {
+      "id": "src/analytics/recordTransformer.ts",
+      "layer": 2
+    },
+    {
+      "id": "src/analytics/revisionEngine.ts",
+      "layer": 2
+    },
+    {
+      "id": "src/analytics/sor/sorEngine.ts",
+      "layer": 2
+    },
+    {
+      "id": "src/analytics/statusEngine.ts",
+      "layer": 2
+    },
+    {
+      "id": "src/components/ActionTracker.tsx",
+      "layer": 3
+    },
+    {
+      "id": "src/components/AdvancedAgingAnalysis.tsx",
+      "layer": 3
+    },
+    {
+      "id": "src/components/DataValidationEngine.tsx",
+      "layer": 3
+    },
+    {
+      "id": "src/components/EngineeringItemDatasetView.tsx",
+      "layer": 3
+    },
+    {
+      "id": "src/components/EnterpriseHardeningView.tsx",
+      "layer": 3
+    },
+    {
+      "id": "src/components/EnterpriseMonitoringDashboard.tsx",
+      "layer": 3
+    },
+    {
+      "id": "src/components/FinalAcceptanceAuditView.tsx",
+      "layer": 3
+    },
+    {
+      "id": "src/components/HistoricalDataWarehouse.tsx",
+      "layer": 3
+    },
+    {
+      "id": "src/components/MasterRegister.tsx",
+      "layer": 3
+    },
+    {
+      "id": "src/components/SLAMonitoring.tsx",
+      "layer": 3
+    },
+    {
+      "id": "src/components/SmartExportModal.tsx",
+      "layer": 3
+    },
+    {
+      "id": "src/components/TrendAndForecastEngine.tsx",
+      "layer": 3
+    },
+    {
+      "id": "src/components/WorkflowMappingCenter.tsx",
+      "layer": 3
+    },
+    {
+      "id": "src/components/dashboard/ReusableComponents.tsx",
+      "layer": 3
+    },
+    {
+      "id": "src/components/presentation/PresHelpers.tsx",
+      "layer": 3
+    },
+    {
+      "id": "src/db/drizzle.config.ts",
+      "layer": 3
+    },
+    {
+      "id": "src/db/index.ts",
+      "layer": 3
+    },
+    {
+      "id": "src/db/schema.ts",
+      "layer": 3
+    },
+    {
+      "id": "src/firebase.ts",
+      "layer": 0
+    },
+    {
+      "id": "src/hooks/useExport.ts",
+      "layer": 3
+    },
+    {
+      "id": "src/hooks/useFilters.ts",
+      "layer": 3
+    },
+    {
+      "id": "src/hooks/useUpload.ts",
+      "layer": 3
+    },
+    {
+      "id": "src/main.tsx",
+      "layer": 3
+    },
+    {
+      "id": "src/types.ts",
+      "layer": 0
+    },
+    {
+      "id": "src/utils/calculations.ts",
+      "layer": 1
+    },
+    {
+      "id": "src/utils/classificationEngine.ts",
+      "layer": 3
+    },
+    {
+      "id": "src/utils/enterpriseEngine.ts",
+      "layer": 3
+    },
+    {
+      "id": "src/utils/enterpriseUpgradeEngine.ts",
+      "layer": 1
+    },
+    {
+      "id": "src/utils/i18n.tsx",
+      "layer": 0
+    },
+    {
+      "id": "src/utils/loadTestingSuite.ts",
+      "layer": 3
+    },
+    {
+      "id": "src/utils/multiFileParser.ts",
+      "layer": 3
+    },
+    {
+      "id": "src/utils/ncrAnalytics.ts",
+      "layer": 2
+    },
+    {
+      "id": "src/utils/parser.ts",
+      "layer": 3
+    },
+    {
+      "id": "src/utils/rfiAnalytics.ts",
+      "layer": 2
+    },
+    {
+      "id": "src/utils/securityRegressionSuite.ts",
+      "layer": 3
+    },
+    {
+      "id": "src/utils/statusMatrixEngine.ts",
+      "layer": 1
+    },
+    {
+      "id": "src/utils/workflowMapping.ts",
+      "layer": 3
+    }
+  ],
+  "edges": [
+    {
+      "source": "src/AIInsights.tsx",
+      "target": "src/types.ts"
+    },
+    {
+      "source": "src/AIInsights.tsx",
+      "target": "src/utils/calculations.ts"
+    },
+    {
+      "source": "src/AIInsights.tsx",
+      "target": "src/utils/enterpriseEngine.ts"
+    },
+    {
+      "source": "src/App.tsx",
+      "target": "src/types.ts"
+    },
+    {
+      "source": "src/App.tsx",
+      "target": "src/components/MasterRegister.tsx"
+    },
+    {
+      "source": "src/App.tsx",
+      "target": "src/ReportTable.tsx"
+    },
+    {
+      "source": "src/App.tsx",
+      "target": "src/DelayAnalysis.tsx"
+    },
+    {
+      "source": "src/App.tsx",
+      "target": "src/Presentation.tsx"
+    },
+    {
+      "source": "src/App.tsx",
+      "target": "src/EnterpriseDashboard.tsx"
+    },
+    {
+      "source": "src/App.tsx",
+      "target": "src/PortfolioCenter.tsx"
+    },
+    {
+      "source": "src/App.tsx",
+      "target": "src/SettingsCenter.tsx"
+    },
+    {
+      "source": "src/App.tsx",
+      "target": "src/AIInsights.tsx"
+    },
+    {
+      "source": "src/App.tsx",
+      "target": "src/NCRAnalytics.tsx"
+    },
+    {
+      "source": "src/App.tsx",
+      "target": "src/SORAnalytics.tsx"
+    },
+    {
+      "source": "src/App.tsx",
+      "target": "src/CorrespondenceAnalytics.tsx"
+    },
+    {
+      "source": "src/App.tsx",
+      "target": "src/RFIAnalytics.tsx"
+    },
+    {
+      "source": "src/App.tsx",
+      "target": "src/components/DataValidationEngine.tsx"
+    },
+    {
+      "source": "src/App.tsx",
+      "target": "src/components/AdvancedAgingAnalysis.tsx"
+    },
+    {
+      "source": "src/App.tsx",
+      "target": "src/components/SLAMonitoring.tsx"
+    },
+    {
+      "source": "src/App.tsx",
+      "target": "src/components/ActionTracker.tsx"
+    },
+    {
+      "source": "src/App.tsx",
+      "target": "src/components/TrendAndForecastEngine.tsx"
+    },
+    {
+      "source": "src/App.tsx",
+      "target": "src/components/HistoricalDataWarehouse.tsx"
+    },
+    {
+      "source": "src/App.tsx",
+      "target": "src/components/EngineeringItemDatasetView.tsx"
+    },
+    {
+      "source": "src/App.tsx",
+      "target": "src/Logo.tsx"
+    },
+    {
+      "source": "src/App.tsx",
+      "target": "src/components/SmartExportModal.tsx"
+    },
+    {
+      "source": "src/App.tsx",
+      "target": "src/hooks/useExport.ts"
+    },
+    {
+      "source": "src/App.tsx",
+      "target": "src/hooks/useUpload.ts"
+    },
+    {
+      "source": "src/App.tsx",
+      "target": "src/hooks/useFilters.ts"
+    },
+    {
+      "source": "src/App.tsx",
+      "target": "src/utils/i18n.tsx"
+    },
+    {
+      "source": "src/App.tsx",
+      "target": "src/LoginScreen.tsx"
+    },
+    {
+      "source": "src/App.tsx",
+      "target": "src/firebase.ts"
+    },
+    {
+      "source": "src/App.tsx",
+      "target": "src/components/EnterpriseMonitoringDashboard.tsx"
+    },
+    {
+      "source": "src/App.tsx",
+      "target": "src/components/FinalAcceptanceAuditView.tsx"
+    },
+    {
+      "source": "src/App.tsx",
+      "target": "src/components/WorkflowMappingCenter.tsx"
+    },
+    {
+      "source": "src/App.tsx",
+      "target": "src/utils/calculations.ts"
+    },
+    {
+      "source": "src/CorrespondenceAnalytics.tsx",
+      "target": "src/types.ts"
+    },
+    {
+      "source": "src/DelayAnalysis.tsx",
+      "target": "src/types.ts"
+    },
+    {
+      "source": "src/DelayAnalysis.tsx",
+      "target": "src/utils/calculations.ts"
+    },
+    {
+      "source": "src/EnterpriseDashboard.tsx",
+      "target": "src/types.ts"
+    },
+    {
+      "source": "src/EnterpriseDashboard.tsx",
+      "target": "src/utils/enterpriseUpgradeEngine.ts"
+    },
+    {
+      "source": "src/EnterpriseDashboard.tsx",
+      "target": "src/components/EnterpriseHardeningView.tsx"
+    },
+    {
+      "source": "src/LoginScreen.tsx",
+      "target": "src/Logo.tsx"
+    },
+    {
+      "source": "src/LoginScreen.tsx",
+      "target": "src/firebase.ts"
+    },
+    {
+      "source": "src/LoginScreen.tsx",
+      "target": "src/utils/i18n.tsx"
+    },
+    {
+      "source": "src/NCRAnalytics.tsx",
+      "target": "src/types.ts"
+    },
+    {
+      "source": "src/NCRAnalytics.tsx",
+      "target": "src/analytics/ncr/ncrEngine.ts"
+    },
+    {
+      "source": "src/NCRAnalytics.tsx",
+      "target": "src/components/dashboard/ReusableComponents.tsx"
+    },
+    {
+      "source": "src/NCRAnalytics.tsx",
+      "target": "src/utils/i18n.tsx"
+    },
+    {
+      "source": "src/PortfolioCenter.tsx",
+      "target": "src/types.ts"
+    },
+    {
+      "source": "src/PortfolioCenter.tsx",
+      "target": "src/firebase.ts"
+    },
+    {
+      "source": "src/Presentation.tsx",
+      "target": "src/types.ts"
+    },
+    {
+      "source": "src/Presentation.tsx",
+      "target": "src/utils/calculations.ts"
+    },
+    {
+      "source": "src/Presentation.tsx",
+      "target": "src/analytics/ncr/ncrEngine.ts"
+    },
+    {
+      "source": "src/Presentation.tsx",
+      "target": "src/utils/i18n.tsx"
+    },
+    {
+      "source": "src/Presentation.tsx",
+      "target": "src/components/presentation/PresHelpers.tsx"
+    },
+    {
+      "source": "src/ProjectConfigModal.tsx",
+      "target": "src/types.ts"
+    },
+    {
+      "source": "src/RFIAnalytics.tsx",
+      "target": "src/types.ts"
+    },
+    {
+      "source": "src/RFIAnalytics.tsx",
+      "target": "src/analytics/analyticsCore.ts"
+    },
+    {
+      "source": "src/ReportTable.tsx",
+      "target": "src/types.ts"
+    },
+    {
+      "source": "src/ReportTable.tsx",
+      "target": "src/utils/calculations.ts"
+    },
+    {
+      "source": "src/ReportTable.tsx",
+      "target": "src/utils/i18n.tsx"
+    },
+    {
+      "source": "src/SORAnalytics.tsx",
+      "target": "src/types.ts"
+    },
+    {
+      "source": "src/SORAnalytics.tsx",
+      "target": "src/analytics/sor/sorEngine.ts"
+    },
+    {
+      "source": "src/SORAnalytics.tsx",
+      "target": "src/components/dashboard/ReusableComponents.tsx"
+    },
+    {
+      "source": "src/SORAnalytics.tsx",
+      "target": "src/utils/i18n.tsx"
+    },
+    {
+      "source": "src/SettingsCenter.tsx",
+      "target": "src/types.ts"
+    },
+    {
+      "source": "src/SettingsCenter.tsx",
+      "target": "src/ProjectConfigModal.tsx"
+    },
+    {
+      "source": "src/SettingsCenter.tsx",
+      "target": "src/firebase.ts"
+    },
+    {
+      "source": "src/SettingsCenter.tsx",
+      "target": "src/utils/i18n.tsx"
+    },
+    {
+      "source": "src/analytics/analyticsCore.ts",
+      "target": "src/types.ts"
+    },
+    {
+      "source": "src/analytics/analyticsCore.ts",
+      "target": "src/utils/statusMatrixEngine.ts"
+    },
+    {
+      "source": "src/analytics/analyticsCore.ts",
+      "target": "src/utils/enterpriseUpgradeEngine.ts"
+    },
+    {
+      "source": "src/analytics/analyticsService.ts",
+      "target": "src/analytics/models.ts"
+    },
+    {
+      "source": "src/analytics/calculationFoundation.ts",
+      "target": "src/types.ts"
+    },
+    {
+      "source": "src/analytics/calculationFoundation.ts",
+      "target": "src/analytics/analyticsCore.ts"
+    },
+    {
+      "source": "src/analytics/dataValidator.ts",
+      "target": "src/analytics/models.ts"
+    },
+    {
+      "source": "src/analytics/dataValidator.ts",
+      "target": "src/utils/calculations.ts"
+    },
+    {
+      "source": "src/analytics/exportEngine.ts",
+      "target": "src/types.ts"
+    },
+    {
+      "source": "src/analytics/exportEngine.ts",
+      "target": "src/utils/calculations.ts"
+    },
+    {
+      "source": "src/analytics/exportEngine.ts",
+      "target": "src/analytics/exportHelpers.ts"
+    },
+    {
+      "source": "src/analytics/exportHelpers.ts",
+      "target": "src/types.ts"
+    },
+    {
+      "source": "src/analytics/exportHelpers.ts",
+      "target": "src/utils/calculations.ts"
+    },
+    {
+      "source": "src/analytics/exportHelpers.ts",
+      "target": "src/analytics/ncr/ncrEngine.ts"
+    },
+    {
+      "source": "src/analytics/exportTelemetryTestSuite.ts",
+      "target": "src/analytics/exportHelpers.ts"
+    },
+    {
+      "source": "src/analytics/exportTelemetryTestSuite.ts",
+      "target": "src/types.ts"
+    },
+    {
+      "source": "src/analytics/governance/canonicalEngineAdapter.ts",
+      "target": "src/types.ts"
+    },
+    {
+      "source": "src/analytics/governance/canonicalEngineAdapter.ts",
+      "target": "src/analytics/calculationFoundation.ts"
+    },
+    {
+      "source": "src/analytics/governance/canonicalEngineAdapter.ts",
+      "target": "src/analytics/governance/validationFramework.ts"
+    },
+    {
+      "source": "src/analytics/governance/canonicalEngineAdapter.ts",
+      "target": "src/analytics/governance/auditFramework.ts"
+    },
+    {
+      "source": "src/analytics/governance/canonicalEngineAdapter.ts",
+      "target": "src/analytics/governance/businessRuleRegistry.ts"
+    },
+    {
+      "source": "src/analytics/governance/canonicalEngineAdapter.ts",
+      "target": "src/analytics/governance/formulaRegistry.ts"
+    },
+    {
+      "source": "src/analytics/governance/validationFramework.ts",
+      "target": "src/types.ts"
+    },
+    {
+      "source": "src/analytics/governance/validationFramework.ts",
+      "target": "src/analytics/governance/auditFramework.ts"
+    },
+    {
+      "source": "src/analytics/governance/validationFramework.ts",
+      "target": "src/analytics/governance/businessRuleRegistry.ts"
+    },
+    {
+      "source": "src/analytics/governance/validationFramework.ts",
+      "target": "src/analytics/governance/formulaRegistry.ts"
+    },
+    {
+      "source": "src/analytics/governance/validationFramework.ts",
+      "target": "src/analytics/calculationFoundation.ts"
+    },
+    {
+      "source": "src/analytics/governance/validationFramework.ts",
+      "target": "src/utils/calculations.ts"
+    },
+    {
+      "source": "src/analytics/kpiEngine.ts",
+      "target": "src/analytics/models.ts"
+    },
+    {
+      "source": "src/analytics/ncr/ncrEngine.ts",
+      "target": "src/types.ts"
+    },
+    {
+      "source": "src/analytics/ncr/ncrEngine.ts",
+      "target": "src/utils/calculations.ts"
+    },
+    {
+      "source": "src/analytics/ncr/ncrEngine.ts",
+      "target": "src/analytics/analyticsCore.ts"
+    },
+    {
+      "source": "src/analytics/ncr/ncrEngine.ts",
+      "target": "src/analytics/governance/auditFramework.ts"
+    },
+    {
+      "source": "src/analytics/recordTransformer.ts",
+      "target": "src/types.ts"
+    },
+    {
+      "source": "src/analytics/recordTransformer.ts",
+      "target": "src/analytics/models.ts"
+    },
+    {
+      "source": "src/analytics/recordTransformer.ts",
+      "target": "src/analytics/statusEngine.ts"
+    },
+    {
+      "source": "src/analytics/recordTransformer.ts",
+      "target": "src/analytics/revisionEngine.ts"
+    },
+    {
+      "source": "src/analytics/revisionEngine.ts",
+      "target": "src/analytics/models.ts"
+    },
+    {
+      "source": "src/analytics/sor/sorEngine.ts",
+      "target": "src/types.ts"
+    },
+    {
+      "source": "src/analytics/sor/sorEngine.ts",
+      "target": "src/utils/calculations.ts"
+    },
+    {
+      "source": "src/analytics/statusEngine.ts",
+      "target": "src/analytics/models.ts"
+    },
+    {
+      "source": "src/components/ActionTracker.tsx",
+      "target": "src/types.ts"
+    },
+    {
+      "source": "src/components/ActionTracker.tsx",
+      "target": "src/utils/calculations.ts"
+    },
+    {
+      "source": "src/components/AdvancedAgingAnalysis.tsx",
+      "target": "src/types.ts"
+    },
+    {
+      "source": "src/components/AdvancedAgingAnalysis.tsx",
+      "target": "src/utils/calculations.ts"
+    },
+    {
+      "source": "src/components/DataValidationEngine.tsx",
+      "target": "src/types.ts"
+    },
+    {
+      "source": "src/components/DataValidationEngine.tsx",
+      "target": "src/utils/calculations.ts"
+    },
+    {
+      "source": "src/components/DataValidationEngine.tsx",
+      "target": "src/analytics/calculationFoundation.ts"
+    },
+    {
+      "source": "src/components/EngineeringItemDatasetView.tsx",
+      "target": "src/types.ts"
+    },
+    {
+      "source": "src/components/EngineeringItemDatasetView.tsx",
+      "target": "src/analytics/calculationFoundation.ts"
+    },
+    {
+      "source": "src/components/EnterpriseHardeningView.tsx",
+      "target": "src/types.ts"
+    },
+    {
+      "source": "src/components/EnterpriseHardeningView.tsx",
+      "target": "src/analytics/analyticsCore.ts"
+    },
+    {
+      "source": "src/components/EnterpriseHardeningView.tsx",
+      "target": "src/analytics/governance/auditFramework.ts"
+    },
+    {
+      "source": "src/components/EnterpriseMonitoringDashboard.tsx",
+      "target": "src/firebase.ts"
+    },
+    {
+      "source": "src/components/FinalAcceptanceAuditView.tsx",
+      "target": "src/types.ts"
+    },
+    {
+      "source": "src/components/FinalAcceptanceAuditView.tsx",
+      "target": "src/utils/calculations.ts"
+    },
+    {
+      "source": "src/components/FinalAcceptanceAuditView.tsx",
+      "target": "src/analytics/governance/validationFramework.ts"
+    },
+    {
+      "source": "src/components/FinalAcceptanceAuditView.tsx",
+      "target": "src/utils/classificationEngine.ts"
+    },
+    {
+      "source": "src/components/FinalAcceptanceAuditView.tsx",
+      "target": "src/firebase.ts"
+    },
+    {
+      "source": "src/components/HistoricalDataWarehouse.tsx",
+      "target": "src/types.ts"
+    },
+    {
+      "source": "src/components/HistoricalDataWarehouse.tsx",
+      "target": "src/utils/calculations.ts"
+    },
+    {
+      "source": "src/components/MasterRegister.tsx",
+      "target": "src/types.ts"
+    },
+    {
+      "source": "src/components/MasterRegister.tsx",
+      "target": "src/utils/calculations.ts"
+    },
+    {
+      "source": "src/components/MasterRegister.tsx",
+      "target": "src/analytics/calculationFoundation.ts"
+    },
+    {
+      "source": "src/components/SLAMonitoring.tsx",
+      "target": "src/types.ts"
+    },
+    {
+      "source": "src/components/SLAMonitoring.tsx",
+      "target": "src/utils/calculations.ts"
+    },
+    {
+      "source": "src/components/SmartExportModal.tsx",
+      "target": "src/utils/i18n.tsx"
+    },
+    {
+      "source": "src/components/SmartExportModal.tsx",
+      "target": "src/types.ts"
+    },
+    {
+      "source": "src/components/SmartExportModal.tsx",
+      "target": "src/analytics/exportEngine.ts"
+    },
+    {
+      "source": "src/components/TrendAndForecastEngine.tsx",
+      "target": "src/types.ts"
+    },
+    {
+      "source": "src/components/TrendAndForecastEngine.tsx",
+      "target": "src/utils/calculations.ts"
+    },
+    {
+      "source": "src/components/WorkflowMappingCenter.tsx",
+      "target": "src/types.ts"
+    },
+    {
+      "source": "src/components/WorkflowMappingCenter.tsx",
+      "target": "src/utils/workflowMapping.ts"
+    },
+    {
+      "source": "src/components/WorkflowMappingCenter.tsx",
+      "target": "src/utils/classificationEngine.ts"
+    },
+    {
+      "source": "src/components/presentation/PresHelpers.tsx",
+      "target": "src/types.ts"
+    },
+    {
+      "source": "src/db/index.ts",
+      "target": "src/db/schema.ts"
+    },
+    {
+      "source": "src/firebase.ts",
+      "target": "firebase-applet-config.json"
+    },
+    {
+      "source": "src/hooks/useExport.ts",
+      "target": "src/analytics/exportEngine.ts"
+    },
+    {
+      "source": "src/hooks/useExport.ts",
+      "target": "src/types.ts"
+    },
+    {
+      "source": "src/hooks/useFilters.ts",
+      "target": "src/types.ts"
+    },
+    {
+      "source": "src/hooks/useUpload.ts",
+      "target": "src/types.ts"
+    },
+    {
+      "source": "src/hooks/useUpload.ts",
+      "target": "src/utils/multiFileParser.ts"
+    },
+    {
+      "source": "src/hooks/useUpload.ts",
+      "target": "src/firebase.ts"
+    },
+    {
+      "source": "src/hooks/useUpload.ts",
+      "target": "src/utils/i18n.tsx"
+    },
+    {
+      "source": "src/main.tsx",
+      "target": "src/App.tsx"
+    },
+    {
+      "source": "src/main.tsx",
+      "target": "src/index.css"
+    },
+    {
+      "source": "src/main.tsx",
+      "target": "src/utils/i18n.tsx"
+    },
+    {
+      "source": "src/utils/calculations.ts",
+      "target": "src/types.ts"
+    },
+    {
+      "source": "src/utils/calculations.ts",
+      "target": "src/analytics/calculationFoundation.ts"
+    },
+    {
+      "source": "src/utils/calculations.ts",
+      "target": "src/utils/workflowMapping.ts"
+    },
+    {
+      "source": "src/utils/classificationEngine.ts",
+      "target": "src/utils/workflowMapping.ts"
+    },
+    {
+      "source": "src/utils/enterpriseEngine.ts",
+      "target": "src/types.ts"
+    },
+    {
+      "source": "src/utils/enterpriseEngine.ts",
+      "target": "src/utils/calculations.ts"
+    },
+    {
+      "source": "src/utils/enterpriseUpgradeEngine.ts",
+      "target": "src/types.ts"
+    },
+    {
+      "source": "src/utils/enterpriseUpgradeEngine.ts",
+      "target": "src/utils/statusMatrixEngine.ts"
+    },
+    {
+      "source": "src/utils/multiFileParser.ts",
+      "target": "src/utils/parser.ts"
+    },
+    {
+      "source": "src/utils/multiFileParser.ts",
+      "target": "src/types.ts"
+    },
+    {
+      "source": "src/utils/ncrAnalytics.ts",
+      "target": "src/types.ts"
+    },
+    {
+      "source": "src/utils/ncrAnalytics.ts",
+      "target": "src/utils/rfiAnalytics.ts"
+    },
+    {
+      "source": "src/utils/parser.ts",
+      "target": "src/types.ts"
+    },
+    {
+      "source": "src/utils/parser.ts",
+      "target": "src/utils/calculations.ts"
+    },
+    {
+      "source": "src/utils/parser.ts",
+      "target": "src/utils/classificationEngine.ts"
+    },
+    {
+      "source": "src/utils/parser.ts",
+      "target": "src/utils/workflowMapping.ts"
+    },
+    {
+      "source": "src/utils/rfiAnalytics.ts",
+      "target": "src/types.ts"
+    },
+    {
+      "source": "src/utils/securityRegressionSuite.ts",
+      "target": "src/types.ts"
+    },
+    {
+      "source": "src/utils/statusMatrixEngine.ts",
+      "target": "src/types.ts"
+    }
+  ]
+}

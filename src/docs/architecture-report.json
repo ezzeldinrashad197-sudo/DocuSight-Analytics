@@ -1,0 +1,4244 @@
+{
+  "metadata": {
+    "generatedAt": "2026-07-24T18:28:40.526Z",
+    "totalFilesScanned": 72,
+    "architecturalViolations": 3,
+    "complianceScore": 85,
+    "circularDependenciesCount": 0,
+    "parserDescription": "TypeScript Compiler AST Parser with strict node visitor symbol-resolution"
+  },
+  "nodes": [
+    {
+      "id": "src/AIInsights.tsx",
+      "layer": 3
+    },
+    {
+      "id": "src/App.tsx",
+      "layer": 3
+    },
+    {
+      "id": "src/CorrespondenceAnalytics.tsx",
+      "layer": 3
+    },
+    {
+      "id": "src/DelayAnalysis.tsx",
+      "layer": 3
+    },
+    {
+      "id": "src/EnterpriseDashboard.tsx",
+      "layer": 3
+    },
+    {
+      "id": "src/LoginScreen.tsx",
+      "layer": 3
+    },
+    {
+      "id": "src/Logo.tsx",
+      "layer": 3
+    },
+    {
+      "id": "src/NCRAnalytics.tsx",
+      "layer": 3
+    },
+    {
+      "id": "src/PortfolioCenter.tsx",
+      "layer": 3
+    },
+    {
+      "id": "src/Presentation.tsx",
+      "layer": 3
+    },
+    {
+      "id": "src/ProjectConfigModal.tsx",
+      "layer": 3
+    },
+    {
+      "id": "src/RFIAnalytics.tsx",
+      "layer": 3
+    },
+    {
+      "id": "src/ReportTable.tsx",
+      "layer": 3
+    },
+    {
+      "id": "src/SORAnalytics.tsx",
+      "layer": 3
+    },
+    {
+      "id": "src/SettingsCenter.tsx",
+      "layer": 3
+    },
+    {
+      "id": "src/analytics/analyticsCore.ts",
+      "layer": 2
+    },
+    {
+      "id": "src/analytics/analyticsService.ts",
+      "layer": 2
+    },
+    {
+      "id": "src/analytics/calculationFoundation.ts",
+      "layer": 2
+    },
+    {
+      "id": "src/analytics/dataValidator.ts",
+      "layer": 2
+    },
+    {
+      "id": "src/analytics/exportEngine.ts",
+      "layer": 2
+    },
+    {
+      "id": "src/analytics/exportHelpers.ts",
+      "layer": 2
+    },
+    {
+      "id": "src/analytics/exportTelemetryTestSuite.ts",
+      "layer": 2
+    },
+    {
+      "id": "src/analytics/governance/auditFramework.ts",
+      "layer": 2
+    },
+    {
+      "id": "src/analytics/governance/businessRuleRegistry.ts",
+      "layer": 2
+    },
+    {
+      "id": "src/analytics/governance/canonicalEngineAdapter.ts",
+      "layer": 2
+    },
+    {
+      "id": "src/analytics/governance/configurationRepository.ts",
+      "layer": 2
+    },
+    {
+      "id": "src/analytics/governance/formulaRegistry.ts",
+      "layer": 2
+    },
+    {
+      "id": "src/analytics/governance/validationFramework.ts",
+      "layer": 2
+    },
+    {
+      "id": "src/analytics/kpiEngine.ts",
+      "layer": 2
+    },
+    {
+      "id": "src/analytics/models.ts",
+      "layer": 2
+    },
+    {
+      "id": "src/analytics/ncr/ncrEngine.ts",
+      "layer": 2
+    },
+    {
+      "id": "src/analytics/recordTransformer.ts",
+      "layer": 2
+    },
+    {
+      "id": "src/analytics/revisionEngine.ts",
+      "layer": 2
+    },
+    {
+      "id": "src/analytics/sor/sorEngine.ts",
+      "layer": 2
+    },
+    {
+      "id": "src/analytics/statusEngine.ts",
+      "layer": 2
+    },
+    {
+      "id": "src/components/ActionTracker.tsx",
+      "layer": 3
+    },
+    {
+      "id": "src/components/AdvancedAgingAnalysis.tsx",
+      "layer": 3
+    },
+    {
+      "id": "src/components/DataValidationEngine.tsx",
+      "layer": 3
+    },
+    {
+      "id": "src/components/EngineeringItemDatasetView.tsx",
+      "layer": 3
+    },
+    {
+      "id": "src/components/EnterpriseHardeningView.tsx",
+      "layer": 3
+    },
+    {
+      "id": "src/components/EnterpriseMonitoringDashboard.tsx",
+      "layer": 3
+    },
+    {
+      "id": "src/components/FinalAcceptanceAuditView.tsx",
+      "layer": 3
+    },
+    {
+      "id": "src/components/HistoricalDataWarehouse.tsx",
+      "layer": 3
+    },
+    {
+      "id": "src/components/MasterRegister.tsx",
+      "layer": 3
+    },
+    {
+      "id": "src/components/SLAMonitoring.tsx",
+      "layer": 3
+    },
+    {
+      "id": "src/components/SmartExportModal.tsx",
+      "layer": 3
+    },
+    {
+      "id": "src/components/TrendAndForecastEngine.tsx",
+      "layer": 3
+    },
+    {
+      "id": "src/components/WorkflowMappingCenter.tsx",
+      "layer": 3
+    },
+    {
+      "id": "src/components/dashboard/ReusableComponents.tsx",
+      "layer": 3
+    },
+    {
+      "id": "src/components/presentation/PresHelpers.tsx",
+      "layer": 3
+    },
+    {
+      "id": "src/db/drizzle.config.ts",
+      "layer": 3
+    },
+    {
+      "id": "src/db/index.ts",
+      "layer": 3
+    },
+    {
+      "id": "src/db/schema.ts",
+      "layer": 3
+    },
+    {
+      "id": "src/firebase.ts",
+      "layer": 0
+    },
+    {
+      "id": "src/hooks/useExport.ts",
+      "layer": 3
+    },
+    {
+      "id": "src/hooks/useFilters.ts",
+      "layer": 3
+    },
+    {
+      "id": "src/hooks/useUpload.ts",
+      "layer": 3
+    },
+    {
+      "id": "src/main.tsx",
+      "layer": 3
+    },
+    {
+      "id": "src/types.ts",
+      "layer": 0
+    },
+    {
+      "id": "src/utils/calculations.ts",
+      "layer": 1
+    },
+    {
+      "id": "src/utils/classificationEngine.ts",
+      "layer": 3
+    },
+    {
+      "id": "src/utils/enterpriseEngine.ts",
+      "layer": 3
+    },
+    {
+      "id": "src/utils/enterpriseUpgradeEngine.ts",
+      "layer": 1
+    },
+    {
+      "id": "src/utils/i18n.tsx",
+      "layer": 0
+    },
+    {
+      "id": "src/utils/loadTestingSuite.ts",
+      "layer": 3
+    },
+    {
+      "id": "src/utils/multiFileParser.ts",
+      "layer": 3
+    },
+    {
+      "id": "src/utils/ncrAnalytics.ts",
+      "layer": 2
+    },
+    {
+      "id": "src/utils/parser.ts",
+      "layer": 3
+    },
+    {
+      "id": "src/utils/rfiAnalytics.ts",
+      "layer": 2
+    },
+    {
+      "id": "src/utils/securityRegressionSuite.ts",
+      "layer": 3
+    },
+    {
+      "id": "src/utils/statusMatrixEngine.ts",
+      "layer": 1
+    },
+    {
+      "id": "src/utils/workflowMapping.ts",
+      "layer": 3
+    }
+  ],
+  "edges": [
+    {
+      "source": "src/AIInsights.tsx",
+      "target": "src/types.ts"
+    },
+    {
+      "source": "src/AIInsights.tsx",
+      "target": "src/utils/calculations.ts"
+    },
+    {
+      "source": "src/AIInsights.tsx",
+      "target": "src/utils/enterpriseEngine.ts"
+    },
+    {
+      "source": "src/App.tsx",
+      "target": "src/types.ts"
+    },
+    {
+      "source": "src/App.tsx",
+      "target": "src/components/MasterRegister.tsx"
+    },
+    {
+      "source": "src/App.tsx",
+      "target": "src/ReportTable.tsx"
+    },
+    {
+      "source": "src/App.tsx",
+      "target": "src/DelayAnalysis.tsx"
+    },
+    {
+      "source": "src/App.tsx",
+      "target": "src/Presentation.tsx"
+    },
+    {
+      "source": "src/App.tsx",
+      "target": "src/EnterpriseDashboard.tsx"
+    },
+    {
+      "source": "src/App.tsx",
+      "target": "src/PortfolioCenter.tsx"
+    },
+    {
+      "source": "src/App.tsx",
+      "target": "src/SettingsCenter.tsx"
+    },
+    {
+      "source": "src/App.tsx",
+      "target": "src/AIInsights.tsx"
+    },
+    {
+      "source": "src/App.tsx",
+      "target": "src/NCRAnalytics.tsx"
+    },
+    {
+      "source": "src/App.tsx",
+      "target": "src/SORAnalytics.tsx"
+    },
+    {
+      "source": "src/App.tsx",
+      "target": "src/CorrespondenceAnalytics.tsx"
+    },
+    {
+      "source": "src/App.tsx",
+      "target": "src/RFIAnalytics.tsx"
+    },
+    {
+      "source": "src/App.tsx",
+      "target": "src/components/DataValidationEngine.tsx"
+    },
+    {
+      "source": "src/App.tsx",
+      "target": "src/components/AdvancedAgingAnalysis.tsx"
+    },
+    {
+      "source": "src/App.tsx",
+      "target": "src/components/SLAMonitoring.tsx"
+    },
+    {
+      "source": "src/App.tsx",
+      "target": "src/components/ActionTracker.tsx"
+    },
+    {
+      "source": "src/App.tsx",
+      "target": "src/components/TrendAndForecastEngine.tsx"
+    },
+    {
+      "source": "src/App.tsx",
+      "target": "src/components/HistoricalDataWarehouse.tsx"
+    },
+    {
+      "source": "src/App.tsx",
+      "target": "src/components/EngineeringItemDatasetView.tsx"
+    },
+    {
+      "source": "src/App.tsx",
+      "target": "src/Logo.tsx"
+    },
+    {
+      "source": "src/App.tsx",
+      "target": "src/components/SmartExportModal.tsx"
+    },
+    {
+      "source": "src/App.tsx",
+      "target": "src/hooks/useExport.ts"
+    },
+    {
+      "source": "src/App.tsx",
+      "target": "src/hooks/useUpload.ts"
+    },
+    {
+      "source": "src/App.tsx",
+      "target": "src/hooks/useFilters.ts"
+    },
+    {
+      "source": "src/App.tsx",
+      "target": "src/utils/i18n.tsx"
+    },
+    {
+      "source": "src/App.tsx",
+      "target": "src/LoginScreen.tsx"
+    },
+    {
+      "source": "src/App.tsx",
+      "target": "src/firebase.ts"
+    },
+    {
+      "source": "src/App.tsx",
+      "target": "src/components/EnterpriseMonitoringDashboard.tsx"
+    },
+    {
+      "source": "src/App.tsx",
+      "target": "src/components/FinalAcceptanceAuditView.tsx"
+    },
+    {
+      "source": "src/App.tsx",
+      "target": "src/components/WorkflowMappingCenter.tsx"
+    },
+    {
+      "source": "src/App.tsx",
+      "target": "src/utils/calculations.ts"
+    },
+    {
+      "source": "src/CorrespondenceAnalytics.tsx",
+      "target": "src/types.ts"
+    },
+    {
+      "source": "src/DelayAnalysis.tsx",
+      "target": "src/types.ts"
+    },
+    {
+      "source": "src/DelayAnalysis.tsx",
+      "target": "src/utils/calculations.ts"
+    },
+    {
+      "source": "src/EnterpriseDashboard.tsx",
+      "target": "src/types.ts"
+    },
+    {
+      "source": "src/EnterpriseDashboard.tsx",
+      "target": "src/utils/enterpriseUpgradeEngine.ts"
+    },
+    {
+      "source": "src/EnterpriseDashboard.tsx",
+      "target": "src/components/EnterpriseHardeningView.tsx"
+    },
+    {
+      "source": "src/LoginScreen.tsx",
+      "target": "src/Logo.tsx"
+    },
+    {
+      "source": "src/LoginScreen.tsx",
+      "target": "src/firebase.ts"
+    },
+    {
+      "source": "src/LoginScreen.tsx",
+      "target": "src/utils/i18n.tsx"
+    },
+    {
+      "source": "src/NCRAnalytics.tsx",
+      "target": "src/types.ts"
+    },
+    {
+      "source": "src/NCRAnalytics.tsx",
+      "target": "src/analytics/ncr/ncrEngine.ts"
+    },
+    {
+      "source": "src/NCRAnalytics.tsx",
+      "target": "src/components/dashboard/ReusableComponents.tsx"
+    },
+    {
+      "source": "src/NCRAnalytics.tsx",
+      "target": "src/utils/i18n.tsx"
+    },
+    {
+      "source": "src/PortfolioCenter.tsx",
+      "target": "src/types.ts"
+    },
+    {
+      "source": "src/PortfolioCenter.tsx",
+      "target": "src/firebase.ts"
+    },
+    {
+      "source": "src/Presentation.tsx",
+      "target": "src/types.ts"
+    },
+    {
+      "source": "src/Presentation.tsx",
+      "target": "src/utils/calculations.ts"
+    },
+    {
+      "source": "src/Presentation.tsx",
+      "target": "src/analytics/ncr/ncrEngine.ts"
+    },
+    {
+      "source": "src/Presentation.tsx",
+      "target": "src/utils/i18n.tsx"
+    },
+    {
+      "source": "src/Presentation.tsx",
+      "target": "src/components/presentation/PresHelpers.tsx"
+    },
+    {
+      "source": "src/ProjectConfigModal.tsx",
+      "target": "src/types.ts"
+    },
+    {
+      "source": "src/RFIAnalytics.tsx",
+      "target": "src/types.ts"
+    },
+    {
+      "source": "src/RFIAnalytics.tsx",
+      "target": "src/analytics/analyticsCore.ts"
+    },
+    {
+      "source": "src/ReportTable.tsx",
+      "target": "src/types.ts"
+    },
+    {
+      "source": "src/ReportTable.tsx",
+      "target": "src/utils/calculations.ts"
+    },
+    {
+      "source": "src/ReportTable.tsx",
+      "target": "src/utils/i18n.tsx"
+    },
+    {
+      "source": "src/SORAnalytics.tsx",
+      "target": "src/types.ts"
+    },
+    {
+      "source": "src/SORAnalytics.tsx",
+      "target": "src/analytics/sor/sorEngine.ts"
+    },
+    {
+      "source": "src/SORAnalytics.tsx",
+      "target": "src/components/dashboard/ReusableComponents.tsx"
+    },
+    {
+      "source": "src/SORAnalytics.tsx",
+      "target": "src/utils/i18n.tsx"
+    },
+    {
+      "source": "src/SettingsCenter.tsx",
+      "target": "src/types.ts"
+    },
+    {
+      "source": "src/SettingsCenter.tsx",
+      "target": "src/ProjectConfigModal.tsx"
+    },
+    {
+      "source": "src/SettingsCenter.tsx",
+      "target": "src/firebase.ts"
+    },
+    {
+      "source": "src/SettingsCenter.tsx",
+      "target": "src/utils/i18n.tsx"
+    },
+    {
+      "source": "src/analytics/analyticsCore.ts",
+      "target": "src/types.ts"
+    },
+    {
+      "source": "src/analytics/analyticsCore.ts",
+      "target": "src/utils/statusMatrixEngine.ts"
+    },
+    {
+      "source": "src/analytics/analyticsCore.ts",
+      "target": "src/utils/enterpriseUpgradeEngine.ts"
+    },
+    {
+      "source": "src/analytics/analyticsService.ts",
+      "target": "src/analytics/models.ts"
+    },
+    {
+      "source": "src/analytics/calculationFoundation.ts",
+      "target": "src/types.ts"
+    },
+    {
+      "source": "src/analytics/calculationFoundation.ts",
+      "target": "src/analytics/analyticsCore.ts"
+    },
+    {
+      "source": "src/analytics/dataValidator.ts",
+      "target": "src/analytics/models.ts"
+    },
+    {
+      "source": "src/analytics/dataValidator.ts",
+      "target": "src/utils/calculations.ts"
+    },
+    {
+      "source": "src/analytics/exportEngine.ts",
+      "target": "src/types.ts"
+    },
+    {
+      "source": "src/analytics/exportEngine.ts",
+      "target": "src/utils/calculations.ts"
+    },
+    {
+      "source": "src/analytics/exportEngine.ts",
+      "target": "src/analytics/exportHelpers.ts"
+    },
+    {
+      "source": "src/analytics/exportHelpers.ts",
+      "target": "src/types.ts"
+    },
+    {
+      "source": "src/analytics/exportHelpers.ts",
+      "target": "src/utils/calculations.ts"
+    },
+    {
+      "source": "src/analytics/exportHelpers.ts",
+      "target": "src/analytics/ncr/ncrEngine.ts"
+    },
+    {
+      "source": "src/analytics/exportTelemetryTestSuite.ts",
+      "target": "src/analytics/exportHelpers.ts"
+    },
+    {
+      "source": "src/analytics/exportTelemetryTestSuite.ts",
+      "target": "src/types.ts"
+    },
+    {
+      "source": "src/analytics/governance/canonicalEngineAdapter.ts",
+      "target": "src/types.ts"
+    },
+    {
+      "source": "src/analytics/governance/canonicalEngineAdapter.ts",
+      "target": "src/analytics/calculationFoundation.ts"
+    },
+    {
+      "source": "src/analytics/governance/canonicalEngineAdapter.ts",
+      "target": "src/analytics/governance/validationFramework.ts"
+    },
+    {
+      "source": "src/analytics/governance/canonicalEngineAdapter.ts",
+      "target": "src/analytics/governance/auditFramework.ts"
+    },
+    {
+      "source": "src/analytics/governance/canonicalEngineAdapter.ts",
+      "target": "src/analytics/governance/businessRuleRegistry.ts"
+    },
+    {
+      "source": "src/analytics/governance/canonicalEngineAdapter.ts",
+      "target": "src/analytics/governance/formulaRegistry.ts"
+    },
+    {
+      "source": "src/analytics/governance/validationFramework.ts",
+      "target": "src/types.ts"
+    },
+    {
+      "source": "src/analytics/governance/validationFramework.ts",
+      "target": "src/analytics/governance/auditFramework.ts"
+    },
+    {
+      "source": "src/analytics/governance/validationFramework.ts",
+      "target": "src/analytics/governance/businessRuleRegistry.ts"
+    },
+    {
+      "source": "src/analytics/governance/validationFramework.ts",
+      "target": "src/analytics/governance/formulaRegistry.ts"
+    },
+    {
+      "source": "src/analytics/governance/validationFramework.ts",
+      "target": "src/analytics/calculationFoundation.ts"
+    },
+    {
+      "source": "src/analytics/governance/validationFramework.ts",
+      "target": "src/utils/calculations.ts"
+    },
+    {
+      "source": "src/analytics/kpiEngine.ts",
+      "target": "src/analytics/models.ts"
+    },
+    {
+      "source": "src/analytics/ncr/ncrEngine.ts",
+      "target": "src/types.ts"
+    },
+    {
+      "source": "src/analytics/ncr/ncrEngine.ts",
+      "target": "src/utils/calculations.ts"
+    },
+    {
+      "source": "src/analytics/ncr/ncrEngine.ts",
+      "target": "src/analytics/analyticsCore.ts"
+    },
+    {
+      "source": "src/analytics/ncr/ncrEngine.ts",
+      "target": "src/analytics/governance/auditFramework.ts"
+    },
+    {
+      "source": "src/analytics/recordTransformer.ts",
+      "target": "src/types.ts"
+    },
+    {
+      "source": "src/analytics/recordTransformer.ts",
+      "target": "src/analytics/models.ts"
+    },
+    {
+      "source": "src/analytics/recordTransformer.ts",
+      "target": "src/analytics/statusEngine.ts"
+    },
+    {
+      "source": "src/analytics/recordTransformer.ts",
+      "target": "src/analytics/revisionEngine.ts"
+    },
+    {
+      "source": "src/analytics/revisionEngine.ts",
+      "target": "src/analytics/models.ts"
+    },
+    {
+      "source": "src/analytics/sor/sorEngine.ts",
+      "target": "src/types.ts"
+    },
+    {
+      "source": "src/analytics/sor/sorEngine.ts",
+      "target": "src/utils/calculations.ts"
+    },
+    {
+      "source": "src/analytics/statusEngine.ts",
+      "target": "src/analytics/models.ts"
+    },
+    {
+      "source": "src/components/ActionTracker.tsx",
+      "target": "src/types.ts"
+    },
+    {
+      "source": "src/components/ActionTracker.tsx",
+      "target": "src/utils/calculations.ts"
+    },
+    {
+      "source": "src/components/AdvancedAgingAnalysis.tsx",
+      "target": "src/types.ts"
+    },
+    {
+      "source": "src/components/AdvancedAgingAnalysis.tsx",
+      "target": "src/utils/calculations.ts"
+    },
+    {
+      "source": "src/components/DataValidationEngine.tsx",
+      "target": "src/types.ts"
+    },
+    {
+      "source": "src/components/DataValidationEngine.tsx",
+      "target": "src/utils/calculations.ts"
+    },
+    {
+      "source": "src/components/DataValidationEngine.tsx",
+      "target": "src/analytics/calculationFoundation.ts"
+    },
+    {
+      "source": "src/components/EngineeringItemDatasetView.tsx",
+      "target": "src/types.ts"
+    },
+    {
+      "source": "src/components/EngineeringItemDatasetView.tsx",
+      "target": "src/analytics/calculationFoundation.ts"
+    },
+    {
+      "source": "src/components/EnterpriseHardeningView.tsx",
+      "target": "src/types.ts"
+    },
+    {
+      "source": "src/components/EnterpriseHardeningView.tsx",
+      "target": "src/analytics/analyticsCore.ts"
+    },
+    {
+      "source": "src/components/EnterpriseHardeningView.tsx",
+      "target": "src/analytics/governance/auditFramework.ts"
+    },
+    {
+      "source": "src/components/EnterpriseMonitoringDashboard.tsx",
+      "target": "src/firebase.ts"
+    },
+    {
+      "source": "src/components/FinalAcceptanceAuditView.tsx",
+      "target": "src/types.ts"
+    },
+    {
+      "source": "src/components/FinalAcceptanceAuditView.tsx",
+      "target": "src/utils/calculations.ts"
+    },
+    {
+      "source": "src/components/FinalAcceptanceAuditView.tsx",
+      "target": "src/analytics/governance/validationFramework.ts"
+    },
+    {
+      "source": "src/components/FinalAcceptanceAuditView.tsx",
+      "target": "src/utils/classificationEngine.ts"
+    },
+    {
+      "source": "src/components/FinalAcceptanceAuditView.tsx",
+      "target": "src/firebase.ts"
+    },
+    {
+      "source": "src/components/HistoricalDataWarehouse.tsx",
+      "target": "src/types.ts"
+    },
+    {
+      "source": "src/components/HistoricalDataWarehouse.tsx",
+      "target": "src/utils/calculations.ts"
+    },
+    {
+      "source": "src/components/MasterRegister.tsx",
+      "target": "src/types.ts"
+    },
+    {
+      "source": "src/components/MasterRegister.tsx",
+      "target": "src/utils/calculations.ts"
+    },
+    {
+      "source": "src/components/MasterRegister.tsx",
+      "target": "src/analytics/calculationFoundation.ts"
+    },
+    {
+      "source": "src/components/SLAMonitoring.tsx",
+      "target": "src/types.ts"
+    },
+    {
+      "source": "src/components/SLAMonitoring.tsx",
+      "target": "src/utils/calculations.ts"
+    },
+    {
+      "source": "src/components/SmartExportModal.tsx",
+      "target": "src/utils/i18n.tsx"
+    },
+    {
+      "source": "src/components/SmartExportModal.tsx",
+      "target": "src/types.ts"
+    },
+    {
+      "source": "src/components/SmartExportModal.tsx",
+      "target": "src/analytics/exportEngine.ts"
+    },
+    {
+      "source": "src/components/TrendAndForecastEngine.tsx",
+      "target": "src/types.ts"
+    },
+    {
+      "source": "src/components/TrendAndForecastEngine.tsx",
+      "target": "src/utils/calculations.ts"
+    },
+    {
+      "source": "src/components/WorkflowMappingCenter.tsx",
+      "target": "src/types.ts"
+    },
+    {
+      "source": "src/components/WorkflowMappingCenter.tsx",
+      "target": "src/utils/workflowMapping.ts"
+    },
+    {
+      "source": "src/components/WorkflowMappingCenter.tsx",
+      "target": "src/utils/classificationEngine.ts"
+    },
+    {
+      "source": "src/components/presentation/PresHelpers.tsx",
+      "target": "src/types.ts"
+    },
+    {
+      "source": "src/db/index.ts",
+      "target": "src/db/schema.ts"
+    },
+    {
+      "source": "src/firebase.ts",
+      "target": "firebase-applet-config.json"
+    },
+    {
+      "source": "src/hooks/useExport.ts",
+      "target": "src/analytics/exportEngine.ts"
+    },
+    {
+      "source": "src/hooks/useExport.ts",
+      "target": "src/types.ts"
+    },
+    {
+      "source": "src/hooks/useFilters.ts",
+      "target": "src/types.ts"
+    },
+    {
+      "source": "src/hooks/useUpload.ts",
+      "target": "src/types.ts"
+    },
+    {
+      "source": "src/hooks/useUpload.ts",
+      "target": "src/utils/multiFileParser.ts"
+    },
+    {
+      "source": "src/hooks/useUpload.ts",
+      "target": "src/firebase.ts"
+    },
+    {
+      "source": "src/hooks/useUpload.ts",
+      "target": "src/utils/i18n.tsx"
+    },
+    {
+      "source": "src/main.tsx",
+      "target": "src/App.tsx"
+    },
+    {
+      "source": "src/main.tsx",
+      "target": "src/index.css"
+    },
+    {
+      "source": "src/main.tsx",
+      "target": "src/utils/i18n.tsx"
+    },
+    {
+      "source": "src/utils/calculations.ts",
+      "target": "src/types.ts"
+    },
+    {
+      "source": "src/utils/calculations.ts",
+      "target": "src/analytics/calculationFoundation.ts"
+    },
+    {
+      "source": "src/utils/calculations.ts",
+      "target": "src/utils/workflowMapping.ts"
+    },
+    {
+      "source": "src/utils/classificationEngine.ts",
+      "target": "src/utils/workflowMapping.ts"
+    },
+    {
+      "source": "src/utils/enterpriseEngine.ts",
+      "target": "src/types.ts"
+    },
+    {
+      "source": "src/utils/enterpriseEngine.ts",
+      "target": "src/utils/calculations.ts"
+    },
+    {
+      "source": "src/utils/enterpriseUpgradeEngine.ts",
+      "target": "src/types.ts"
+    },
+    {
+      "source": "src/utils/enterpriseUpgradeEngine.ts",
+      "target": "src/utils/statusMatrixEngine.ts"
+    },
+    {
+      "source": "src/utils/multiFileParser.ts",
+      "target": "src/utils/parser.ts"
+    },
+    {
+      "source": "src/utils/multiFileParser.ts",
+      "target": "src/types.ts"
+    },
+    {
+      "source": "src/utils/ncrAnalytics.ts",
+      "target": "src/types.ts"
+    },
+    {
+      "source": "src/utils/ncrAnalytics.ts",
+      "target": "src/utils/rfiAnalytics.ts"
+    },
+    {
+      "source": "src/utils/parser.ts",
+      "target": "src/types.ts"
+    },
+    {
+      "source": "src/utils/parser.ts",
+      "target": "src/utils/calculations.ts"
+    },
+    {
+      "source": "src/utils/parser.ts",
+      "target": "src/utils/classificationEngine.ts"
+    },
+    {
+      "source": "src/utils/parser.ts",
+      "target": "src/utils/workflowMapping.ts"
+    },
+    {
+      "source": "src/utils/rfiAnalytics.ts",
+      "target": "src/types.ts"
+    },
+    {
+      "source": "src/utils/securityRegressionSuite.ts",
+      "target": "src/types.ts"
+    },
+    {
+      "source": "src/utils/statusMatrixEngine.ts",
+      "target": "src/types.ts"
+    }
+  ],
+  "calls": [
+    {
+      "callerFile": "src/AIInsights.tsx",
+      "line": 19,
+      "context": "calculateStats(data)",
+      "destination": "src/utils/calculations.ts::calculateStats",
+      "functionName": "calculateStats"
+    },
+    {
+      "callerFile": "src/AIInsights.tsx",
+      "line": 20,
+      "context": "runEnterpriseEngine(data)",
+      "destination": "src/utils/calculations.ts::runEnterpriseEngine",
+      "functionName": "runEnterpriseEngine"
+    },
+    {
+      "callerFile": "src/AIInsights.tsx",
+      "line": 46,
+      "context": "calculateStats(rows)",
+      "destination": "src/utils/calculations.ts::calculateStats",
+      "functionName": "calculateStats"
+    },
+    {
+      "callerFile": "src/App.tsx",
+      "line": 256,
+      "context": "useUpload(setData, setActiveTab as any, setStartDate, setEndDate)",
+      "destination": "src/utils/calculations.ts::useUpload",
+      "functionName": "useUpload"
+    },
+    {
+      "callerFile": "src/App.tsx",
+      "line": 257,
+      "context": "useFilters(data, startDate, endDate)",
+      "destination": "src/utils/calculations.ts::useFilters",
+      "functionName": "useFilters"
+    },
+    {
+      "callerFile": "src/App.tsx",
+      "line": 270,
+      "context": "syncProjectStats(activeProjectId, {\n           totalDocs,\n           approvalRate,\n           overdueRate,\n           healthScore\n       })",
+      "destination": "src/utils/calculations.ts::syncProjectStats",
+      "functionName": "syncProjectStats"
+    },
+    {
+      "callerFile": "src/App.tsx",
+      "line": 279,
+      "context": "useExport({\n      data,\n      activeTab,\n      filterMonthly,\n      filterCumulative,\n      activeProject,\n      setParseMessage,\n      setIsError,\n      startDate,\n      endDate\n  })",
+      "destination": "src/utils/calculations.ts::useExport",
+      "functionName": "useExport"
+    },
+    {
+      "callerFile": "src/App.tsx",
+      "line": 704,
+      "context": "normalizeData(prev)",
+      "destination": "src/utils/calculations.ts::normalizeData",
+      "functionName": "normalizeData"
+    },
+    {
+      "callerFile": "src/DelayAnalysis.tsx",
+      "line": 16,
+      "context": "getDelayDays(d.submissionDate, d.responseDate, d.dueDate)",
+      "destination": "src/utils/calculations.ts::getDelayDays",
+      "functionName": "getDelayDays"
+    },
+    {
+      "callerFile": "src/DelayAnalysis.tsx",
+      "line": 17,
+      "context": "getStatusCodeCategory(d.status || 'W')",
+      "destination": "src/utils/calculations.ts::getStatusCodeCategory",
+      "functionName": "getStatusCodeCategory"
+    },
+    {
+      "callerFile": "src/EnterpriseDashboard.tsx",
+      "line": 134,
+      "context": "scanDataIntegrity(data, statusMap)",
+      "destination": "src/utils/calculations.ts::scanDataIntegrity",
+      "functionName": "scanDataIntegrity"
+    },
+    {
+      "callerFile": "src/EnterpriseDashboard.tsx",
+      "line": 159,
+      "context": "calculateLogicalRegisterKPIs(data, startDate, endDate, statusMap)",
+      "destination": "src/utils/calculations.ts::calculateLogicalRegisterKPIs",
+      "functionName": "calculateLogicalRegisterKPIs"
+    },
+    {
+      "callerFile": "src/EnterpriseDashboard.tsx",
+      "line": 163,
+      "context": "getRootCauseIntelligence(data)",
+      "destination": "src/utils/calculations.ts::getRootCauseIntelligence",
+      "functionName": "getRootCauseIntelligence"
+    },
+    {
+      "callerFile": "src/EnterpriseDashboard.tsx",
+      "line": 182,
+      "context": "calculateContractorScorecards(data, statusMap)",
+      "destination": "src/utils/calculations.ts::calculateContractorScorecards",
+      "functionName": "calculateContractorScorecards"
+    },
+    {
+      "callerFile": "src/EnterpriseDashboard.tsx",
+      "line": 185,
+      "context": "generateExecutiveIntelligence(data, statusMap)",
+      "destination": "src/utils/calculations.ts::generateExecutiveIntelligence",
+      "functionName": "generateExecutiveIntelligence"
+    },
+    {
+      "callerFile": "src/EnterpriseDashboard.tsx",
+      "line": 188,
+      "context": "mapCrossRegisterRelationships(data)",
+      "destination": "src/utils/calculations.ts::mapCrossRegisterRelationships",
+      "functionName": "mapCrossRegisterRelationships"
+    },
+    {
+      "callerFile": "src/EnterpriseDashboard.tsx",
+      "line": 191,
+      "context": "generatePredictiveForecast(data)",
+      "destination": "src/utils/calculations.ts::generatePredictiveForecast",
+      "functionName": "generatePredictiveForecast"
+    },
+    {
+      "callerFile": "src/EnterpriseDashboard.tsx",
+      "line": 207,
+      "context": "getRevisionWeight(a.rev)",
+      "destination": "src/utils/calculations.ts::getRevisionWeight",
+      "functionName": "getRevisionWeight"
+    },
+    {
+      "callerFile": "src/EnterpriseDashboard.tsx",
+      "line": 207,
+      "context": "getRevisionWeight(b.rev)",
+      "destination": "src/utils/calculations.ts::getRevisionWeight",
+      "functionName": "getRevisionWeight"
+    },
+    {
+      "callerFile": "src/EnterpriseDashboard.tsx",
+      "line": 213,
+      "context": "calculateDocumentLifecycle(selectedDocNo, selectedDocRevisions, statusMap)",
+      "destination": "src/utils/calculations.ts::calculateDocumentLifecycle",
+      "functionName": "calculateDocumentLifecycle"
+    },
+    {
+      "callerFile": "src/EnterpriseDashboard.tsx",
+      "line": 280,
+      "context": "checkIfOverdueDynamically(r)",
+      "destination": "src/utils/calculations.ts::checkIfOverdueDynamically",
+      "functionName": "checkIfOverdueDynamically"
+    },
+    {
+      "callerFile": "src/EnterpriseDashboard.tsx",
+      "line": 298,
+      "context": "checkIfOverdueDynamically(d)",
+      "destination": "src/utils/calculations.ts::checkIfOverdueDynamically",
+      "functionName": "checkIfOverdueDynamically"
+    },
+    {
+      "callerFile": "src/EnterpriseDashboard.tsx",
+      "line": 302,
+      "context": "getDocRegisterType(r)",
+      "destination": "src/utils/calculations.ts::getDocRegisterType",
+      "functionName": "getDocRegisterType"
+    },
+    {
+      "callerFile": "src/EnterpriseDashboard.tsx",
+      "line": 302,
+      "context": "getStatusCategory(r.status, statusMap)",
+      "destination": "src/utils/calculations.ts::getStatusCategory",
+      "functionName": "getStatusCategory"
+    },
+    {
+      "callerFile": "src/EnterpriseDashboard.tsx",
+      "line": 303,
+      "context": "getDocRegisterType(r)",
+      "destination": "src/utils/calculations.ts::getDocRegisterType",
+      "functionName": "getDocRegisterType"
+    },
+    {
+      "callerFile": "src/EnterpriseDashboard.tsx",
+      "line": 894,
+      "context": "getRevisionWeight(rev.rev)",
+      "destination": "src/utils/calculations.ts::getRevisionWeight",
+      "functionName": "getRevisionWeight"
+    },
+    {
+      "callerFile": "src/LoginScreen.tsx",
+      "line": 68,
+      "context": "resolveUserPermissions(user.uid, userEmail, user.displayName)",
+      "destination": "src/utils/calculations.ts::resolveUserPermissions",
+      "functionName": "resolveUserPermissions"
+    },
+    {
+      "callerFile": "src/LoginScreen.tsx",
+      "line": 102,
+      "context": "resolveUserPermissions(user.uid, userEmail, user.displayName)",
+      "destination": "src/utils/calculations.ts::resolveUserPermissions",
+      "functionName": "resolveUserPermissions"
+    },
+    {
+      "callerFile": "src/NCRAnalytics.tsx",
+      "line": 19,
+      "context": "parseMixedText(text, language)",
+      "destination": "src/utils/calculations.ts::parseMixedText",
+      "functionName": "parseMixedText"
+    },
+    {
+      "callerFile": "src/NCRAnalytics.tsx",
+      "line": 22,
+      "context": "processNCRData(safeData, monthlyStart)",
+      "destination": "src/utils/calculations.ts::processNCRData",
+      "functionName": "processNCRData"
+    },
+    {
+      "callerFile": "src/PortfolioCenter.tsx",
+      "line": 23,
+      "context": "handleFirestoreError(err, OperationType.LIST, 'project_stats')",
+      "destination": "src/utils/calculations.ts::handleFirestoreError",
+      "functionName": "handleFirestoreError"
+    },
+    {
+      "callerFile": "src/Presentation.tsx",
+      "line": 156,
+      "context": "processNCRData(sourceData, monthlyStart)",
+      "destination": "src/utils/calculations.ts::processNCRData",
+      "functionName": "processNCRData"
+    },
+    {
+      "callerFile": "src/Presentation.tsx",
+      "line": 255,
+      "context": "calculateNCRStats(dData, false)",
+      "destination": "src/utils/calculations.ts::calculateNCRStats",
+      "functionName": "calculateNCRStats"
+    },
+    {
+      "callerFile": "src/Presentation.tsx",
+      "line": 255,
+      "context": "calculateSORStats(dData, false)",
+      "destination": "src/utils/calculations.ts::calculateSORStats",
+      "functionName": "calculateSORStats"
+    },
+    {
+      "callerFile": "src/Presentation.tsx",
+      "line": 255,
+      "context": "calculateLTRStats(dData, false)",
+      "destination": "src/utils/calculations.ts::calculateLTRStats",
+      "functionName": "calculateLTRStats"
+    },
+    {
+      "callerFile": "src/Presentation.tsx",
+      "line": 255,
+      "context": "calculateStats(dData)",
+      "destination": "src/utils/calculations.ts::calculateStats",
+      "functionName": "calculateStats"
+    },
+    {
+      "callerFile": "src/Presentation.tsx",
+      "line": 314,
+      "context": "getColLabel(c.label, language)",
+      "destination": "src/utils/calculations.ts::getColLabel",
+      "functionName": "getColLabel"
+    },
+    {
+      "callerFile": "src/Presentation.tsx",
+      "line": 323,
+      "context": "getDiscName(s.discipline, language)",
+      "destination": "src/utils/calculations.ts::getDiscName",
+      "functionName": "getDiscName"
+    },
+    {
+      "callerFile": "src/Presentation.tsx",
+      "line": 333,
+      "context": "getDiscName(statsData.totalRow.discipline, language)",
+      "destination": "src/utils/calculations.ts::getDiscName",
+      "functionName": "getDiscName"
+    },
+    {
+      "callerFile": "src/Presentation.tsx",
+      "line": 346,
+      "context": "getChartTitle(titleStr, language)",
+      "destination": "src/utils/calculations.ts::getChartTitle",
+      "functionName": "getChartTitle"
+    },
+    {
+      "callerFile": "src/Presentation.tsx",
+      "line": 350,
+      "context": "getDiscName(d, language)",
+      "destination": "src/utils/calculations.ts::getDiscName",
+      "functionName": "getDiscName"
+    },
+    {
+      "callerFile": "src/Presentation.tsx",
+      "line": 427,
+      "context": "getDiscName(s.discipline, language)",
+      "destination": "src/utils/calculations.ts::getDiscName",
+      "functionName": "getDiscName"
+    },
+    {
+      "callerFile": "src/Presentation.tsx",
+      "line": 437,
+      "context": "getPieLabelTranslator(String(name), language)",
+      "destination": "src/utils/calculations.ts::getPieLabelTranslator",
+      "functionName": "getPieLabelTranslator"
+    },
+    {
+      "callerFile": "src/Presentation.tsx",
+      "line": 445,
+      "context": "getPieLabelTranslator(p.name, language)",
+      "destination": "src/utils/calculations.ts::getPieLabelTranslator",
+      "functionName": "getPieLabelTranslator"
+    },
+    {
+      "callerFile": "src/Presentation.tsx",
+      "line": 729,
+      "context": "getMonthlySummary(overallMonthlyStats, language)",
+      "destination": "src/utils/calculations.ts::getMonthlySummary",
+      "functionName": "getMonthlySummary"
+    },
+    {
+      "callerFile": "src/Presentation.tsx",
+      "line": 870,
+      "context": "compileStatsForBaseType(monthlyData, bt, startDate, data)",
+      "destination": "src/utils/calculations.ts::compileStatsForBaseType",
+      "functionName": "compileStatsForBaseType"
+    },
+    {
+      "callerFile": "src/Presentation.tsx",
+      "line": 941,
+      "context": "compileStatsForBaseType(monthlyData, bt, startDate, data)",
+      "destination": "src/utils/calculations.ts::compileStatsForBaseType",
+      "functionName": "compileStatsForBaseType"
+    },
+    {
+      "callerFile": "src/Presentation.tsx",
+      "line": 979,
+      "context": "getMonthlyRecommendations(overallMonthlyStats, language)",
+      "destination": "src/utils/calculations.ts::getMonthlyRecommendations",
+      "functionName": "getMonthlyRecommendations"
+    },
+    {
+      "callerFile": "src/Presentation.tsx",
+      "line": 1032,
+      "context": "getCumulativeSummary(overallCumulativeStats, language)",
+      "destination": "src/utils/calculations.ts::getCumulativeSummary",
+      "functionName": "getCumulativeSummary"
+    },
+    {
+      "callerFile": "src/Presentation.tsx",
+      "line": 1173,
+      "context": "compileStatsForBaseType(cumulativeData, bt, undefined, data)",
+      "destination": "src/utils/calculations.ts::compileStatsForBaseType",
+      "functionName": "compileStatsForBaseType"
+    },
+    {
+      "callerFile": "src/Presentation.tsx",
+      "line": 1227,
+      "context": "compileStatsForBaseType(monthlyData, bt, startDate, data)",
+      "destination": "src/utils/calculations.ts::compileStatsForBaseType",
+      "functionName": "compileStatsForBaseType"
+    },
+    {
+      "callerFile": "src/Presentation.tsx",
+      "line": 1228,
+      "context": "compileStatsForBaseType(cumulativeData, bt, undefined, data)",
+      "destination": "src/utils/calculations.ts::compileStatsForBaseType",
+      "functionName": "compileStatsForBaseType"
+    },
+    {
+      "callerFile": "src/Presentation.tsx",
+      "line": 1232,
+      "context": "getDiscName(bt, 'ar')",
+      "destination": "src/utils/calculations.ts::getDiscName",
+      "functionName": "getDiscName"
+    },
+    {
+      "callerFile": "src/Presentation.tsx",
+      "line": 1437,
+      "context": "getDiscName(row.trade, language)",
+      "destination": "src/utils/calculations.ts::getDiscName",
+      "functionName": "getDiscName"
+    },
+    {
+      "callerFile": "src/Presentation.tsx",
+      "line": 1496,
+      "context": "getDiscName(row.trade, language)",
+      "destination": "src/utils/calculations.ts::getDiscName",
+      "functionName": "getDiscName"
+    },
+    {
+      "callerFile": "src/RFIAnalytics.tsx",
+      "line": 21,
+      "context": "isYes(r.isLatestRev)",
+      "destination": "src/utils/calculations.ts::isYes",
+      "functionName": "isYes"
+    },
+    {
+      "callerFile": "src/RFIAnalytics.tsx",
+      "line": 24,
+      "context": "compareRevisions(a.rev, b.rev)",
+      "destination": "src/utils/calculations.ts::compareRevisions",
+      "functionName": "compareRevisions"
+    },
+    {
+      "callerFile": "src/RFIAnalytics.tsx",
+      "line": 84,
+      "context": "getNormalizedStatusCore(row, projectId, projectInfo)",
+      "destination": "src/utils/calculations.ts::getNormalizedStatusCore",
+      "functionName": "getNormalizedStatusCore"
+    },
+    {
+      "callerFile": "src/ReportTable.tsx",
+      "line": 66,
+      "context": "calculateStats(filteredData.filter(d => rowToLabel(d) === typeLabel), rawDataset || data)",
+      "destination": "src/utils/calculations.ts::calculateStats",
+      "functionName": "calculateStats"
+    },
+    {
+      "callerFile": "src/ReportTable.tsx",
+      "line": 111,
+      "context": "calculateStats(filteredData.filter(d => !(d.documentType || 'DOC').startsWith('NCR-') && (d.documentType || 'DOC') !== 'NCR'), rawDataset || data)",
+      "destination": "src/utils/calculations.ts::calculateStats",
+      "functionName": "calculateStats"
+    },
+    {
+      "callerFile": "src/ReportTable.tsx",
+      "line": 256,
+      "context": "calculateStats(firstHalf, rawDataset || data)",
+      "destination": "src/utils/calculations.ts::calculateStats",
+      "functionName": "calculateStats"
+    },
+    {
+      "callerFile": "src/ReportTable.tsx",
+      "line": 257,
+      "context": "calculateStats(secondHalf, rawDataset || data)",
+      "destination": "src/utils/calculations.ts::calculateStats",
+      "functionName": "calculateStats"
+    },
+    {
+      "callerFile": "src/SORAnalytics.tsx",
+      "line": 18,
+      "context": "parseMixedText(text, language)",
+      "destination": "src/utils/calculations.ts::parseMixedText",
+      "functionName": "parseMixedText"
+    },
+    {
+      "callerFile": "src/SORAnalytics.tsx",
+      "line": 21,
+      "context": "processSORData(safeData, monthlyStart)",
+      "destination": "src/utils/calculations.ts::processSORData",
+      "functionName": "processSORData"
+    },
+    {
+      "callerFile": "src/SettingsCenter.tsx",
+      "line": 19,
+      "context": "parseMixedText(text, language)",
+      "destination": "src/utils/calculations.ts::parseMixedText",
+      "functionName": "parseMixedText"
+    },
+    {
+      "callerFile": "src/SettingsCenter.tsx",
+      "line": 86,
+      "context": "handleFirestoreError(err, OperationType.LIST, 'users')",
+      "destination": "src/utils/calculations.ts::handleFirestoreError",
+      "functionName": "handleFirestoreError"
+    },
+    {
+      "callerFile": "src/SettingsCenter.tsx",
+      "line": 134,
+      "context": "handleFirestoreError(err, OperationType.WRITE, 'users')",
+      "destination": "src/utils/calculations.ts::handleFirestoreError",
+      "functionName": "handleFirestoreError"
+    },
+    {
+      "callerFile": "src/SettingsCenter.tsx",
+      "line": 167,
+      "context": "handleFirestoreError(err, OperationType.WRITE, 'users')",
+      "destination": "src/utils/calculations.ts::handleFirestoreError",
+      "functionName": "handleFirestoreError"
+    },
+    {
+      "callerFile": "src/SettingsCenter.tsx",
+      "line": 207,
+      "context": "handleFirestoreError(err, OperationType.DELETE, 'users')",
+      "destination": "src/utils/calculations.ts::handleFirestoreError",
+      "functionName": "handleFirestoreError"
+    },
+    {
+      "callerFile": "src/analytics/analyticsCore.ts",
+      "line": 15,
+      "context": "getNormalizedStatus(row, projectId, settings)",
+      "destination": "src/utils/calculations.ts::getNormalizedStatus",
+      "functionName": "getNormalizedStatus"
+    },
+    {
+      "callerFile": "src/analytics/analyticsCore.ts",
+      "line": 23,
+      "context": "getNormalizedStatus(row, projectId, settings)",
+      "destination": "src/utils/calculations.ts::getNormalizedStatus",
+      "functionName": "getNormalizedStatus"
+    },
+    {
+      "callerFile": "src/analytics/analyticsCore.ts",
+      "line": 32,
+      "context": "getNormalizedStatus(row, projectId, settings)",
+      "destination": "src/utils/calculations.ts::getNormalizedStatus",
+      "functionName": "getNormalizedStatus"
+    },
+    {
+      "callerFile": "src/analytics/analyticsCore.ts",
+      "line": 40,
+      "context": "getNormalizedStatus(row, projectId, settings)",
+      "destination": "src/utils/calculations.ts::getNormalizedStatus",
+      "functionName": "getNormalizedStatus"
+    },
+    {
+      "callerFile": "src/analytics/analyticsCore.ts",
+      "line": 47,
+      "context": "checkIfOverdueDynamically(row, settings)",
+      "destination": "src/utils/calculations.ts::checkIfOverdueDynamically",
+      "functionName": "checkIfOverdueDynamically"
+    },
+    {
+      "callerFile": "src/analytics/analyticsCore.ts",
+      "line": 54,
+      "context": "getRevisionWeight(revA)",
+      "destination": "src/utils/calculations.ts::getRevisionWeight",
+      "functionName": "getRevisionWeight"
+    },
+    {
+      "callerFile": "src/analytics/analyticsCore.ts",
+      "line": 55,
+      "context": "getRevisionWeight(revB)",
+      "destination": "src/utils/calculations.ts::getRevisionWeight",
+      "functionName": "getRevisionWeight"
+    },
+    {
+      "callerFile": "src/analytics/analyticsCore.ts",
+      "line": 63,
+      "context": "compareRevisions(rows[i].rev, latest.rev)",
+      "destination": "src/utils/calculations.ts::compareRevisions",
+      "functionName": "compareRevisions"
+    },
+    {
+      "callerFile": "src/analytics/analyticsCore.ts",
+      "line": 71,
+      "context": "compareRevisions(a.rev, b.rev)",
+      "destination": "src/utils/calculations.ts::compareRevisions",
+      "functionName": "compareRevisions"
+    },
+    {
+      "callerFile": "src/analytics/analyticsCore.ts",
+      "line": 144,
+      "context": "getNormalizedStatus(row, projectId, settings)",
+      "destination": "src/utils/calculations.ts::getNormalizedStatus",
+      "functionName": "getNormalizedStatus"
+    },
+    {
+      "callerFile": "src/analytics/calculationFoundation.ts",
+      "line": 112,
+      "context": "getBusinessEntityKey(row)",
+      "destination": "src/utils/calculations.ts::getBusinessEntityKey",
+      "functionName": "getBusinessEntityKey"
+    },
+    {
+      "callerFile": "src/analytics/calculationFoundation.ts",
+      "line": 129,
+      "context": "compareRevisions(a.rev, b.rev)",
+      "destination": "src/utils/calculations.ts::compareRevisions",
+      "functionName": "compareRevisions"
+    },
+    {
+      "callerFile": "src/analytics/calculationFoundation.ts",
+      "line": 144,
+      "context": "processRevisionEngine(baseRows, cutoffDate)",
+      "destination": "src/utils/calculations.ts::processRevisionEngine",
+      "functionName": "processRevisionEngine"
+    },
+    {
+      "callerFile": "src/analytics/calculationFoundation.ts",
+      "line": 171,
+      "context": "getBusinessEntityKey(row)",
+      "destination": "src/utils/calculations.ts::getBusinessEntityKey",
+      "functionName": "getBusinessEntityKey"
+    },
+    {
+      "callerFile": "src/analytics/calculationFoundation.ts",
+      "line": 172,
+      "context": "compareRevisions(row.rev, '0')",
+      "destination": "src/utils/calculations.ts::compareRevisions",
+      "functionName": "compareRevisions"
+    },
+    {
+      "callerFile": "src/analytics/calculationFoundation.ts",
+      "line": 253,
+      "context": "processRevisionEngine(rows)",
+      "destination": "src/utils/calculations.ts::processRevisionEngine",
+      "functionName": "processRevisionEngine"
+    },
+    {
+      "callerFile": "src/analytics/calculationFoundation.ts",
+      "line": 261,
+      "context": "compareRevisions(a.rev, b.rev)",
+      "destination": "src/utils/calculations.ts::compareRevisions",
+      "functionName": "compareRevisions"
+    },
+    {
+      "callerFile": "src/analytics/calculationFoundation.ts",
+      "line": 269,
+      "context": "compareRevisions(revStr, '0')",
+      "destination": "src/utils/calculations.ts::compareRevisions",
+      "functionName": "compareRevisions"
+    },
+    {
+      "callerFile": "src/analytics/calculationFoundation.ts",
+      "line": 301,
+      "context": "evaluateEngineeringItemClassification(baseRows)",
+      "destination": "src/utils/calculations.ts::evaluateEngineeringItemClassification",
+      "functionName": "evaluateEngineeringItemClassification"
+    },
+    {
+      "callerFile": "src/analytics/calculationFoundation.ts",
+      "line": 347,
+      "context": "compareRevisions(a.revision, b.revision)",
+      "destination": "src/utils/calculations.ts::compareRevisions",
+      "functionName": "compareRevisions"
+    },
+    {
+      "callerFile": "src/analytics/calculationFoundation.ts",
+      "line": 423,
+      "context": "buildCanonicalDataset(rows, rows)",
+      "destination": "src/utils/calculations.ts::buildCanonicalDataset",
+      "functionName": "buildCanonicalDataset"
+    },
+    {
+      "callerFile": "src/analytics/calculationFoundation.ts",
+      "line": 438,
+      "context": "compareRevisions(a.revision, b.revision)",
+      "destination": "src/utils/calculations.ts::compareRevisions",
+      "functionName": "compareRevisions"
+    },
+    {
+      "callerFile": "src/analytics/calculationFoundation.ts",
+      "line": 459,
+      "context": "getPerformanceValidationRows(rows)",
+      "destination": "src/utils/calculations.ts::getPerformanceValidationRows",
+      "functionName": "getPerformanceValidationRows"
+    },
+    {
+      "callerFile": "src/analytics/dataValidator.ts",
+      "line": 90,
+      "context": "getStatusCodeCategory(statusVal)",
+      "destination": "src/utils/calculations.ts::getStatusCodeCategory",
+      "functionName": "getStatusCodeCategory"
+    },
+    {
+      "callerFile": "src/analytics/exportEngine.ts",
+      "line": 52,
+      "context": "defineDocusightSlideMaster(pres, projectInfo, options)",
+      "destination": "src/utils/calculations.ts::defineDocusightSlideMaster",
+      "functionName": "defineDocusightSlideMaster"
+    },
+    {
+      "callerFile": "src/analytics/exportEngine.ts",
+      "line": 216,
+      "context": "renderLuxeLogoBox(pres, coverSlide, 7.2, 0.8, 2.2, 1.2, projectInfo, logoUrl)",
+      "destination": "src/utils/calculations.ts::renderLuxeLogoBox",
+      "functionName": "renderLuxeLogoBox"
+    },
+    {
+      "callerFile": "src/analytics/exportEngine.ts",
+      "line": 238,
+      "context": "renderLuxeLogoBox(pres, idxSlide, 8.2, 0.4, 1.4, 0.6, projectInfo, logoUrl)",
+      "destination": "src/utils/calculations.ts::renderLuxeLogoBox",
+      "functionName": "renderLuxeLogoBox"
+    },
+    {
+      "callerFile": "src/analytics/exportEngine.ts",
+      "line": 276,
+      "context": "addDividerSlide(pres, isArabic ? \"أعضاء الفريق وبيانات العقد\" : \"Team Members & Project Details\", isArabic ? \"01 معلومات المشروع\" : \"01 PROJECT INFORMATION\", projectInfo, logoUrl, options)",
+      "destination": "src/utils/calculations.ts::addDividerSlide",
+      "functionName": "addDividerSlide"
+    },
+    {
+      "callerFile": "src/analytics/exportEngine.ts",
+      "line": 278,
+      "context": "addHeaderAndFooter(pres, infoSlide, isArabic ? \"معلومات المشروع العامة\" : \"PROJECT INFORMATION\", projectInfo, logoUrl, options)",
+      "destination": "src/utils/calculations.ts::addHeaderAndFooter",
+      "functionName": "addHeaderAndFooter"
+    },
+    {
+      "callerFile": "src/analytics/exportEngine.ts",
+      "line": 303,
+      "context": "compileStatsForBaseType(monthlyWorkingData, bt, options?.monthlyStart, data)",
+      "destination": "src/utils/calculations.ts::compileStatsForBaseType",
+      "functionName": "compileStatsForBaseType"
+    },
+    {
+      "callerFile": "src/analytics/exportEngine.ts",
+      "line": 304,
+      "context": "compileStatsForBaseType(cumulativeWorkingData, bt, undefined, data)",
+      "destination": "src/utils/calculations.ts::compileStatsForBaseType",
+      "functionName": "compileStatsForBaseType"
+    },
+    {
+      "callerFile": "src/analytics/exportEngine.ts",
+      "line": 313,
+      "context": "addDividerSlide(pres, bt, sectionTitle, projectInfo, logoUrl, options)",
+      "destination": "src/utils/calculations.ts::addDividerSlide",
+      "functionName": "addDividerSlide"
+    },
+    {
+      "callerFile": "src/analytics/exportEngine.ts",
+      "line": 370,
+      "context": "addHeaderAndFooter(pres, slideA, `${longName} (${bt}) ${periodLabel}`, projectInfo, logoUrl, options)",
+      "destination": "src/utils/calculations.ts::addHeaderAndFooter",
+      "functionName": "addHeaderAndFooter"
+    },
+    {
+      "callerFile": "src/analytics/exportEngine.ts",
+      "line": 373,
+      "context": "buildTableData(statsData.stats, statsData.totalRow, cols, options?.fontFace)",
+      "destination": "src/utils/calculations.ts::buildTableData",
+      "functionName": "buildTableData"
+    },
+    {
+      "callerFile": "src/analytics/exportEngine.ts",
+      "line": 415,
+      "context": "addHeaderAndFooter(pres, slideB, `${longName} (${bt}) ${periodLabel}`, projectInfo, logoUrl, options)",
+      "destination": "src/utils/calculations.ts::addHeaderAndFooter",
+      "functionName": "addHeaderAndFooter"
+    },
+    {
+      "callerFile": "src/analytics/exportEngine.ts",
+      "line": 509,
+      "context": "addDividerSlide(pres, isArabic ? \"الوثائق التي تتطلب إعادة تقديم\" : \"Items Requiring Resubmission\", `${String(sectionNumRejected).padStart(2, '0')} REJECTED ITEMS`, projectInfo, logoUrl, options)",
+      "destination": "src/utils/calculations.ts::addDividerSlide",
+      "functionName": "addDividerSlide"
+    },
+    {
+      "callerFile": "src/analytics/exportEngine.ts",
+      "line": 513,
+      "context": "addHeaderAndFooter(pres, slide, \"REJECTED ITEMS\", projectInfo, logoUrl, options)",
+      "destination": "src/utils/calculations.ts::addHeaderAndFooter",
+      "functionName": "addHeaderAndFooter"
+    },
+    {
+      "callerFile": "src/analytics/exportEngine.ts",
+      "line": 519,
+      "context": "addHeaderAndFooter(pres, slide, \"REJECTED ITEMS\", projectInfo, logoUrl, options)",
+      "destination": "src/utils/calculations.ts::addHeaderAndFooter",
+      "functionName": "addHeaderAndFooter"
+    },
+    {
+      "callerFile": "src/analytics/exportEngine.ts",
+      "line": 575,
+      "context": "addDividerSlide(pres, isArabic ? \"الوثائق تحت المراجعة المتأخرة\" : \"Items Requiring Response\", `${String(sectionNumPending).padStart(2, '0')} PENDING ITEMS`, projectInfo, logoUrl, options)",
+      "destination": "src/utils/calculations.ts::addDividerSlide",
+      "functionName": "addDividerSlide"
+    },
+    {
+      "callerFile": "src/analytics/exportEngine.ts",
+      "line": 579,
+      "context": "addHeaderAndFooter(pres, slide, \"PENDING ITEMS\", projectInfo, logoUrl, options)",
+      "destination": "src/utils/calculations.ts::addHeaderAndFooter",
+      "functionName": "addHeaderAndFooter"
+    },
+    {
+      "callerFile": "src/analytics/exportEngine.ts",
+      "line": 585,
+      "context": "addHeaderAndFooter(pres, slide, \"PENDING ITEMS\", projectInfo, logoUrl, options)",
+      "destination": "src/utils/calculations.ts::addHeaderAndFooter",
+      "functionName": "addHeaderAndFooter"
+    },
+    {
+      "callerFile": "src/analytics/exportEngine.ts",
+      "line": 629,
+      "context": "addDividerSlide(pres, isArabic ? \"فريق مراقبة وجودة الوثائق\" : \"Document Control Team\", isArabic ? \"شكراً لكم\" : \"Thanks\", projectInfo, logoUrl, options)",
+      "destination": "src/utils/calculations.ts::addDividerSlide",
+      "functionName": "addDividerSlide"
+    },
+    {
+      "callerFile": "src/analytics/exportEngine.ts",
+      "line": 707,
+      "context": "calculateStats(cumulativeWorkingData.filter(d => rowToLabel(d) === typeLabel))",
+      "destination": "src/utils/calculations.ts::calculateStats",
+      "functionName": "calculateStats"
+    },
+    {
+      "callerFile": "src/analytics/exportEngine.ts",
+      "line": 849,
+      "context": "calculateNCRStats(dData, false)",
+      "destination": "src/utils/calculations.ts::calculateNCRStats",
+      "functionName": "calculateNCRStats"
+    },
+    {
+      "callerFile": "src/analytics/exportEngine.ts",
+      "line": 849,
+      "context": "calculateSORStats(dData, false)",
+      "destination": "src/utils/calculations.ts::calculateSORStats",
+      "functionName": "calculateSORStats"
+    },
+    {
+      "callerFile": "src/analytics/exportEngine.ts",
+      "line": 849,
+      "context": "calculateLTRStats(dData, false)",
+      "destination": "src/utils/calculations.ts::calculateLTRStats",
+      "functionName": "calculateLTRStats"
+    },
+    {
+      "callerFile": "src/analytics/exportEngine.ts",
+      "line": 849,
+      "context": "calculateStats(dData)",
+      "destination": "src/utils/calculations.ts::calculateStats",
+      "functionName": "calculateStats"
+    },
+    {
+      "callerFile": "src/analytics/exportHelpers.ts",
+      "line": 10,
+      "context": "processNCRData(sourceData, monthlyStart)",
+      "destination": "src/utils/calculations.ts::processNCRData",
+      "functionName": "processNCRData"
+    },
+    {
+      "callerFile": "src/analytics/exportHelpers.ts",
+      "line": 129,
+      "context": "calculateNCRStats(dData, false)",
+      "destination": "src/utils/calculations.ts::calculateNCRStats",
+      "functionName": "calculateNCRStats"
+    },
+    {
+      "callerFile": "src/analytics/exportHelpers.ts",
+      "line": 129,
+      "context": "calculateSORStats(dData, false)",
+      "destination": "src/utils/calculations.ts::calculateSORStats",
+      "functionName": "calculateSORStats"
+    },
+    {
+      "callerFile": "src/analytics/exportHelpers.ts",
+      "line": 129,
+      "context": "calculateLTRStats(dData, false)",
+      "destination": "src/utils/calculations.ts::calculateLTRStats",
+      "functionName": "calculateLTRStats"
+    },
+    {
+      "callerFile": "src/analytics/exportHelpers.ts",
+      "line": 129,
+      "context": "calculateStats(dData)",
+      "destination": "src/utils/calculations.ts::calculateStats",
+      "functionName": "calculateStats"
+    },
+    {
+      "callerFile": "src/analytics/exportHelpers.ts",
+      "line": 389,
+      "context": "renderLuxeLogoBox(pres, slide, 8.3, 0.4, 1.3, 0.8, projectInfo, options?.logoUrl || logoBase64)",
+      "destination": "src/utils/calculations.ts::renderLuxeLogoBox",
+      "functionName": "renderLuxeLogoBox"
+    },
+    {
+      "callerFile": "src/analytics/exportTelemetryTestSuite.ts",
+      "line": 53,
+      "context": "compileStatsForBaseType(dummyData, \"NCR\")",
+      "destination": "src/utils/calculations.ts::compileStatsForBaseType",
+      "functionName": "compileStatsForBaseType"
+    },
+    {
+      "callerFile": "src/analytics/exportTelemetryTestSuite.ts",
+      "line": 92,
+      "context": "compileStatsForBaseType(dummyData, \"NCR\")",
+      "destination": "src/utils/calculations.ts::compileStatsForBaseType",
+      "functionName": "compileStatsForBaseType"
+    },
+    {
+      "callerFile": "src/analytics/exportTelemetryTestSuite.ts",
+      "line": 127,
+      "context": "compileStatsForBaseType(dummyData, \"NCR\")",
+      "destination": "src/utils/calculations.ts::compileStatsForBaseType",
+      "functionName": "compileStatsForBaseType"
+    },
+    {
+      "callerFile": "src/analytics/exportTelemetryTestSuite.ts",
+      "line": 163,
+      "context": "compileStatsForBaseType(dummyData, \"RFI\")",
+      "destination": "src/utils/calculations.ts::compileStatsForBaseType",
+      "functionName": "compileStatsForBaseType"
+    },
+    {
+      "callerFile": "src/analytics/exportTelemetryTestSuite.ts",
+      "line": 212,
+      "context": "compileStatsForBaseType(dataset, \"NCR\")",
+      "destination": "src/utils/calculations.ts::compileStatsForBaseType",
+      "functionName": "compileStatsForBaseType"
+    },
+    {
+      "callerFile": "src/analytics/exportTelemetryTestSuite.ts",
+      "line": 221,
+      "context": "compileStatsForBaseType(dataset, \"NCR\")",
+      "destination": "src/utils/calculations.ts::compileStatsForBaseType",
+      "functionName": "compileStatsForBaseType"
+    },
+    {
+      "callerFile": "src/analytics/governance/canonicalEngineAdapter.ts",
+      "line": 28,
+      "context": "validateRecord(row)",
+      "destination": "src/utils/calculations.ts::validateRecord",
+      "functionName": "validateRecord"
+    },
+    {
+      "callerFile": "src/analytics/governance/canonicalEngineAdapter.ts",
+      "line": 40,
+      "context": "processRevisionEngine(rows, cutoffDate)",
+      "destination": "src/utils/calculations.ts::processRevisionEngine",
+      "functionName": "processRevisionEngine"
+    },
+    {
+      "callerFile": "src/analytics/governance/canonicalEngineAdapter.ts",
+      "line": 43,
+      "context": "getBusinessRule('BR-0002')",
+      "destination": "src/utils/calculations.ts::getBusinessRule",
+      "functionName": "getBusinessRule"
+    },
+    {
+      "callerFile": "src/analytics/governance/canonicalEngineAdapter.ts",
+      "line": 44,
+      "context": "getFormula('FORM-0001')",
+      "destination": "src/utils/calculations.ts::getFormula",
+      "functionName": "getFormula"
+    },
+    {
+      "callerFile": "src/analytics/governance/canonicalEngineAdapter.ts",
+      "line": 46,
+      "context": "recordAuditLog({\n    processName: 'Canonical Engine Adapter Pipeline',\n    recordIdentifier: `BATCH:${rows.length}_RECORDS`,\n    action: 'EXECUTE_PIPELINE',\n    ruleApplied: ruleBR0002 ? ruleBR0002.ruleId : 'BR-0002',\n    engineVersion: '1.0.0',\n    executedBy: 'System',\n    result: 'SUCCESS',\n    remarks: `Processed ${rows.length} rows (${validCount} valid, ${invalidCount} invalid). Formula applied: ${formulaForm0001?.formulaId || 'FORM-0001'}`,\n    engineUsed: 'Canonical'\n  })",
+      "destination": "src/utils/calculations.ts::recordAuditLog",
+      "functionName": "recordAuditLog"
+    },
+    {
+      "callerFile": "src/analytics/governance/validationFramework.ts",
+      "line": 42,
+      "context": "recordAuditLog({\n    processName: 'Validation Engine',\n    recordIdentifier: docRef || 'UNKNOWN',\n    action: 'RECORD_VALIDATION',\n    ruleApplied: 'BR-0101..BR-0104',\n    engineVersion: '1.0.0',\n    executedBy: 'System',\n    result: isValid ? 'SUCCESS' : 'FAILURE',\n    remarks: errors.join('; ') || warnings.join('; ') || 'Passed validation'\n  })",
+      "destination": "src/utils/calculations.ts::recordAuditLog",
+      "functionName": "recordAuditLog"
+    },
+    {
+      "callerFile": "src/analytics/governance/validationFramework.ts",
+      "line": 121,
+      "context": "validateRecord(r)",
+      "destination": "src/utils/calculations.ts::validateRecord",
+      "functionName": "validateRecord"
+    },
+    {
+      "callerFile": "src/analytics/governance/validationFramework.ts",
+      "line": 171,
+      "context": "buildCanonicalDataset(rows, rows)",
+      "destination": "src/utils/calculations.ts::buildCanonicalDataset",
+      "functionName": "buildCanonicalDataset"
+    },
+    {
+      "callerFile": "src/analytics/governance/validationFramework.ts",
+      "line": 172,
+      "context": "evaluatePerformanceLayer(canonical)",
+      "destination": "src/utils/calculations.ts::evaluatePerformanceLayer",
+      "functionName": "evaluatePerformanceLayer"
+    },
+    {
+      "callerFile": "src/analytics/governance/validationFramework.ts",
+      "line": 231,
+      "context": "buildCanonicalDataset(rows, rows)",
+      "destination": "src/utils/calculations.ts::buildCanonicalDataset",
+      "functionName": "buildCanonicalDataset"
+    },
+    {
+      "callerFile": "src/analytics/governance/validationFramework.ts",
+      "line": 232,
+      "context": "evaluatePerformanceLayer(canonical)",
+      "destination": "src/utils/calculations.ts::evaluatePerformanceLayer",
+      "functionName": "evaluatePerformanceLayer"
+    },
+    {
+      "callerFile": "src/analytics/governance/validationFramework.ts",
+      "line": 233,
+      "context": "calculateStats(rows)",
+      "destination": "src/utils/calculations.ts::calculateStats",
+      "functionName": "calculateStats"
+    },
+    {
+      "callerFile": "src/analytics/governance/validationFramework.ts",
+      "line": 304,
+      "context": "getStatusCodeCategory(row.status || 'W')",
+      "destination": "src/utils/calculations.ts::getStatusCodeCategory",
+      "functionName": "getStatusCodeCategory"
+    },
+    {
+      "callerFile": "src/analytics/governance/validationFramework.ts",
+      "line": 368,
+      "context": "calculateStats(rows)",
+      "destination": "src/utils/calculations.ts::calculateStats",
+      "functionName": "calculateStats"
+    },
+    {
+      "callerFile": "src/analytics/governance/validationFramework.ts",
+      "line": 369,
+      "context": "buildCanonicalDataset(rows, rows)",
+      "destination": "src/utils/calculations.ts::buildCanonicalDataset",
+      "functionName": "buildCanonicalDataset"
+    },
+    {
+      "callerFile": "src/analytics/governance/validationFramework.ts",
+      "line": 370,
+      "context": "evaluatePerformanceLayer(canonicalBase)",
+      "destination": "src/utils/calculations.ts::evaluatePerformanceLayer",
+      "functionName": "evaluatePerformanceLayer"
+    },
+    {
+      "callerFile": "src/analytics/ncr/ncrEngine.ts",
+      "line": 36,
+      "context": "isYes(r.isLatestRev)",
+      "destination": "src/utils/calculations.ts::isYes",
+      "functionName": "isYes"
+    },
+    {
+      "callerFile": "src/analytics/ncr/ncrEngine.ts",
+      "line": 40,
+      "context": "compareRevisions(a.rev, b.rev)",
+      "destination": "src/utils/calculations.ts::compareRevisions",
+      "functionName": "compareRevisions"
+    },
+    {
+      "callerFile": "src/analytics/ncr/ncrEngine.ts",
+      "line": 172,
+      "context": "groupNCRByReference(normalizedData)",
+      "destination": "src/utils/calculations.ts::groupNCRByReference",
+      "functionName": "groupNCRByReference"
+    },
+    {
+      "callerFile": "src/analytics/ncr/ncrEngine.ts",
+      "line": 178,
+      "context": "compareRevisions(a.rev, b.rev)",
+      "destination": "src/utils/calculations.ts::compareRevisions",
+      "functionName": "compareRevisions"
+    },
+    {
+      "callerFile": "src/analytics/ncr/ncrEngine.ts",
+      "line": 182,
+      "context": "normalizeDiscipline(latestOverall)",
+      "destination": "src/utils/calculations.ts::normalizeDiscipline",
+      "functionName": "normalizeDiscipline"
+    },
+    {
+      "callerFile": "src/analytics/ncr/ncrEngine.ts",
+      "line": 204,
+      "context": "classifyNcrStatus(latestOverall)",
+      "destination": "src/utils/calculations.ts::classifyNcrStatus",
+      "functionName": "classifyNcrStatus"
+    },
+    {
+      "callerFile": "src/analytics/ncr/ncrEngine.ts",
+      "line": 241,
+      "context": "compareRevisions(latestOverall.rev, '0')",
+      "destination": "src/utils/calculations.ts::compareRevisions",
+      "functionName": "compareRevisions"
+    },
+    {
+      "callerFile": "src/analytics/ncr/ncrEngine.ts",
+      "line": 306,
+      "context": "groupNCRByReference(normalizedData)",
+      "destination": "src/utils/calculations.ts::groupNCRByReference",
+      "functionName": "groupNCRByReference"
+    },
+    {
+      "callerFile": "src/analytics/ncr/ncrEngine.ts",
+      "line": 325,
+      "context": "compareRevisions(a.rev, b.rev)",
+      "destination": "src/utils/calculations.ts::compareRevisions",
+      "functionName": "compareRevisions"
+    },
+    {
+      "callerFile": "src/analytics/ncr/ncrEngine.ts",
+      "line": 329,
+      "context": "normalizeDiscipline(latestOverall)",
+      "destination": "src/utils/calculations.ts::normalizeDiscipline",
+      "functionName": "normalizeDiscipline"
+    },
+    {
+      "callerFile": "src/analytics/ncr/ncrEngine.ts",
+      "line": 384,
+      "context": "compareRevisions(r.rev, '0')",
+      "destination": "src/utils/calculations.ts::compareRevisions",
+      "functionName": "compareRevisions"
+    },
+    {
+      "callerFile": "src/analytics/ncr/ncrEngine.ts",
+      "line": 391,
+      "context": "classifyNcrStatus(r)",
+      "destination": "src/utils/calculations.ts::classifyNcrStatus",
+      "functionName": "classifyNcrStatus"
+    },
+    {
+      "callerFile": "src/analytics/ncr/ncrEngine.ts",
+      "line": 425,
+      "context": "classifyNcrStatus(r)",
+      "destination": "src/utils/calculations.ts::classifyNcrStatus",
+      "functionName": "classifyNcrStatus"
+    },
+    {
+      "callerFile": "src/analytics/ncr/ncrEngine.ts",
+      "line": 456,
+      "context": "compareRevisions(a.rev, b.rev)",
+      "destination": "src/utils/calculations.ts::compareRevisions",
+      "functionName": "compareRevisions"
+    },
+    {
+      "callerFile": "src/analytics/ncr/ncrEngine.ts",
+      "line": 478,
+      "context": "classifyNcrStatus(latestAtEnd)",
+      "destination": "src/utils/calculations.ts::classifyNcrStatus",
+      "functionName": "classifyNcrStatus"
+    },
+    {
+      "callerFile": "src/analytics/ncr/ncrEngine.ts",
+      "line": 493,
+      "context": "classifyNcrStatus(latestAtEnd)",
+      "destination": "src/utils/calculations.ts::classifyNcrStatus",
+      "functionName": "classifyNcrStatus"
+    },
+    {
+      "callerFile": "src/analytics/ncr/ncrEngine.ts",
+      "line": 548,
+      "context": "normalizeNCRData(safeData)",
+      "destination": "src/utils/calculations.ts::normalizeNCRData",
+      "functionName": "normalizeNCRData"
+    },
+    {
+      "callerFile": "src/analytics/ncr/ncrEngine.ts",
+      "line": 551,
+      "context": "calculateCumulativeSnapshot(normalizedData)",
+      "destination": "src/utils/calculations.ts::calculateCumulativeSnapshot",
+      "functionName": "calculateCumulativeSnapshot"
+    },
+    {
+      "callerFile": "src/analytics/ncr/ncrEngine.ts",
+      "line": 552,
+      "context": "calculateMonthlyEvents(normalizedData, monthlyStart)",
+      "destination": "src/utils/calculations.ts::calculateMonthlyEvents",
+      "functionName": "calculateMonthlyEvents"
+    },
+    {
+      "callerFile": "src/analytics/ncr/ncrEngine.ts",
+      "line": 604,
+      "context": "recordAuditLog({\n    processName: 'NCR Dual Engine Validation',\n    recordIdentifier: auditId,\n    action: 'DUAL_COMPARISON',\n    ruleApplied: 'BR-0101',\n    engineVersion: '3.0.0',\n    executedBy: 'System QA Auditor',\n    result: integrityReport.passed ? 'SUCCESS' : 'WARNING',\n    engineUsed: 'Dual Comparison',\n    remarks: `Validation: ${integrityReport.passed ? 'PASS' : 'FAIL'} | Module: NCR Event-Driven Engine | Total: ${cumulativeKPIs.totalUnique} | Open Snapshot: ${cumulativeKPIs.open} | Closed Snapshot: ${cumulativeKPIs.closed} | Monthly Events - New: ${monthlyKPIs.newNcrReceived}, Submitted: ${monthlyKPIs.correctiveSubmitted}, Responses: ${monthlyKPIs.responsesReceived}`\n  })",
+      "destination": "src/utils/calculations.ts::recordAuditLog",
+      "functionName": "recordAuditLog"
+    },
+    {
+      "callerFile": "src/analytics/recordTransformer.ts",
+      "line": 9,
+      "context": "normalizeStatus(rawStatus)",
+      "destination": "src/utils/calculations.ts::normalizeStatus",
+      "functionName": "normalizeStatus"
+    },
+    {
+      "callerFile": "src/analytics/recordTransformer.ts",
+      "line": 31,
+      "context": "normalizeNcrStatus(r)",
+      "destination": "src/utils/calculations.ts::normalizeNcrStatus",
+      "functionName": "normalizeNcrStatus"
+    },
+    {
+      "callerFile": "src/analytics/recordTransformer.ts",
+      "line": 80,
+      "context": "runRevisionEngine(records as AnyRecord[])",
+      "destination": "src/utils/calculations.ts::runRevisionEngine",
+      "functionName": "runRevisionEngine"
+    },
+    {
+      "callerFile": "src/analytics/sor/sorEngine.ts",
+      "line": 20,
+      "context": "isYes(r.isLatestRev)",
+      "destination": "src/utils/calculations.ts::isYes",
+      "functionName": "isYes"
+    },
+    {
+      "callerFile": "src/analytics/sor/sorEngine.ts",
+      "line": 77,
+      "context": "getLatestRev(history)",
+      "destination": "src/utils/calculations.ts::getLatestRev",
+      "functionName": "getLatestRev"
+    },
+    {
+      "callerFile": "src/analytics/sor/sorEngine.ts",
+      "line": 93,
+      "context": "classifyNcrStatus(latest)",
+      "destination": "src/utils/calculations.ts::classifyNcrStatus",
+      "functionName": "classifyNcrStatus"
+    },
+    {
+      "callerFile": "src/analytics/sor/sorEngine.ts",
+      "line": 110,
+      "context": "getLatestRev(history, targetMonth)",
+      "destination": "src/utils/calculations.ts::getLatestRev",
+      "functionName": "getLatestRev"
+    },
+    {
+      "callerFile": "src/analytics/sor/sorEngine.ts",
+      "line": 121,
+      "context": "classifyNcrStatus(latestOfMon)",
+      "destination": "src/utils/calculations.ts::classifyNcrStatus",
+      "functionName": "classifyNcrStatus"
+    },
+    {
+      "callerFile": "src/components/ActionTracker.tsx",
+      "line": 23,
+      "context": "getStatusCodeCategory(d.status)",
+      "destination": "src/utils/calculations.ts::getStatusCodeCategory",
+      "functionName": "getStatusCodeCategory"
+    },
+    {
+      "callerFile": "src/components/ActionTracker.tsx",
+      "line": 47,
+      "context": "getStatusCodeCategory(d.status)",
+      "destination": "src/utils/calculations.ts::getStatusCodeCategory",
+      "functionName": "getStatusCodeCategory"
+    },
+    {
+      "callerFile": "src/components/AdvancedAgingAnalysis.tsx",
+      "line": 16,
+      "context": "getStatusCodeCategory(d.status)",
+      "destination": "src/utils/calculations.ts::getStatusCodeCategory",
+      "functionName": "getStatusCodeCategory"
+    },
+    {
+      "callerFile": "src/components/DataValidationEngine.tsx",
+      "line": 33,
+      "context": "getPerformanceValidationRows(data)",
+      "destination": "src/utils/calculations.ts::getPerformanceValidationRows",
+      "functionName": "getPerformanceValidationRows"
+    },
+    {
+      "callerFile": "src/components/DataValidationEngine.tsx",
+      "line": 127,
+      "context": "getStatusCodeCategory(row.status)",
+      "destination": "src/utils/calculations.ts::getStatusCodeCategory",
+      "functionName": "getStatusCodeCategory"
+    },
+    {
+      "callerFile": "src/components/EngineeringItemDatasetView.tsx",
+      "line": 15,
+      "context": "evaluateEngineeringItemClassification(data)",
+      "destination": "src/utils/calculations.ts::evaluateEngineeringItemClassification",
+      "functionName": "evaluateEngineeringItemClassification"
+    },
+    {
+      "callerFile": "src/components/EnterpriseHardeningView.tsx",
+      "line": 484,
+      "context": "getNormalizedStatusCore(row, 'default')",
+      "destination": "src/utils/calculations.ts::getNormalizedStatusCore",
+      "functionName": "getNormalizedStatusCore"
+    },
+    {
+      "callerFile": "src/components/EnterpriseHardeningView.tsx",
+      "line": 490,
+      "context": "getNormalizedStatusCore(row, 'default')",
+      "destination": "src/utils/calculations.ts::getNormalizedStatusCore",
+      "functionName": "getNormalizedStatusCore"
+    },
+    {
+      "callerFile": "src/components/EnterpriseHardeningView.tsx",
+      "line": 496,
+      "context": "getNormalizedStatusCore(row, 'default')",
+      "destination": "src/utils/calculations.ts::getNormalizedStatusCore",
+      "functionName": "getNormalizedStatusCore"
+    },
+    {
+      "callerFile": "src/components/EnterpriseHardeningView.tsx",
+      "line": 503,
+      "context": "compareRevisions(rowA.rev, rowB.rev)",
+      "destination": "src/utils/calculations.ts::compareRevisions",
+      "functionName": "compareRevisions"
+    },
+    {
+      "callerFile": "src/components/EnterpriseHardeningView.tsx",
+      "line": 510,
+      "context": "compareRevisions(rowA.rev, rowB.rev)",
+      "destination": "src/utils/calculations.ts::compareRevisions",
+      "functionName": "compareRevisions"
+    },
+    {
+      "callerFile": "src/components/EnterpriseHardeningView.tsx",
+      "line": 517,
+      "context": "compareRevisions(rowA.rev, rowB.rev)",
+      "destination": "src/utils/calculations.ts::compareRevisions",
+      "functionName": "compareRevisions"
+    },
+    {
+      "callerFile": "src/components/EnterpriseHardeningView.tsx",
+      "line": 522,
+      "context": "compareRevisions('01', '01')",
+      "destination": "src/utils/calculations.ts::compareRevisions",
+      "functionName": "compareRevisions"
+    },
+    {
+      "callerFile": "src/components/EnterpriseHardeningView.tsx",
+      "line": 528,
+      "context": "validateLifecycle(row)",
+      "destination": "src/utils/calculations.ts::validateLifecycle",
+      "functionName": "validateLifecycle"
+    },
+    {
+      "callerFile": "src/components/EnterpriseHardeningView.tsx",
+      "line": 534,
+      "context": "validateLifecycle(row)",
+      "destination": "src/utils/calculations.ts::validateLifecycle",
+      "functionName": "validateLifecycle"
+    },
+    {
+      "callerFile": "src/components/EnterpriseMonitoringDashboard.tsx",
+      "line": 52,
+      "context": "logAuditContext('SECURITY_REGRESSION_TEST_EXECUTION', 'enterprise-monitoring', {\n        passedCount: data.passedTests,\n        totalCount: data.totalTests,\n        version: data.version\n      })",
+      "destination": "src/utils/calculations.ts::logAuditContext",
+      "functionName": "logAuditContext"
+    },
+    {
+      "callerFile": "src/components/EnterpriseMonitoringDashboard.tsx",
+      "line": 73,
+      "context": "logAuditContext('PRODUCTION_LOAD_STRESS_EXECUTION', 'enterprise-monitoring', {\n        executedSimulations: data.totalSimulationsExecuted,\n        heapUsageMb: data.heapAllocationsMegaBytes\n      })",
+      "destination": "src/utils/calculations.ts::logAuditContext",
+      "functionName": "logAuditContext"
+    },
+    {
+      "callerFile": "src/components/EnterpriseMonitoringDashboard.tsx",
+      "line": 93,
+      "context": "logAuditContext('EXPORT_ENGINE_STRESS_TEST', 'enterprise-monitoring', {\n        testCaseCount: data.testCases?.length,\n        timestamp: data.timestamp\n      })",
+      "destination": "src/utils/calculations.ts::logAuditContext",
+      "functionName": "logAuditContext"
+    },
+    {
+      "callerFile": "src/components/EnterpriseMonitoringDashboard.tsx",
+      "line": 145,
+      "context": "logAuditContext('SECURITY_SELF_TEST_EXECUTION', 'enterprise-monitoring', {\n         testSuite: data.testSuite,\n         passed: data.overallPassed,\n         timestamp: data.timestamp\n      })",
+      "destination": "src/utils/calculations.ts::logAuditContext",
+      "functionName": "logAuditContext"
+    },
+    {
+      "callerFile": "src/components/FinalAcceptanceAuditView.tsx",
+      "line": 112,
+      "context": "verifyParallelEngineEquivalence(data)",
+      "destination": "src/utils/calculations.ts::verifyParallelEngineEquivalence",
+      "functionName": "verifyParallelEngineEquivalence"
+    },
+    {
+      "callerFile": "src/components/FinalAcceptanceAuditView.tsx",
+      "line": 297,
+      "context": "calculateStats(validRows)",
+      "destination": "src/utils/calculations.ts::calculateStats",
+      "functionName": "calculateStats"
+    },
+    {
+      "callerFile": "src/components/FinalAcceptanceAuditView.tsx",
+      "line": 302,
+      "context": "calculateStats(validRows)",
+      "destination": "src/utils/calculations.ts::calculateStats",
+      "functionName": "calculateStats"
+    },
+    {
+      "callerFile": "src/components/FinalAcceptanceAuditView.tsx",
+      "line": 405,
+      "context": "classifyNcrStatus(latest)",
+      "destination": "src/utils/calculations.ts::classifyNcrStatus",
+      "functionName": "classifyNcrStatus"
+    },
+    {
+      "callerFile": "src/components/FinalAcceptanceAuditView.tsx",
+      "line": 515,
+      "context": "classifyNcrStatus(row)",
+      "destination": "src/utils/calculations.ts::classifyNcrStatus",
+      "functionName": "classifyNcrStatus"
+    },
+    {
+      "callerFile": "src/components/FinalAcceptanceAuditView.tsx",
+      "line": 557,
+      "context": "classifyNcrStatus(row)",
+      "destination": "src/utils/calculations.ts::classifyNcrStatus",
+      "functionName": "classifyNcrStatus"
+    },
+    {
+      "callerFile": "src/components/FinalAcceptanceAuditView.tsx",
+      "line": 586,
+      "context": "calculateStats(data)",
+      "destination": "src/utils/calculations.ts::calculateStats",
+      "functionName": "calculateStats"
+    },
+    {
+      "callerFile": "src/components/FinalAcceptanceAuditView.tsx",
+      "line": 605,
+      "context": "getStatusCodeCategory(row.status)",
+      "destination": "src/utils/calculations.ts::getStatusCodeCategory",
+      "functionName": "getStatusCodeCategory"
+    },
+    {
+      "callerFile": "src/components/FinalAcceptanceAuditView.tsx",
+      "line": 630,
+      "context": "getStatusCodeCategory(row.status || 'W')",
+      "destination": "src/utils/calculations.ts::getStatusCodeCategory",
+      "functionName": "getStatusCodeCategory"
+    },
+    {
+      "callerFile": "src/components/FinalAcceptanceAuditView.tsx",
+      "line": 696,
+      "destination": "src/utils/calculations.ts::classifyRegisterSheet",
+      "functionName": "classifyRegisterSheet"
+    },
+    {
+      "callerFile": "src/components/FinalAcceptanceAuditView.tsx",
+      "line": 708,
+      "destination": "src/utils/calculations.ts::classifyRegisterSheet",
+      "functionName": "classifyRegisterSheet"
+    },
+    {
+      "callerFile": "src/components/FinalAcceptanceAuditView.tsx",
+      "line": 720,
+      "destination": "src/utils/calculations.ts::classifyRegisterSheet",
+      "functionName": "classifyRegisterSheet"
+    },
+    {
+      "callerFile": "src/components/FinalAcceptanceAuditView.tsx",
+      "line": 732,
+      "destination": "src/utils/calculations.ts::classifyRegisterSheet",
+      "functionName": "classifyRegisterSheet"
+    },
+    {
+      "callerFile": "src/components/FinalAcceptanceAuditView.tsx",
+      "line": 771,
+      "context": "validateAllBusinessRules(data)",
+      "destination": "src/utils/calculations.ts::validateAllBusinessRules",
+      "functionName": "validateAllBusinessRules"
+    },
+    {
+      "callerFile": "src/components/FinalAcceptanceAuditView.tsx",
+      "line": 787,
+      "context": "validateAllFormulas(data)",
+      "destination": "src/utils/calculations.ts::validateAllFormulas",
+      "functionName": "validateAllFormulas"
+    },
+    {
+      "callerFile": "src/components/FinalAcceptanceAuditView.tsx",
+      "line": 818,
+      "context": "classifyNcrStatus(mockRecords[i])",
+      "destination": "src/utils/calculations.ts::classifyNcrStatus",
+      "functionName": "classifyNcrStatus"
+    },
+    {
+      "callerFile": "src/components/HistoricalDataWarehouse.tsx",
+      "line": 32,
+      "context": "calculateStats(rows)",
+      "destination": "src/utils/calculations.ts::calculateStats",
+      "functionName": "calculateStats"
+    },
+    {
+      "callerFile": "src/components/MasterRegister.tsx",
+      "line": 28,
+      "context": "calculateStats(data)",
+      "destination": "src/utils/calculations.ts::calculateStats",
+      "functionName": "calculateStats"
+    },
+    {
+      "callerFile": "src/components/MasterRegister.tsx",
+      "line": 35,
+      "context": "getPerformanceValidationRows(data)",
+      "destination": "src/utils/calculations.ts::getPerformanceValidationRows",
+      "functionName": "getPerformanceValidationRows"
+    },
+    {
+      "callerFile": "src/components/MasterRegister.tsx",
+      "line": 44,
+      "context": "getStatusCodeCategory(d.status)",
+      "destination": "src/utils/calculations.ts::getStatusCodeCategory",
+      "functionName": "getStatusCodeCategory"
+    },
+    {
+      "callerFile": "src/components/MasterRegister.tsx",
+      "line": 106,
+      "context": "getStatusCodeCategory(row.status)",
+      "destination": "src/utils/calculations.ts::getStatusCodeCategory",
+      "functionName": "getStatusCodeCategory"
+    },
+    {
+      "callerFile": "src/components/MasterRegister.tsx",
+      "line": 106,
+      "context": "getStatusCodeCategory(row.status)",
+      "destination": "src/utils/calculations.ts::getStatusCodeCategory",
+      "functionName": "getStatusCodeCategory"
+    },
+    {
+      "callerFile": "src/components/MasterRegister.tsx",
+      "line": 161,
+      "context": "exportPerformanceValidationCsv(data)",
+      "destination": "src/utils/calculations.ts::exportPerformanceValidationCsv",
+      "functionName": "exportPerformanceValidationCsv"
+    },
+    {
+      "callerFile": "src/components/MasterRegister.tsx",
+      "line": 241,
+      "context": "getStatusCodeCategory(row.status)",
+      "destination": "src/utils/calculations.ts::getStatusCodeCategory",
+      "functionName": "getStatusCodeCategory"
+    },
+    {
+      "callerFile": "src/components/MasterRegister.tsx",
+      "line": 241,
+      "context": "getStatusCodeCategory(row.status)",
+      "destination": "src/utils/calculations.ts::getStatusCodeCategory",
+      "functionName": "getStatusCodeCategory"
+    },
+    {
+      "callerFile": "src/components/SLAMonitoring.tsx",
+      "line": 44,
+      "context": "getStatusCodeCategory(d.status)",
+      "destination": "src/utils/calculations.ts::getStatusCodeCategory",
+      "functionName": "getStatusCodeCategory"
+    },
+    {
+      "callerFile": "src/components/SmartExportModal.tsx",
+      "line": 176,
+      "context": "generatePptxReport(data, activeProject, scopeMode as any, filters, exportOptions)",
+      "destination": "src/utils/calculations.ts::generatePptxReport",
+      "functionName": "generatePptxReport"
+    },
+    {
+      "callerFile": "src/components/TrendAndForecastEngine.tsx",
+      "line": 50,
+      "context": "getStatusCodeCategory(d.status)",
+      "destination": "src/utils/calculations.ts::getStatusCodeCategory",
+      "functionName": "getStatusCodeCategory"
+    },
+    {
+      "callerFile": "src/components/WorkflowMappingCenter.tsx",
+      "line": 46,
+      "context": "getActiveMappings()",
+      "destination": "src/utils/calculations.ts::getActiveMappings",
+      "functionName": "getActiveMappings"
+    },
+    {
+      "callerFile": "src/components/WorkflowMappingCenter.tsx",
+      "line": 57,
+      "context": "getSmartImportProfiles()",
+      "destination": "src/utils/calculations.ts::getSmartImportProfiles",
+      "functionName": "getSmartImportProfiles"
+    },
+    {
+      "callerFile": "src/components/WorkflowMappingCenter.tsx",
+      "line": 58,
+      "context": "getLearningRules(activeProjectId)",
+      "destination": "src/utils/calculations.ts::getLearningRules",
+      "functionName": "getLearningRules"
+    },
+    {
+      "callerFile": "src/components/WorkflowMappingCenter.tsx",
+      "line": 131,
+      "context": "saveCustomAlias(cleanAlias, newFamily, newDisplay || cleanAlias)",
+      "destination": "src/utils/calculations.ts::saveCustomAlias",
+      "functionName": "saveCustomAlias"
+    },
+    {
+      "callerFile": "src/components/WorkflowMappingCenter.tsx",
+      "line": 133,
+      "context": "getActiveMappings()",
+      "destination": "src/utils/calculations.ts::getActiveMappings",
+      "functionName": "getActiveMappings"
+    },
+    {
+      "callerFile": "src/components/WorkflowMappingCenter.tsx",
+      "line": 147,
+      "context": "deleteCustomAlias(alias)",
+      "destination": "src/utils/calculations.ts::deleteCustomAlias",
+      "functionName": "deleteCustomAlias"
+    },
+    {
+      "callerFile": "src/components/WorkflowMappingCenter.tsx",
+      "line": 149,
+      "context": "getActiveMappings()",
+      "destination": "src/utils/calculations.ts::getActiveMappings",
+      "functionName": "getActiveMappings"
+    },
+    {
+      "callerFile": "src/components/WorkflowMappingCenter.tsx",
+      "line": 160,
+      "context": "saveSmartImportProfile(activeProjectId, manualSheetName, manualWorkflowFamily)",
+      "destination": "src/utils/calculations.ts::saveSmartImportProfile",
+      "functionName": "saveSmartImportProfile"
+    },
+    {
+      "callerFile": "src/components/WorkflowMappingCenter.tsx",
+      "line": 161,
+      "context": "getSmartImportProfiles()",
+      "destination": "src/utils/calculations.ts::getSmartImportProfiles",
+      "functionName": "getSmartImportProfiles"
+    },
+    {
+      "callerFile": "src/components/WorkflowMappingCenter.tsx",
+      "line": 168,
+      "context": "deleteSmartImportProfile(activeProjectId, sheetName)",
+      "destination": "src/utils/calculations.ts::deleteSmartImportProfile",
+      "functionName": "deleteSmartImportProfile"
+    },
+    {
+      "callerFile": "src/components/WorkflowMappingCenter.tsx",
+      "line": 169,
+      "context": "getSmartImportProfiles()",
+      "destination": "src/utils/calculations.ts::getSmartImportProfiles",
+      "functionName": "getSmartImportProfiles"
+    },
+    {
+      "callerFile": "src/components/WorkflowMappingCenter.tsx",
+      "line": 177,
+      "context": "saveLearningRule(activeProjectId, manualInput, manualTarget, manualRuleType)",
+      "destination": "src/utils/calculations.ts::saveLearningRule",
+      "functionName": "saveLearningRule"
+    },
+    {
+      "callerFile": "src/components/WorkflowMappingCenter.tsx",
+      "line": 178,
+      "context": "getLearningRules(activeProjectId)",
+      "destination": "src/utils/calculations.ts::getLearningRules",
+      "functionName": "getLearningRules"
+    },
+    {
+      "callerFile": "src/components/WorkflowMappingCenter.tsx",
+      "line": 186,
+      "context": "deleteLearningRule(activeProjectId, input, type)",
+      "destination": "src/utils/calculations.ts::deleteLearningRule",
+      "functionName": "deleteLearningRule"
+    },
+    {
+      "callerFile": "src/components/WorkflowMappingCenter.tsx",
+      "line": 187,
+      "context": "getLearningRules(activeProjectId)",
+      "destination": "src/utils/calculations.ts::getLearningRules",
+      "functionName": "getLearningRules"
+    },
+    {
+      "callerFile": "src/components/WorkflowMappingCenter.tsx",
+      "line": 206,
+      "context": "mapDocumentToWorkflow(simInput)",
+      "destination": "src/utils/calculations.ts::mapDocumentToWorkflow",
+      "functionName": "mapDocumentToWorkflow"
+    },
+    {
+      "callerFile": "src/db/index.ts",
+      "line": 20,
+      "context": "createPool()",
+      "destination": "src/utils/calculations.ts::createPool",
+      "functionName": "createPool"
+    },
+    {
+      "callerFile": "src/firebase.ts",
+      "line": 124,
+      "context": "handleFirestoreError(err, OperationType.WRITE, `project_stats/${projectId}`)",
+      "destination": "src/utils/calculations.ts::handleFirestoreError",
+      "functionName": "handleFirestoreError"
+    },
+    {
+      "callerFile": "src/hooks/useExport.ts",
+      "line": 265,
+      "context": "generatePptxReport(data, activeProject, 'presentation', { filterMonthly, filterCumulative }, { monthlyStart: startDate, ...options })",
+      "destination": "src/utils/calculations.ts::generatePptxReport",
+      "functionName": "generatePptxReport"
+    },
+    {
+      "callerFile": "src/hooks/useExport.ts",
+      "line": 269,
+      "context": "generatePptxReport(filteredData, activeProject, activeTab === 'monthly' ? 'monthly' : 'cumulative', undefined, { monthlyStart: startDate, ...options })",
+      "destination": "src/utils/calculations.ts::generatePptxReport",
+      "functionName": "generatePptxReport"
+    },
+    {
+      "callerFile": "src/hooks/useUpload.ts",
+      "line": 26,
+      "context": "processMultiUpload(files)",
+      "destination": "src/utils/calculations.ts::processMultiUpload",
+      "functionName": "processMultiUpload"
+    },
+    {
+      "callerFile": "src/hooks/useUpload.ts",
+      "line": 31,
+      "context": "logAuditContext(\"UPLOAD_FAILED\", \"log_file\", { reason: \"No matching data\" })",
+      "destination": "src/utils/calculations.ts::logAuditContext",
+      "functionName": "logAuditContext"
+    },
+    {
+      "callerFile": "src/hooks/useUpload.ts",
+      "line": 44,
+      "context": "logAuditContext(\"UPLOAD_SUCCESS\", \"log_file\", { rows: parsed.length, fileNames: Array.from(files).map(f => f.name) })",
+      "destination": "src/utils/calculations.ts::logAuditContext",
+      "functionName": "logAuditContext"
+    },
+    {
+      "callerFile": "src/hooks/useUpload.ts",
+      "line": 49,
+      "context": "logAuditContext(\"UPLOAD_ERROR\", \"log_file\", { error: err.message })",
+      "destination": "src/utils/calculations.ts::logAuditContext",
+      "functionName": "logAuditContext"
+    },
+    {
+      "callerFile": "src/utils/calculations.ts",
+      "line": 50,
+      "context": "mapDocumentToWorkflow(r.logType || r.documentType || '')",
+      "destination": "src/utils/calculations.ts::mapDocumentToWorkflow",
+      "functionName": "mapDocumentToWorkflow"
+    },
+    {
+      "callerFile": "src/utils/calculations.ts",
+      "line": 92,
+      "context": "getStatusCodeCategory(r.status || 'W')",
+      "destination": "src/utils/calculations.ts::getStatusCodeCategory",
+      "functionName": "getStatusCodeCategory"
+    },
+    {
+      "callerFile": "src/utils/calculations.ts",
+      "line": 108,
+      "context": "getDelayDays(r.submissionDate, r.responseDate, r.dueDate)",
+      "destination": "src/utils/calculations.ts::getDelayDays",
+      "functionName": "getDelayDays"
+    },
+    {
+      "callerFile": "src/utils/calculations.ts",
+      "line": 581,
+      "context": "classifyNcrStatus(latest)",
+      "destination": "src/utils/calculations.ts::classifyNcrStatus",
+      "functionName": "classifyNcrStatus"
+    },
+    {
+      "callerFile": "src/utils/calculations.ts",
+      "line": 652,
+      "context": "getStatusCodeCategory(row.status || 'W')",
+      "destination": "src/utils/calculations.ts::getStatusCodeCategory",
+      "functionName": "getStatusCodeCategory"
+    },
+    {
+      "callerFile": "src/utils/calculations.ts",
+      "line": 659,
+      "context": "getDelayDays(row.submissionDate, row.responseDate, row.dueDate)",
+      "destination": "src/utils/calculations.ts::getDelayDays",
+      "functionName": "getDelayDays"
+    },
+    {
+      "callerFile": "src/utils/classificationEngine.ts",
+      "line": 34,
+      "context": "getSmartImportProfiles()",
+      "destination": "src/utils/calculations.ts::getSmartImportProfiles",
+      "functionName": "getSmartImportProfiles"
+    },
+    {
+      "callerFile": "src/utils/classificationEngine.ts",
+      "line": 47,
+      "context": "getSmartImportProfiles()",
+      "destination": "src/utils/calculations.ts::getSmartImportProfiles",
+      "functionName": "getSmartImportProfiles"
+    },
+    {
+      "callerFile": "src/utils/classificationEngine.ts",
+      "line": 206,
+      "context": "getSmartImportProfiles()",
+      "destination": "src/utils/calculations.ts::getSmartImportProfiles",
+      "functionName": "getSmartImportProfiles"
+    },
+    {
+      "callerFile": "src/utils/classificationEngine.ts",
+      "line": 219,
+      "context": "getLearningRules(projectId)",
+      "destination": "src/utils/calculations.ts::getLearningRules",
+      "functionName": "getLearningRules"
+    },
+    {
+      "callerFile": "src/utils/classificationEngine.ts",
+      "line": 474,
+      "context": "getLearningRules(projectId)",
+      "destination": "src/utils/calculations.ts::getLearningRules",
+      "functionName": "getLearningRules"
+    },
+    {
+      "callerFile": "src/utils/enterpriseEngine.ts",
+      "line": 31,
+      "context": "getStatusCodeCategory(n.status)",
+      "destination": "src/utils/calculations.ts::getStatusCodeCategory",
+      "functionName": "getStatusCodeCategory"
+    },
+    {
+      "callerFile": "src/utils/enterpriseEngine.ts",
+      "line": 35,
+      "context": "getStatusCodeCategory(d.status)",
+      "destination": "src/utils/calculations.ts::getStatusCodeCategory",
+      "functionName": "getStatusCodeCategory"
+    },
+    {
+      "callerFile": "src/utils/enterpriseEngine.ts",
+      "line": 121,
+      "context": "getStatusCodeCategory(d.status)",
+      "destination": "src/utils/calculations.ts::getStatusCodeCategory",
+      "functionName": "getStatusCodeCategory"
+    },
+    {
+      "callerFile": "src/utils/enterpriseEngine.ts",
+      "line": 158,
+      "context": "getStatusCodeCategory(d.status)",
+      "destination": "src/utils/calculations.ts::getStatusCodeCategory",
+      "functionName": "getStatusCodeCategory"
+    },
+    {
+      "callerFile": "src/utils/enterpriseEngine.ts",
+      "line": 191,
+      "context": "getStatusCodeCategory(d.status)",
+      "destination": "src/utils/calculations.ts::getStatusCodeCategory",
+      "functionName": "getStatusCodeCategory"
+    },
+    {
+      "callerFile": "src/utils/enterpriseEngine.ts",
+      "line": 233,
+      "context": "getStatusCodeCategory(d.status)",
+      "destination": "src/utils/calculations.ts::getStatusCodeCategory",
+      "functionName": "getStatusCodeCategory"
+    },
+    {
+      "callerFile": "src/utils/enterpriseUpgradeEngine.ts",
+      "line": 170,
+      "context": "getRevisionWeight(a.rev)",
+      "destination": "src/utils/calculations.ts::getRevisionWeight",
+      "functionName": "getRevisionWeight"
+    },
+    {
+      "callerFile": "src/utils/enterpriseUpgradeEngine.ts",
+      "line": 170,
+      "context": "getRevisionWeight(b.rev)",
+      "destination": "src/utils/calculations.ts::getRevisionWeight",
+      "functionName": "getRevisionWeight"
+    },
+    {
+      "callerFile": "src/utils/enterpriseUpgradeEngine.ts",
+      "line": 185,
+      "context": "getStatusCategory(r.status, statusMap)",
+      "destination": "src/utils/calculations.ts::getStatusCategory",
+      "functionName": "getStatusCategory"
+    },
+    {
+      "callerFile": "src/utils/enterpriseUpgradeEngine.ts",
+      "line": 201,
+      "context": "getStatusCategory(latestRev.status, statusMap)",
+      "destination": "src/utils/calculations.ts::getStatusCategory",
+      "functionName": "getStatusCategory"
+    },
+    {
+      "callerFile": "src/utils/enterpriseUpgradeEngine.ts",
+      "line": 284,
+      "context": "getDocRegisterType(r)",
+      "destination": "src/utils/calculations.ts::getDocRegisterType",
+      "functionName": "getDocRegisterType"
+    },
+    {
+      "callerFile": "src/utils/enterpriseUpgradeEngine.ts",
+      "line": 367,
+      "context": "getStatusCategory(r.status, statusMap)",
+      "destination": "src/utils/calculations.ts::getStatusCategory",
+      "functionName": "getStatusCategory"
+    },
+    {
+      "callerFile": "src/utils/enterpriseUpgradeEngine.ts",
+      "line": 386,
+      "context": "getRevisionWeight(h.rev)",
+      "destination": "src/utils/calculations.ts::getRevisionWeight",
+      "functionName": "getRevisionWeight"
+    },
+    {
+      "callerFile": "src/utils/enterpriseUpgradeEngine.ts",
+      "line": 392,
+      "context": "getDocRegisterType(firstRow)",
+      "destination": "src/utils/calculations.ts::getDocRegisterType",
+      "functionName": "getDocRegisterType"
+    },
+    {
+      "callerFile": "src/utils/enterpriseUpgradeEngine.ts",
+      "line": 411,
+      "context": "getDocRegisterType(r)",
+      "destination": "src/utils/calculations.ts::getDocRegisterType",
+      "functionName": "getDocRegisterType"
+    },
+    {
+      "callerFile": "src/utils/enterpriseUpgradeEngine.ts",
+      "line": 446,
+      "context": "getDocRegisterType(r)",
+      "destination": "src/utils/calculations.ts::getDocRegisterType",
+      "functionName": "getDocRegisterType"
+    },
+    {
+      "callerFile": "src/utils/enterpriseUpgradeEngine.ts",
+      "line": 511,
+      "context": "getDocRegisterType(r)",
+      "destination": "src/utils/calculations.ts::getDocRegisterType",
+      "functionName": "getDocRegisterType"
+    },
+    {
+      "callerFile": "src/utils/enterpriseUpgradeEngine.ts",
+      "line": 512,
+      "context": "getDocRegisterType(r)",
+      "destination": "src/utils/calculations.ts::getDocRegisterType",
+      "functionName": "getDocRegisterType"
+    },
+    {
+      "callerFile": "src/utils/enterpriseUpgradeEngine.ts",
+      "line": 521,
+      "context": "getRootCauseIntelligence(rows)",
+      "destination": "src/utils/calculations.ts::getRootCauseIntelligence",
+      "functionName": "getRootCauseIntelligence"
+    },
+    {
+      "callerFile": "src/utils/enterpriseUpgradeEngine.ts",
+      "line": 544,
+      "context": "getDocRegisterType(r)",
+      "destination": "src/utils/calculations.ts::getDocRegisterType",
+      "functionName": "getDocRegisterType"
+    },
+    {
+      "callerFile": "src/utils/enterpriseUpgradeEngine.ts",
+      "line": 545,
+      "context": "getDocRegisterType(r)",
+      "destination": "src/utils/calculations.ts::getDocRegisterType",
+      "functionName": "getDocRegisterType"
+    },
+    {
+      "callerFile": "src/utils/enterpriseUpgradeEngine.ts",
+      "line": 578,
+      "context": "checkIfOverdueDynamically(r)",
+      "destination": "src/utils/calculations.ts::checkIfOverdueDynamically",
+      "functionName": "checkIfOverdueDynamically"
+    },
+    {
+      "callerFile": "src/utils/enterpriseUpgradeEngine.ts",
+      "line": 591,
+      "context": "scanDataIntegrity(rows, statusMap)",
+      "destination": "src/utils/calculations.ts::scanDataIntegrity",
+      "functionName": "scanDataIntegrity"
+    },
+    {
+      "callerFile": "src/utils/enterpriseUpgradeEngine.ts",
+      "line": 640,
+      "context": "getDocRegisterType(r)",
+      "destination": "src/utils/calculations.ts::getDocRegisterType",
+      "functionName": "getDocRegisterType"
+    },
+    {
+      "callerFile": "src/utils/enterpriseUpgradeEngine.ts",
+      "line": 650,
+      "context": "getDocRegisterType(r)",
+      "destination": "src/utils/calculations.ts::getDocRegisterType",
+      "functionName": "getDocRegisterType"
+    },
+    {
+      "callerFile": "src/utils/enterpriseUpgradeEngine.ts",
+      "line": 773,
+      "context": "getStatusCategory(r.status, statusMap)",
+      "destination": "src/utils/calculations.ts::getStatusCategory",
+      "functionName": "getStatusCategory"
+    },
+    {
+      "callerFile": "src/utils/enterpriseUpgradeEngine.ts",
+      "line": 776,
+      "context": "getStatusCategory(r.status, statusMap)",
+      "destination": "src/utils/calculations.ts::getStatusCategory",
+      "functionName": "getStatusCategory"
+    },
+    {
+      "callerFile": "src/utils/enterpriseUpgradeEngine.ts",
+      "line": 777,
+      "context": "checkIfOverdueDynamically(r)",
+      "destination": "src/utils/calculations.ts::checkIfOverdueDynamically",
+      "functionName": "checkIfOverdueDynamically"
+    },
+    {
+      "callerFile": "src/utils/enterpriseUpgradeEngine.ts",
+      "line": 793,
+      "context": "getStatusCategory(r.status, statusMap)",
+      "destination": "src/utils/calculations.ts::getStatusCategory",
+      "functionName": "getStatusCategory"
+    },
+    {
+      "callerFile": "src/utils/enterpriseUpgradeEngine.ts",
+      "line": 843,
+      "context": "getRevisionWeight(existing.rev)",
+      "destination": "src/utils/calculations.ts::getRevisionWeight",
+      "functionName": "getRevisionWeight"
+    },
+    {
+      "callerFile": "src/utils/enterpriseUpgradeEngine.ts",
+      "line": 844,
+      "context": "getRevisionWeight(r.rev)",
+      "destination": "src/utils/calculations.ts::getRevisionWeight",
+      "functionName": "getRevisionWeight"
+    },
+    {
+      "callerFile": "src/utils/enterpriseUpgradeEngine.ts",
+      "line": 858,
+      "context": "getDocRegisterType(r)",
+      "destination": "src/utils/calculations.ts::getDocRegisterType",
+      "functionName": "getDocRegisterType"
+    },
+    {
+      "callerFile": "src/utils/enterpriseUpgradeEngine.ts",
+      "line": 859,
+      "context": "getDocRegisterType(r)",
+      "destination": "src/utils/calculations.ts::getDocRegisterType",
+      "functionName": "getDocRegisterType"
+    },
+    {
+      "callerFile": "src/utils/enterpriseUpgradeEngine.ts",
+      "line": 869,
+      "context": "getStatusCategory(r.status, statusMap)",
+      "destination": "src/utils/calculations.ts::getStatusCategory",
+      "functionName": "getStatusCategory"
+    },
+    {
+      "callerFile": "src/utils/enterpriseUpgradeEngine.ts",
+      "line": 870,
+      "context": "checkIfOverdueDynamically(r)",
+      "destination": "src/utils/calculations.ts::checkIfOverdueDynamically",
+      "functionName": "checkIfOverdueDynamically"
+    },
+    {
+      "callerFile": "src/utils/enterpriseUpgradeEngine.ts",
+      "line": 873,
+      "context": "getStatusCategory(r.status, statusMap)",
+      "destination": "src/utils/calculations.ts::getStatusCategory",
+      "functionName": "getStatusCategory"
+    },
+    {
+      "callerFile": "src/utils/enterpriseUpgradeEngine.ts",
+      "line": 874,
+      "context": "checkIfOverdueDynamically(r)",
+      "destination": "src/utils/calculations.ts::checkIfOverdueDynamically",
+      "functionName": "checkIfOverdueDynamically"
+    },
+    {
+      "callerFile": "src/utils/enterpriseUpgradeEngine.ts",
+      "line": 875,
+      "context": "getStatusCategory(r.status, statusMap)",
+      "destination": "src/utils/calculations.ts::getStatusCategory",
+      "functionName": "getStatusCategory"
+    },
+    {
+      "callerFile": "src/utils/enterpriseUpgradeEngine.ts",
+      "line": 877,
+      "context": "getStatusCategory(r.status, statusMap)",
+      "destination": "src/utils/calculations.ts::getStatusCategory",
+      "functionName": "getStatusCategory"
+    },
+    {
+      "callerFile": "src/utils/enterpriseUpgradeEngine.ts",
+      "line": 878,
+      "context": "getStatusCategory(r.status, statusMap)",
+      "destination": "src/utils/calculations.ts::getStatusCategory",
+      "functionName": "getStatusCategory"
+    },
+    {
+      "callerFile": "src/utils/enterpriseUpgradeEngine.ts",
+      "line": 880,
+      "context": "getStatusCategory(r.status, statusMap)",
+      "destination": "src/utils/calculations.ts::getStatusCategory",
+      "functionName": "getStatusCategory"
+    },
+    {
+      "callerFile": "src/utils/enterpriseUpgradeEngine.ts",
+      "line": 881,
+      "context": "getStatusCategory(r.status, statusMap)",
+      "destination": "src/utils/calculations.ts::getStatusCategory",
+      "functionName": "getStatusCategory"
+    },
+    {
+      "callerFile": "src/utils/enterpriseUpgradeEngine.ts",
+      "line": 951,
+      "context": "getDocRegisterType(r)",
+      "destination": "src/utils/calculations.ts::getDocRegisterType",
+      "functionName": "getDocRegisterType"
+    },
+    {
+      "callerFile": "src/utils/enterpriseUpgradeEngine.ts",
+      "line": 951,
+      "context": "getStatusCategory(r.status, statusMap)",
+      "destination": "src/utils/calculations.ts::getStatusCategory",
+      "functionName": "getStatusCategory"
+    },
+    {
+      "callerFile": "src/utils/multiFileParser.ts",
+      "line": 20,
+      "context": "parseExcelFile(extractedFile)",
+      "destination": "src/utils/calculations.ts::parseExcelFile",
+      "functionName": "parseExcelFile"
+    },
+    {
+      "callerFile": "src/utils/multiFileParser.ts",
+      "line": 26,
+      "context": "parseExcelFile(file)",
+      "destination": "src/utils/calculations.ts::parseExcelFile",
+      "functionName": "parseExcelFile"
+    },
+    {
+      "callerFile": "src/utils/ncrAnalytics.ts",
+      "line": 88,
+      "context": "getMonthStr(targetMonth)",
+      "destination": "src/utils/calculations.ts::getMonthStr",
+      "functionName": "getMonthStr"
+    },
+    {
+      "callerFile": "src/utils/ncrAnalytics.ts",
+      "line": 116,
+      "context": "getMonthStr(issueDateStr)",
+      "destination": "src/utils/calculations.ts::getMonthStr",
+      "functionName": "getMonthStr"
+    },
+    {
+      "callerFile": "src/utils/ncrAnalytics.ts",
+      "line": 117,
+      "context": "getMonthStr(closureDateStr)",
+      "destination": "src/utils/calculations.ts::getMonthStr",
+      "functionName": "getMonthStr"
+    },
+    {
+      "callerFile": "src/utils/parser.ts",
+      "line": 61,
+      "context": "classifyRegisterSheet({\n            fileName: file.name,\n            sheetName: sheetName,\n            headers: headers.map(h => String(h || '')),\n            sampleRows: rows.slice(0, 20) as any[][],\n            projectId: activeProjectId\n          })",
+      "destination": "src/utils/calculations.ts::classifyRegisterSheet",
+      "functionName": "classifyRegisterSheet"
+    },
+    {
+      "callerFile": "src/utils/parser.ts",
+      "line": 366,
+      "context": "normalizeDiscipline(disciplineVal, activeProjectId)",
+      "destination": "src/utils/calculations.ts::normalizeDiscipline",
+      "functionName": "normalizeDiscipline"
+    },
+    {
+      "callerFile": "src/utils/parser.ts",
+      "line": 470,
+      "context": "mapDocumentToWorkflow(assignedType)",
+      "destination": "src/utils/calculations.ts::mapDocumentToWorkflow",
+      "functionName": "mapDocumentToWorkflow"
+    },
+    {
+      "callerFile": "src/utils/parser.ts",
+      "line": 522,
+      "context": "normalizeData(parsed)",
+      "destination": "src/utils/calculations.ts::normalizeData",
+      "functionName": "normalizeData"
+    },
+    {
+      "callerFile": "src/utils/rfiAnalytics.ts",
+      "line": 72,
+      "context": "getMonthStr(targetMonth)",
+      "destination": "src/utils/calculations.ts::getMonthStr",
+      "functionName": "getMonthStr"
+    },
+    {
+      "callerFile": "src/utils/rfiAnalytics.ts",
+      "line": 97,
+      "context": "getMonthStr(issueDateStr)",
+      "destination": "src/utils/calculations.ts::getMonthStr",
+      "functionName": "getMonthStr"
+    },
+    {
+      "callerFile": "src/utils/rfiAnalytics.ts",
+      "line": 98,
+      "context": "getMonthStr(responseDateStr)",
+      "destination": "src/utils/calculations.ts::getMonthStr",
+      "functionName": "getMonthStr"
+    },
+    {
+      "callerFile": "src/utils/statusMatrixEngine.ts",
+      "line": 32,
+      "context": "checkIfOverdueDynamically(row, projectSettings)",
+      "destination": "src/utils/calculations.ts::checkIfOverdueDynamically",
+      "functionName": "checkIfOverdueDynamically"
+    },
+    {
+      "callerFile": "src/utils/statusMatrixEngine.ts",
+      "line": 39,
+      "context": "getProjectStatusMap(projectId)",
+      "destination": "src/utils/calculations.ts::getProjectStatusMap",
+      "functionName": "getProjectStatusMap"
+    },
+    {
+      "callerFile": "src/utils/workflowMapping.ts",
+      "line": 187,
+      "context": "getActiveMappings()",
+      "destination": "src/utils/calculations.ts::getActiveMappings",
+      "functionName": "getActiveMappings"
+    },
+    {
+      "callerFile": "src/utils/workflowMapping.ts",
+      "line": 292,
+      "context": "getActiveMappings()",
+      "destination": "src/utils/calculations.ts::getActiveMappings",
+      "functionName": "getActiveMappings"
+    }
+  ],
+  "complexity": [
+    {
+      "functionName": "getStatusCodeCategory",
+      "cyclomatic": 28,
+      "loc": 34,
+      "halsteadVolume": 687.89,
+      "maintainabilityIndex": 124.87,
+      "normalizedMi": 73
+    },
+    {
+      "functionName": "getDelayDays",
+      "cyclomatic": 6,
+      "loc": 23,
+      "halsteadVolume": 343.38,
+      "maintainabilityIndex": 134.18,
+      "normalizedMi": 78
+    },
+    {
+      "functionName": "classifyNcrStatus",
+      "cyclomatic": 37,
+      "loc": 187,
+      "halsteadVolume": 2173.74,
+      "maintainabilityIndex": 114.06,
+      "normalizedMi": 67
+    },
+    {
+      "functionName": "calculateLTRStats",
+      "cyclomatic": 7,
+      "loc": 40,
+      "halsteadVolume": 393.46,
+      "maintainabilityIndex": 132.34,
+      "normalizedMi": 77
+    },
+    {
+      "functionName": "calculateSORStats",
+      "cyclomatic": 27,
+      "loc": 73,
+      "halsteadVolume": 1463.77,
+      "maintainabilityIndex": 119.94,
+      "normalizedMi": 70
+    },
+    {
+      "functionName": "calculateNCRStats",
+      "cyclomatic": 19,
+      "loc": 69,
+      "halsteadVolume": 1217.49,
+      "maintainabilityIndex": 122.83,
+      "normalizedMi": 72
+    },
+    {
+      "functionName": "calculateStats",
+      "cyclomatic": 23,
+      "loc": 84,
+      "halsteadVolume": 1458.77,
+      "maintainabilityIndex": 120.65,
+      "normalizedMi": 71
+    }
+  ],
+  "deadCode": {
+    "unusedSymbols": [
+      {
+        "file": "src/EnterpriseDashboard.tsx",
+        "exportName": "AuditLogEntry",
+        "type": "Type/Interface",
+        "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+        "reason": "No incoming imports of 'AuditLogEntry' detected in any active source modules.",
+        "referencedBy": []
+      },
+      {
+        "file": "src/analytics/analyticsCore.ts",
+        "exportName": "NormalizedStatus",
+        "type": "Type/Interface",
+        "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+        "reason": "No incoming imports of 'NormalizedStatus' detected in any active source modules.",
+        "referencedBy": []
+      },
+      {
+        "file": "src/analytics/analyticsCore.ts",
+        "exportName": "isStatusOpenCore",
+        "type": "Function",
+        "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+        "reason": "No incoming imports of 'isStatusOpenCore' detected in any active source modules.",
+        "referencedBy": []
+      },
+      {
+        "file": "src/analytics/analyticsCore.ts",
+        "exportName": "isStatusClosedCore",
+        "type": "Function",
+        "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+        "reason": "No incoming imports of 'isStatusClosedCore' detected in any active source modules.",
+        "referencedBy": []
+      },
+      {
+        "file": "src/analytics/analyticsCore.ts",
+        "exportName": "isStatusRejectedCore",
+        "type": "Function",
+        "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+        "reason": "No incoming imports of 'isStatusRejectedCore' detected in any active source modules.",
+        "referencedBy": []
+      },
+      {
+        "file": "src/analytics/analyticsCore.ts",
+        "exportName": "isStatusOverdueCore",
+        "type": "Function",
+        "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+        "reason": "No incoming imports of 'isStatusOverdueCore' detected in any active source modules.",
+        "referencedBy": []
+      },
+      {
+        "file": "src/analytics/analyticsCore.ts",
+        "exportName": "sortRevisions",
+        "type": "Function",
+        "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+        "reason": "No incoming imports of 'sortRevisions' detected in any active source modules.",
+        "referencedBy": []
+      },
+      {
+        "file": "src/analytics/analyticsCore.ts",
+        "exportName": "LifecycleValidationResult",
+        "type": "Type/Interface",
+        "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+        "reason": "No incoming imports of 'LifecycleValidationResult' detected in any active source modules.",
+        "referencedBy": []
+      },
+      {
+        "file": "src/analytics/analyticsCore.ts",
+        "exportName": "DocumentMetrics",
+        "type": "Type/Interface",
+        "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+        "reason": "No incoming imports of 'DocumentMetrics' detected in any active source modules.",
+        "referencedBy": []
+      },
+      {
+        "file": "src/analytics/analyticsCore.ts",
+        "exportName": "getDocumentMetrics",
+        "type": "Function",
+        "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+        "reason": "No incoming imports of 'getDocumentMetrics' detected in any active source modules.",
+        "referencedBy": []
+      },
+      {
+        "file": "src/analytics/analyticsService.ts",
+        "exportName": "BaseAnalytics",
+        "type": "Type/Interface",
+        "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+        "reason": "No incoming imports of 'BaseAnalytics' detected in any active source modules.",
+        "referencedBy": []
+      },
+      {
+        "file": "src/analytics/analyticsService.ts",
+        "exportName": "generateGlobalAnalytics",
+        "type": "Function",
+        "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+        "reason": "No incoming imports of 'generateGlobalAnalytics' detected in any active source modules.",
+        "referencedBy": []
+      },
+      {
+        "file": "src/analytics/calculationFoundation.ts",
+        "exportName": "SubmissionLayerResult",
+        "type": "Type/Interface",
+        "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+        "reason": "No incoming imports of 'SubmissionLayerResult' detected in any active source modules.",
+        "referencedBy": []
+      },
+      {
+        "file": "src/analytics/calculationFoundation.ts",
+        "exportName": "PerformanceLayerResult",
+        "type": "Type/Interface",
+        "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+        "reason": "No incoming imports of 'PerformanceLayerResult' detected in any active source modules.",
+        "referencedBy": []
+      },
+      {
+        "file": "src/analytics/calculationFoundation.ts",
+        "exportName": "getBusinessEntityKey",
+        "type": "Function",
+        "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+        "reason": "No incoming imports of 'getBusinessEntityKey' detected in any active source modules.",
+        "referencedBy": []
+      },
+      {
+        "file": "src/analytics/calculationFoundation.ts",
+        "exportName": "EngineeringItemClassification",
+        "type": "Type/Interface",
+        "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+        "reason": "No incoming imports of 'EngineeringItemClassification' detected in any active source modules.",
+        "referencedBy": []
+      },
+      {
+        "file": "src/analytics/calculationFoundation.ts",
+        "exportName": "PerformanceValidationRow",
+        "type": "Type/Interface",
+        "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+        "reason": "No incoming imports of 'PerformanceValidationRow' detected in any active source modules.",
+        "referencedBy": []
+      },
+      {
+        "file": "src/analytics/dataValidator.ts",
+        "exportName": "validateDataset",
+        "type": "Function",
+        "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+        "reason": "No incoming imports of 'validateDataset' detected in any active source modules.",
+        "referencedBy": []
+      },
+      {
+        "file": "src/analytics/exportTelemetryTestSuite.ts",
+        "exportName": "runExportTelemetrySuite",
+        "type": "Function",
+        "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+        "reason": "No incoming imports of 'runExportTelemetrySuite' detected in any active source modules.",
+        "referencedBy": []
+      },
+      {
+        "file": "src/analytics/governance/auditFramework.ts",
+        "exportName": "AuditLogEntry",
+        "type": "Type/Interface",
+        "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+        "reason": "No incoming imports of 'AuditLogEntry' detected in any active source modules.",
+        "referencedBy": []
+      },
+      {
+        "file": "src/analytics/governance/auditFramework.ts",
+        "exportName": "getAuditLogs",
+        "type": "Function",
+        "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+        "reason": "No incoming imports of 'getAuditLogs' detected in any active source modules.",
+        "referencedBy": []
+      },
+      {
+        "file": "src/analytics/governance/auditFramework.ts",
+        "exportName": "clearAuditLogs",
+        "type": "Function",
+        "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+        "reason": "No incoming imports of 'clearAuditLogs' detected in any active source modules.",
+        "referencedBy": []
+      },
+      {
+        "file": "src/analytics/governance/canonicalEngineAdapter.ts",
+        "exportName": "AdaptedCalculationResult",
+        "type": "Type/Interface",
+        "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+        "reason": "No incoming imports of 'AdaptedCalculationResult' detected in any active source modules.",
+        "referencedBy": []
+      },
+      {
+        "file": "src/analytics/governance/canonicalEngineAdapter.ts",
+        "exportName": "executeAdaptedCalculationPipeline",
+        "type": "Function",
+        "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+        "reason": "No incoming imports of 'executeAdaptedCalculationPipeline' detected in any active source modules.",
+        "referencedBy": []
+      },
+      {
+        "file": "src/analytics/governance/configurationRepository.ts",
+        "exportName": "SystemConfiguration",
+        "type": "Type/Interface",
+        "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+        "reason": "No incoming imports of 'SystemConfiguration' detected in any active source modules.",
+        "referencedBy": []
+      },
+      {
+        "file": "src/analytics/governance/configurationRepository.ts",
+        "exportName": "DEFAULT_SYSTEM_CONFIGURATION",
+        "type": "Component",
+        "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+        "reason": "No incoming imports of 'DEFAULT_SYSTEM_CONFIGURATION' detected in any active source modules.",
+        "referencedBy": []
+      },
+      {
+        "file": "src/analytics/governance/configurationRepository.ts",
+        "exportName": "getSystemConfiguration",
+        "type": "Function",
+        "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+        "reason": "No incoming imports of 'getSystemConfiguration' detected in any active source modules.",
+        "referencedBy": []
+      },
+      {
+        "file": "src/analytics/governance/configurationRepository.ts",
+        "exportName": "updateSystemConfiguration",
+        "type": "Function",
+        "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+        "reason": "No incoming imports of 'updateSystemConfiguration' detected in any active source modules.",
+        "referencedBy": []
+      },
+      {
+        "file": "src/analytics/governance/validationFramework.ts",
+        "exportName": "RuleVerificationResult",
+        "type": "Type/Interface",
+        "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+        "reason": "No incoming imports of 'RuleVerificationResult' detected in any active source modules.",
+        "referencedBy": []
+      },
+      {
+        "file": "src/analytics/governance/validationFramework.ts",
+        "exportName": "FormulaVerificationResult",
+        "type": "Type/Interface",
+        "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+        "reason": "No incoming imports of 'FormulaVerificationResult' detected in any active source modules.",
+        "referencedBy": []
+      },
+      {
+        "file": "src/analytics/governance/validationFramework.ts",
+        "exportName": "ParallelEquivalenceResult",
+        "type": "Type/Interface",
+        "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+        "reason": "No incoming imports of 'ParallelEquivalenceResult' detected in any active source modules.",
+        "referencedBy": []
+      },
+      {
+        "file": "src/analytics/kpiEngine.ts",
+        "exportName": "RegisterStats",
+        "type": "Type/Interface",
+        "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+        "reason": "No incoming imports of 'RegisterStats' detected in any active source modules.",
+        "referencedBy": []
+      },
+      {
+        "file": "src/analytics/kpiEngine.ts",
+        "exportName": "CorrespondenceStats",
+        "type": "Type/Interface",
+        "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+        "reason": "No incoming imports of 'CorrespondenceStats' detected in any active source modules.",
+        "referencedBy": []
+      },
+      {
+        "file": "src/analytics/kpiEngine.ts",
+        "exportName": "KPIReport",
+        "type": "Type/Interface",
+        "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+        "reason": "No incoming imports of 'KPIReport' detected in any active source modules.",
+        "referencedBy": []
+      },
+      {
+        "file": "src/analytics/kpiEngine.ts",
+        "exportName": "generateKpiReport",
+        "type": "Function",
+        "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+        "reason": "No incoming imports of 'generateKpiReport' detected in any active source modules.",
+        "referencedBy": []
+      },
+      {
+        "file": "src/analytics/models.ts",
+        "exportName": "BaseRecord",
+        "type": "Type/Interface",
+        "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+        "reason": "No incoming imports of 'BaseRecord' detected in any active source modules.",
+        "referencedBy": []
+      },
+      {
+        "file": "src/analytics/models.ts",
+        "exportName": "DocumentRecord",
+        "type": "Type/Interface",
+        "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+        "reason": "No incoming imports of 'DocumentRecord' detected in any active source modules.",
+        "referencedBy": []
+      },
+      {
+        "file": "src/analytics/models.ts",
+        "exportName": "RFIRecord",
+        "type": "Type/Interface",
+        "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+        "reason": "No incoming imports of 'RFIRecord' detected in any active source modules.",
+        "referencedBy": []
+      },
+      {
+        "file": "src/analytics/models.ts",
+        "exportName": "NCRRecord",
+        "type": "Type/Interface",
+        "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+        "reason": "No incoming imports of 'NCRRecord' detected in any active source modules.",
+        "referencedBy": []
+      },
+      {
+        "file": "src/analytics/models.ts",
+        "exportName": "WIRRecord",
+        "type": "Type/Interface",
+        "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+        "reason": "No incoming imports of 'WIRRecord' detected in any active source modules.",
+        "referencedBy": []
+      },
+      {
+        "file": "src/analytics/models.ts",
+        "exportName": "MIRRecord",
+        "type": "Type/Interface",
+        "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+        "reason": "No incoming imports of 'MIRRecord' detected in any active source modules.",
+        "referencedBy": []
+      },
+      {
+        "file": "src/analytics/models.ts",
+        "exportName": "LetterInRecord",
+        "type": "Type/Interface",
+        "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+        "reason": "No incoming imports of 'LetterInRecord' detected in any active source modules.",
+        "referencedBy": []
+      },
+      {
+        "file": "src/analytics/models.ts",
+        "exportName": "LetterOutRecord",
+        "type": "Type/Interface",
+        "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+        "reason": "No incoming imports of 'LetterOutRecord' detected in any active source modules.",
+        "referencedBy": []
+      },
+      {
+        "file": "src/analytics/models.ts",
+        "exportName": "SiteInstructionRecord",
+        "type": "Type/Interface",
+        "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+        "reason": "No incoming imports of 'SiteInstructionRecord' detected in any active source modules.",
+        "referencedBy": []
+      },
+      {
+        "file": "src/analytics/models.ts",
+        "exportName": "MeetingMinutesRecord",
+        "type": "Type/Interface",
+        "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+        "reason": "No incoming imports of 'MeetingMinutesRecord' detected in any active source modules.",
+        "referencedBy": []
+      },
+      {
+        "file": "src/analytics/models.ts",
+        "exportName": "ImportResult",
+        "type": "Type/Interface",
+        "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+        "reason": "No incoming imports of 'ImportResult' detected in any active source modules.",
+        "referencedBy": []
+      },
+      {
+        "file": "src/analytics/ncr/ncrEngine.ts",
+        "exportName": "isYes",
+        "type": "Function",
+        "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+        "reason": "No incoming imports of 'isYes' detected in any active source modules.",
+        "referencedBy": []
+      },
+      {
+        "file": "src/analytics/ncr/ncrEngine.ts",
+        "exportName": "getLatestRev",
+        "type": "Function",
+        "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+        "reason": "No incoming imports of 'getLatestRev' detected in any active source modules.",
+        "referencedBy": []
+      },
+      {
+        "file": "src/analytics/ncr/ncrEngine.ts",
+        "exportName": "NCRStats",
+        "type": "Type/Interface",
+        "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+        "reason": "No incoming imports of 'NCRStats' detected in any active source modules.",
+        "referencedBy": []
+      },
+      {
+        "file": "src/analytics/ncr/ncrEngine.ts",
+        "exportName": "NCRClassificationStats",
+        "type": "Type/Interface",
+        "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+        "reason": "No incoming imports of 'NCRClassificationStats' detected in any active source modules.",
+        "referencedBy": []
+      },
+      {
+        "file": "src/analytics/ncr/ncrEngine.ts",
+        "exportName": "normalizeDiscipline",
+        "type": "Function",
+        "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+        "reason": "No incoming imports of 'normalizeDiscipline' detected in any active source modules.",
+        "referencedBy": []
+      },
+      {
+        "file": "src/analytics/ncr/ncrEngine.ts",
+        "exportName": "normalizeNCRData",
+        "type": "Function",
+        "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+        "reason": "No incoming imports of 'normalizeNCRData' detected in any active source modules.",
+        "referencedBy": []
+      },
+      {
+        "file": "src/analytics/ncr/ncrEngine.ts",
+        "exportName": "groupNCRByReference",
+        "type": "Function",
+        "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+        "reason": "No incoming imports of 'groupNCRByReference' detected in any active source modules.",
+        "referencedBy": []
+      },
+      {
+        "file": "src/analytics/ncr/ncrEngine.ts",
+        "exportName": "NCREvidence",
+        "type": "Type/Interface",
+        "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+        "reason": "No incoming imports of 'NCREvidence' detected in any active source modules.",
+        "referencedBy": []
+      },
+      {
+        "file": "src/analytics/ncr/ncrEngine.ts",
+        "exportName": "NCRIntegrityReport",
+        "type": "Type/Interface",
+        "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+        "reason": "No incoming imports of 'NCRIntegrityReport' detected in any active source modules.",
+        "referencedBy": []
+      },
+      {
+        "file": "src/analytics/ncr/ncrEngine.ts",
+        "exportName": "calculateCumulativeSnapshot",
+        "type": "Function",
+        "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+        "reason": "No incoming imports of 'calculateCumulativeSnapshot' detected in any active source modules.",
+        "referencedBy": []
+      },
+      {
+        "file": "src/analytics/ncr/ncrEngine.ts",
+        "exportName": "calculateMonthlyEvents",
+        "type": "Function",
+        "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+        "reason": "No incoming imports of 'calculateMonthlyEvents' detected in any active source modules.",
+        "referencedBy": []
+      },
+      {
+        "file": "src/analytics/recordTransformer.ts",
+        "exportName": "transformRecords",
+        "type": "Function",
+        "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+        "reason": "No incoming imports of 'transformRecords' detected in any active source modules.",
+        "referencedBy": []
+      },
+      {
+        "file": "src/analytics/sor/sorEngine.ts",
+        "exportName": "isYes",
+        "type": "Function",
+        "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+        "reason": "No incoming imports of 'isYes' detected in any active source modules.",
+        "referencedBy": []
+      },
+      {
+        "file": "src/analytics/sor/sorEngine.ts",
+        "exportName": "getLatestRev",
+        "type": "Function",
+        "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+        "reason": "No incoming imports of 'getLatestRev' detected in any active source modules.",
+        "referencedBy": []
+      },
+      {
+        "file": "src/analytics/sor/sorEngine.ts",
+        "exportName": "SORStats",
+        "type": "Type/Interface",
+        "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+        "reason": "No incoming imports of 'SORStats' detected in any active source modules.",
+        "referencedBy": []
+      },
+      {
+        "file": "src/analytics/sor/sorEngine.ts",
+        "exportName": "SORClassificationStats",
+        "type": "Type/Interface",
+        "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+        "reason": "No incoming imports of 'SORClassificationStats' detected in any active source modules.",
+        "referencedBy": []
+      },
+      {
+        "file": "src/db/index.ts",
+        "exportName": "createPool",
+        "type": "Function",
+        "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+        "reason": "No incoming imports of 'createPool' detected in any active source modules.",
+        "referencedBy": []
+      },
+      {
+        "file": "src/db/index.ts",
+        "exportName": "db",
+        "type": "Constant/Enum/Class",
+        "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+        "reason": "No incoming imports of 'db' detected in any active source modules.",
+        "referencedBy": []
+      },
+      {
+        "file": "src/db/schema.ts",
+        "exportName": "users",
+        "type": "Constant/Enum/Class",
+        "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+        "reason": "No incoming imports of 'users' detected in any active source modules.",
+        "referencedBy": []
+      },
+      {
+        "file": "src/db/schema.ts",
+        "exportName": "roles",
+        "type": "Constant/Enum/Class",
+        "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+        "reason": "No incoming imports of 'roles' detected in any active source modules.",
+        "referencedBy": []
+      },
+      {
+        "file": "src/db/schema.ts",
+        "exportName": "permissions",
+        "type": "Constant/Enum/Class",
+        "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+        "reason": "No incoming imports of 'permissions' detected in any active source modules.",
+        "referencedBy": []
+      },
+      {
+        "file": "src/db/schema.ts",
+        "exportName": "projects",
+        "type": "Constant/Enum/Class",
+        "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+        "reason": "No incoming imports of 'projects' detected in any active source modules.",
+        "referencedBy": []
+      },
+      {
+        "file": "src/db/schema.ts",
+        "exportName": "projectMembers",
+        "type": "Constant/Enum/Class",
+        "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+        "reason": "No incoming imports of 'projectMembers' detected in any active source modules.",
+        "referencedBy": []
+      },
+      {
+        "file": "src/db/schema.ts",
+        "exportName": "registers",
+        "type": "Constant/Enum/Class",
+        "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+        "reason": "No incoming imports of 'registers' detected in any active source modules.",
+        "referencedBy": []
+      },
+      {
+        "file": "src/db/schema.ts",
+        "exportName": "documents",
+        "type": "Constant/Enum/Class",
+        "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+        "reason": "No incoming imports of 'documents' detected in any active source modules.",
+        "referencedBy": []
+      },
+      {
+        "file": "src/db/schema.ts",
+        "exportName": "documentRevisions",
+        "type": "Constant/Enum/Class",
+        "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+        "reason": "No incoming imports of 'documentRevisions' detected in any active source modules.",
+        "referencedBy": []
+      },
+      {
+        "file": "src/db/schema.ts",
+        "exportName": "documentStatusHistory",
+        "type": "Constant/Enum/Class",
+        "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+        "reason": "No incoming imports of 'documentStatusHistory' detected in any active source modules.",
+        "referencedBy": []
+      },
+      {
+        "file": "src/db/schema.ts",
+        "exportName": "rfiRecords",
+        "type": "Constant/Enum/Class",
+        "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+        "reason": "No incoming imports of 'rfiRecords' detected in any active source modules.",
+        "referencedBy": []
+      },
+      {
+        "file": "src/db/schema.ts",
+        "exportName": "mirRecords",
+        "type": "Constant/Enum/Class",
+        "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+        "reason": "No incoming imports of 'mirRecords' detected in any active source modules.",
+        "referencedBy": []
+      },
+      {
+        "file": "src/db/schema.ts",
+        "exportName": "irRecords",
+        "type": "Constant/Enum/Class",
+        "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+        "reason": "No incoming imports of 'irRecords' detected in any active source modules.",
+        "referencedBy": []
+      },
+      {
+        "file": "src/db/schema.ts",
+        "exportName": "ncrRecords",
+        "type": "Constant/Enum/Class",
+        "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+        "reason": "No incoming imports of 'ncrRecords' detected in any active source modules.",
+        "referencedBy": []
+      },
+      {
+        "file": "src/db/schema.ts",
+        "exportName": "sdwRecords",
+        "type": "Constant/Enum/Class",
+        "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+        "reason": "No incoming imports of 'sdwRecords' detected in any active source modules.",
+        "referencedBy": []
+      },
+      {
+        "file": "src/db/schema.ts",
+        "exportName": "analyticsSnapshots",
+        "type": "Constant/Enum/Class",
+        "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+        "reason": "No incoming imports of 'analyticsSnapshots' detected in any active source modules.",
+        "referencedBy": []
+      },
+      {
+        "file": "src/db/schema.ts",
+        "exportName": "aiInsights",
+        "type": "Constant/Enum/Class",
+        "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+        "reason": "No incoming imports of 'aiInsights' detected in any active source modules.",
+        "referencedBy": []
+      },
+      {
+        "file": "src/db/schema.ts",
+        "exportName": "auditLogs",
+        "type": "Constant/Enum/Class",
+        "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+        "reason": "No incoming imports of 'auditLogs' detected in any active source modules.",
+        "referencedBy": []
+      },
+      {
+        "file": "src/db/schema.ts",
+        "exportName": "notifications",
+        "type": "Constant/Enum/Class",
+        "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+        "reason": "No incoming imports of 'notifications' detected in any active source modules.",
+        "referencedBy": []
+      },
+      {
+        "file": "src/db/schema.ts",
+        "exportName": "savedFilters",
+        "type": "Constant/Enum/Class",
+        "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+        "reason": "No incoming imports of 'savedFilters' detected in any active source modules.",
+        "referencedBy": []
+      },
+      {
+        "file": "src/db/schema.ts",
+        "exportName": "reports",
+        "type": "Constant/Enum/Class",
+        "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+        "reason": "No incoming imports of 'reports' detected in any active source modules.",
+        "referencedBy": []
+      },
+      {
+        "file": "src/db/schema.ts",
+        "exportName": "reportExports",
+        "type": "Constant/Enum/Class",
+        "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+        "reason": "No incoming imports of 'reportExports' detected in any active source modules.",
+        "referencedBy": []
+      },
+      {
+        "file": "src/db/schema.ts",
+        "exportName": "kpiResults",
+        "type": "Constant/Enum/Class",
+        "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+        "reason": "No incoming imports of 'kpiResults' detected in any active source modules.",
+        "referencedBy": []
+      },
+      {
+        "file": "src/db/schema.ts",
+        "exportName": "reviewCycles",
+        "type": "Constant/Enum/Class",
+        "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+        "reason": "No incoming imports of 'reviewCycles' detected in any active source modules.",
+        "referencedBy": []
+      },
+      {
+        "file": "src/db/schema.ts",
+        "exportName": "reviewComments",
+        "type": "Constant/Enum/Class",
+        "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+        "reason": "No incoming imports of 'reviewComments' detected in any active source modules.",
+        "referencedBy": []
+      },
+      {
+        "file": "src/db/schema.ts",
+        "exportName": "rejectionReasons",
+        "type": "Constant/Enum/Class",
+        "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+        "reason": "No incoming imports of 'rejectionReasons' detected in any active source modules.",
+        "referencedBy": []
+      },
+      {
+        "file": "src/db/schema.ts",
+        "exportName": "workflowEvents",
+        "type": "Constant/Enum/Class",
+        "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+        "reason": "No incoming imports of 'workflowEvents' detected in any active source modules.",
+        "referencedBy": []
+      },
+      {
+        "file": "src/db/schema.ts",
+        "exportName": "auditLogsRelations",
+        "type": "Constant/Enum/Class",
+        "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+        "reason": "No incoming imports of 'auditLogsRelations' detected in any active source modules.",
+        "referencedBy": []
+      },
+      {
+        "file": "src/hooks/useFilters.ts",
+        "exportName": "FilterState",
+        "type": "Type/Interface",
+        "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+        "reason": "No incoming imports of 'FilterState' detected in any active source modules.",
+        "referencedBy": []
+      },
+      {
+        "file": "src/utils/calculations.ts",
+        "exportName": "getUniqueNCRs",
+        "type": "Function",
+        "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+        "reason": "No incoming imports of 'getUniqueNCRs' detected in any active source modules.",
+        "referencedBy": []
+      },
+      {
+        "file": "src/utils/calculations.ts",
+        "exportName": "getUniqueSORs",
+        "type": "Function",
+        "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+        "reason": "No incoming imports of 'getUniqueSORs' detected in any active source modules.",
+        "referencedBy": []
+      },
+      {
+        "file": "src/utils/classificationEngine.ts",
+        "exportName": "ClassificationResult",
+        "type": "Type/Interface",
+        "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+        "reason": "No incoming imports of 'ClassificationResult' detected in any active source modules.",
+        "referencedBy": []
+      },
+      {
+        "file": "src/utils/enterpriseUpgradeEngine.ts",
+        "exportName": "ContractorPerformance",
+        "type": "Type/Interface",
+        "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+        "reason": "No incoming imports of 'ContractorPerformance' detected in any active source modules.",
+        "referencedBy": []
+      },
+      {
+        "file": "src/utils/enterpriseUpgradeEngine.ts",
+        "exportName": "getProjectStatusMap",
+        "type": "Constant/Enum/Class",
+        "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+        "reason": "No incoming imports of 'getProjectStatusMap' detected in any active source modules.",
+        "referencedBy": []
+      },
+      {
+        "file": "src/utils/enterpriseUpgradeEngine.ts",
+        "exportName": "getNormalizedStatus",
+        "type": "Constant/Enum/Class",
+        "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+        "reason": "No incoming imports of 'getNormalizedStatus' detected in any active source modules.",
+        "referencedBy": []
+      },
+      {
+        "file": "src/utils/enterpriseUpgradeEngine.ts",
+        "exportName": "ValidationIssue",
+        "type": "Type/Interface",
+        "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+        "reason": "No incoming imports of 'ValidationIssue' detected in any active source modules.",
+        "referencedBy": []
+      },
+      {
+        "file": "src/utils/enterpriseUpgradeEngine.ts",
+        "exportName": "RegisterQualityScorecard",
+        "type": "Type/Interface",
+        "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+        "reason": "No incoming imports of 'RegisterQualityScorecard' detected in any active source modules.",
+        "referencedBy": []
+      },
+      {
+        "file": "src/utils/enterpriseUpgradeEngine.ts",
+        "exportName": "RegisterHealth",
+        "type": "Type/Interface",
+        "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+        "reason": "No incoming imports of 'RegisterHealth' detected in any active source modules.",
+        "referencedBy": []
+      },
+      {
+        "file": "src/utils/enterpriseUpgradeEngine.ts",
+        "exportName": "DocLifecycleInfo",
+        "type": "Type/Interface",
+        "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+        "reason": "No incoming imports of 'DocLifecycleInfo' detected in any active source modules.",
+        "referencedBy": []
+      },
+      {
+        "file": "src/utils/enterpriseUpgradeEngine.ts",
+        "exportName": "RootCauseStat",
+        "type": "Type/Interface",
+        "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+        "reason": "No incoming imports of 'RootCauseStat' detected in any active source modules.",
+        "referencedBy": []
+      },
+      {
+        "file": "src/utils/enterpriseUpgradeEngine.ts",
+        "exportName": "ExecutiveInsightEntry",
+        "type": "Type/Interface",
+        "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+        "reason": "No incoming imports of 'ExecutiveInsightEntry' detected in any active source modules.",
+        "referencedBy": []
+      },
+      {
+        "file": "src/utils/enterpriseUpgradeEngine.ts",
+        "exportName": "CrossRegisterLink",
+        "type": "Type/Interface",
+        "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+        "reason": "No incoming imports of 'CrossRegisterLink' detected in any active source modules.",
+        "referencedBy": []
+      },
+      {
+        "file": "src/utils/i18n.tsx",
+        "exportName": "Language",
+        "type": "Type/Interface",
+        "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+        "reason": "No incoming imports of 'Language' detected in any active source modules.",
+        "referencedBy": []
+      },
+      {
+        "file": "src/utils/loadTestingSuite.ts",
+        "exportName": "SimulationMetrics",
+        "type": "Type/Interface",
+        "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+        "reason": "No incoming imports of 'SimulationMetrics' detected in any active source modules.",
+        "referencedBy": []
+      },
+      {
+        "file": "src/utils/loadTestingSuite.ts",
+        "exportName": "PerformanceSnapshot",
+        "type": "Type/Interface",
+        "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+        "reason": "No incoming imports of 'PerformanceSnapshot' detected in any active source modules.",
+        "referencedBy": []
+      },
+      {
+        "file": "src/utils/loadTestingSuite.ts",
+        "exportName": "runLoadTestingSuite",
+        "type": "Function",
+        "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+        "reason": "No incoming imports of 'runLoadTestingSuite' detected in any active source modules.",
+        "referencedBy": []
+      },
+      {
+        "file": "src/utils/ncrAnalytics.ts",
+        "exportName": "NCRStats",
+        "type": "Type/Interface",
+        "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+        "reason": "No incoming imports of 'NCRStats' detected in any active source modules.",
+        "referencedBy": []
+      },
+      {
+        "file": "src/utils/ncrAnalytics.ts",
+        "exportName": "calculateNCRStats",
+        "type": "Function",
+        "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+        "reason": "No incoming imports of 'calculateNCRStats' detected in any active source modules.",
+        "referencedBy": []
+      },
+      {
+        "file": "src/utils/rfiAnalytics.ts",
+        "exportName": "RFITradeStat",
+        "type": "Type/Interface",
+        "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+        "reason": "No incoming imports of 'RFITradeStat' detected in any active source modules.",
+        "referencedBy": []
+      },
+      {
+        "file": "src/utils/rfiAnalytics.ts",
+        "exportName": "RFIStats",
+        "type": "Type/Interface",
+        "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+        "reason": "No incoming imports of 'RFIStats' detected in any active source modules.",
+        "referencedBy": []
+      },
+      {
+        "file": "src/utils/rfiAnalytics.ts",
+        "exportName": "calculateRFIStats",
+        "type": "Function",
+        "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+        "reason": "No incoming imports of 'calculateRFIStats' detected in any active source modules.",
+        "referencedBy": []
+      },
+      {
+        "file": "src/utils/securityRegressionSuite.ts",
+        "exportName": "RegressionTestResult",
+        "type": "Type/Interface",
+        "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+        "reason": "No incoming imports of 'RegressionTestResult' detected in any active source modules.",
+        "referencedBy": []
+      },
+      {
+        "file": "src/utils/securityRegressionSuite.ts",
+        "exportName": "SuiteSummary",
+        "type": "Type/Interface",
+        "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+        "reason": "No incoming imports of 'SuiteSummary' detected in any active source modules.",
+        "referencedBy": []
+      },
+      {
+        "file": "src/utils/securityRegressionSuite.ts",
+        "exportName": "runSecurityRegressionSuite",
+        "type": "Function",
+        "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+        "reason": "No incoming imports of 'runSecurityRegressionSuite' detected in any active source modules.",
+        "referencedBy": []
+      },
+      {
+        "file": "src/utils/statusMatrixEngine.ts",
+        "exportName": "saveProjectStatusMap",
+        "type": "Function",
+        "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+        "reason": "No incoming imports of 'saveProjectStatusMap' detected in any active source modules.",
+        "referencedBy": []
+      },
+      {
+        "file": "src/utils/statusMatrixEngine.ts",
+        "exportName": "NormalizedStatus",
+        "type": "Type/Interface",
+        "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+        "reason": "No incoming imports of 'NormalizedStatus' detected in any active source modules.",
+        "referencedBy": []
+      },
+      {
+        "file": "src/utils/workflowMapping.ts",
+        "exportName": "CalculationEngineType",
+        "type": "Type/Interface",
+        "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+        "reason": "No incoming imports of 'CalculationEngineType' detected in any active source modules.",
+        "referencedBy": []
+      }
+    ],
+    "legacyModules": [
+      "src/analytics/analyticsService.ts",
+      "src/analytics/dataValidator.ts",
+      "src/analytics/exportTelemetryTestSuite.ts",
+      "src/analytics/governance/canonicalEngineAdapter.ts",
+      "src/analytics/governance/configurationRepository.ts",
+      "src/analytics/kpiEngine.ts",
+      "src/analytics/recordTransformer.ts",
+      "src/db/index.ts",
+      "src/db/schema.ts",
+      "src/utils/loadTestingSuite.ts",
+      "src/utils/ncrAnalytics.ts",
+      "src/utils/securityRegressionSuite.ts"
+    ]
+  },
+  "staticReachability": {
+    "totalLines": 700,
+    "coveredLines": 251,
+    "totalStatements": 92,
+    "coveredStatements": 33,
+    "totalBranches": 107,
+    "coveredBranches": 33,
+    "totalFunctions": 28,
+    "coveredFunctions": 12
+  }
+}

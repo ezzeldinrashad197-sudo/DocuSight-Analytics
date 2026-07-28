@@ -1,0 +1,15 @@
+{
+  "datasetId": "RFI-REF-V1.0.0",
+  "documentType": "RFI",
+  "description": "Frozen Reference Dataset for Request for Information Logs",
+  "totalRecords": 1050,
+  "verifiedBy": "PMC QA Director",
+  "checksum": "sha256-rfi-d9e11fa7",
+  "kpis": {
+    "Total": 1050,
+    "Open": 85,
+    "Closed": 965,
+    "Approved": 900,
+    "Rejected": 65
+  }
+}

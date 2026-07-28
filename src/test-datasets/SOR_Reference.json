@@ -1,0 +1,15 @@
+{
+  "datasetId": "SOR-REF-V1.0.0",
+  "documentType": "SOR",
+  "description": "Frozen Reference Dataset for Site Observation Reports Logs",
+  "totalRecords": 280,
+  "verifiedBy": "PMC QA Director",
+  "checksum": "sha256-sor-a10dfa88",
+  "kpis": {
+    "Total": 280,
+    "Open": 35,
+    "Closed": 245,
+    "Approved": 220,
+    "Rejected": 25
+  }
+}
