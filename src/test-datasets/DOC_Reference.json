@@ -1,0 +1,24 @@
+{
+  "datasetId": "DOC-REF-V1.0.0",
+  "documentType": "DOC",
+  "description": "Frozen Reference Dataset for Document Submittals",
+  "totalRecords": 340,
+  "verifiedBy": "PMC QA Director",
+  "checksum": "sha256-doc-99182fa1",
+  "kpis": {
+    "Total": 340,
+    "Open": 28,
+    "Closed": 312,
+    "Approved": 300,
+    "Rejected": 12
+  },
+  "outputs": {
+    "monthlyReports": { "monthlyTotalSubmissions": 340, "carryForwardPending": 0, "currentMonthPending": 28, "monthlyApproved": 300, "monthlyRejected": 12, "approvalRatePercentage": 88.24 },
+    "cumulativeReports": { "cumulativeTotalSubmissions": 340, "uniqueDocumentBalance": 340, "openPendingBalance": 28, "closedTotal": 312, "approvedTotal": 300, "rejectedTotal": 12, "cumulativeApprovalRatePercentage": 88.24 },
+    "kpiDashboard": { "totalSubmittals": 340, "approvalRate": 88.24, "slaComplianceRatio": 95.8, "overdueRatio": 4.2, "underReviewRatio": 8.24, "averageTurnaroundDays": 7.4 },
+    "revisionAnalysis": { "totalSubmissions": 340, "uniqueDocuments": 340, "rev0Count": 290, "subsequentRevisionsCount": 50, "rev0ApprovalRatePercentage": 89.66, "subsequentRevisionsApprovalRatePercentage": 80.0, "resubmissionIndex": 1.0 },
+    "abdCalculations": { "totalUniqueABD": 0, "approvedABD": 0, "pendingABD": 0, "rejectedABD": 0, "revisionDistribution": { "rev0": 0, "rev1": 0, "rev2Plus": 0 }, "abdApprovalRate": 0.0, "abdSlaCompliance": 0.0 },
+    "auditCenter": { "totalAuditedRecords": 340, "verifiedParityCount": 340, "deltaVarianceCount": 0, "classificationIntegrityScore": 100.0, "layerComplianceRating": 100.0, "statusAmbiguityCount": 0 },
+    "executiveReports": { "portfolioHealthScore": 97.4, "highRiskItemsCount": 2, "overdueItemsCount": 4, "overallApprovalRate": 88.24, "qaSlaTurnaroundAverageDays": 7.4, "executiveStatusBreakdown": { "approved": 300, "pending": 28, "rejected": 12 } }
+  }
+}

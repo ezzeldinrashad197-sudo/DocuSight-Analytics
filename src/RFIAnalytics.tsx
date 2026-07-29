@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
 import { SubmittalRow, ProjectSettings } from './types';
+import { getRevisionWeight } from './utils/enterpriseUpgradeEngine';
 import { getNormalizedStatusCore, compareRevisions, getLatestRevision } from './analytics/analyticsCore';
 
 const isYes = (v: unknown) => typeof v === 'string' ? v.toUpperCase() === 'YES' || v.toUpperCase() === 'Y' : !!v;
@@ -76,8 +77,7 @@ export default function RFIAnalytics(props: { data: SubmittalRow[], monthlyStart
             const st = m.get(displayDisc)!;
 
             st.total++;
-            const revUpper = (row.rev || '').trim().toUpperCase();
-            const isRev0 = revUpper === '00' || revUpper === '0' || revUpper === '';
+            const isRev0 = row.isRev0 ?? (getRevisionWeight(row.rev) === 0);
             if (isRev0) st.rev00++; else st.furtherRev++;
 
             // Use centralized StatusMatrixEngine normalization through analyticsCore

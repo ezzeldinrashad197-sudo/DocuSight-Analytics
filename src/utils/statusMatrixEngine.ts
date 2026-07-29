@@ -31,40 +31,30 @@ export const getNormalizedStatus = (
 ): NormalizedStatus => {
   const isOverdue = checkIfOverdueDynamically(row, projectSettings);
   
-  const rawStatus = (row.status || (row as any).recordStatus || (row as any).ncrStatus || '').trim().toUpperCase();
+  const rawStatus = (row.status || '').trim().toUpperCase();
   if (!rawStatus) {
     return isOverdue ? 'OVERDUE' : 'OPEN';
   }
   
   const config = getProjectStatusMap(projectId);
-  const cleanStatus = rawStatus.replace(/["':\-\s]+/g, ' ').trim();
   
-  // Flexible token/prefix matching against configured status map
-  const isClosed = config.closed.some(s => {
-    const sClean = s.toUpperCase().trim();
-    return cleanStatus === sClean || cleanStatus.startsWith(sClean + ' ') || cleanStatus.endsWith(' ' + sClean) || (sClean.length >= 3 && cleanStatus.includes(sClean));
-  });
+  // Strict EXACT matching only - absolutely no partial string or wildcard includes() matching.
+  const isClosed = config.closed.some(s => s.toUpperCase() === rawStatus);
   if (isClosed) return 'CLOSED';
   
-  const isRejected = config.rejected.some(s => {
-    const sClean = s.toUpperCase().trim();
-    return cleanStatus === sClean || cleanStatus.startsWith(sClean + ' ') || cleanStatus.endsWith(' ' + sClean) || (sClean.length >= 3 && cleanStatus.includes(sClean));
-  });
+  const isRejected = config.rejected.some(s => s.toUpperCase() === rawStatus);
   if (isRejected) return 'REJECTED';
   
-  const isOpen = config.open.some(s => {
-    const sClean = s.toUpperCase().trim();
-    return cleanStatus === sClean || cleanStatus.startsWith(sClean + ' ') || cleanStatus.endsWith(' ' + sClean) || (sClean.length >= 3 && cleanStatus.includes(sClean));
-  });
+  const isOpen = config.open.some(s => s.toUpperCase() === rawStatus);
   if (isOpen) {
     return isOverdue ? 'OVERDUE' : 'OPEN';
   }
 
-  // Fallback protections for standard codes A, B, D -> CLOSED; C -> REJECTED
-  if (['A', 'B', 'D'].some(code => cleanStatus === code || cleanStatus.startsWith(code + ' ') || cleanStatus.includes('CODE ' + code) || cleanStatus.includes('APP') || cleanStatus.includes('CLOS'))) {
+  // Exact fallback protections for safety
+  if (['A', 'B', 'CODE A', 'CODE B', 'APPROVED', 'CLOSED', 'ACCEPTED'].includes(rawStatus)) {
     return 'CLOSED';
   }
-  if (cleanStatus === 'C' || cleanStatus.startsWith('C ') || cleanStatus.includes('CODE C') || cleanStatus.includes('REJ') || cleanStatus.includes('RET')) {
+  if (['C', 'CODE C', 'REJECTED', 'RETURNED', 'REJ'].includes(rawStatus)) {
     return 'REJECTED';
   }
   

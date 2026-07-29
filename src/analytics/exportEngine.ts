@@ -7,19 +7,7 @@ import {
   addHeaderAndFooter,
   addDividerSlide,
   buildTableData,
-  defineDocusightSlideMaster,
-  addInnovoCoverSlide,
-  addInnovoIndexSlide,
-  addInnovoSectionDivider,
-  addInnovoSlideHeaderFooter,
-  buildInnovoTableRows,
-  addInnovoStackedColumnChart,
-  addInnovoPieChartGrid,
-  addInnovoHorizontalBarChart,
-  addInnovoTeamMembersSlide,
-  addInnovoTableSlide,
-  addInnovoACCNoticeSlide,
-  addInnovoThanksSlide
+  defineDocusightSlideMaster
 } from "./exportHelpers";
 
 export const generatePptxReport = async (
@@ -118,270 +106,531 @@ export const generatePptxReport = async (
     const isArabic = !!options?.arabicEnabled;
 
     if (mode === 'presentation') {
-        // 1. Cover Slide
+        const logoUrl = options?.logoUrl || projectInfo?.logoUrl;
+        const primColor = options?.primaryColor ? options.primaryColor.replace('#', '') : "0A192F";
+        const accColor = options?.accentColor ? options.accentColor.replace('#', '') : "D4AF37";
+        const font = options?.fontFace || "Arial";
+        const style = options?.coverStyle || "luxe"; // luxe, minimal, corporate, bold
+        const showLogo = options?.showLogo !== false;
+
+        // Cover Slide
         if (isSectionSelected('cover')) {
-            addInnovoCoverSlide(pres, projectInfo);
+            let coverSlide: any = pres.addSlide();
+            
+            if (style === "minimal") {
+                coverSlide.background = { color: "FAF9F6" };
+                coverSlide.addShape(pres.ShapeType.rect, { x: 0, y: 0, w: 0.15, h: 5.625, fill: { color: accColor } });
+                
+                coverSlide.addText(isArabic ? "مراقبة وإدارة الوثائق" : "DOCUMENT CONTROL", { 
+                    x: 1.2, y: 1.0, w: 7, h: 0.8, 
+                    fontSize: 36, bold: true, color: primColor, 
+                    fontFace: font, rtl: isArabic, align: isArabic ? "right" : "left"
+                });
+                coverSlide.addText(isArabic ? "التقرير الإحصائي الشهري" : "MONTHLY PERFORMANCE REPORT", { 
+                    x: 1.2, y: 1.8, w: 7, h: 0.8, 
+                    fontSize: 28, bold: true, color: accColor, 
+                    fontFace: font, rtl: isArabic, align: isArabic ? "right" : "left"
+                });
+                coverSlide.addShape(pres.ShapeType.rect, { x: 1.2, y: 2.7, w: 5.5, h: 0.02, fill: { color: accColor } });
+                coverSlide.addText(`[${projectInfo?.projectName || 'Project'}]`, { 
+                    x: 1.2, y: 2.9, w: 5.5, h: 0.4, 
+                    fontSize: 14, color: "475569", fontFace: font, 
+                    rtl: isArabic, align: isArabic ? "right" : "left"
+                });
+                coverSlide.addShape(pres.ShapeType.rect, { x: 1.2, y: 3.5, w: 5.5, h: 0.02, fill: { color: accColor } });
+                const dateStr = new Date().toLocaleDateString('en-US', { day: '2-digit', month: 'long', year: 'numeric' });
+                coverSlide.addText(isArabic ? `تاريخ التقرير: ${dateStr}` : `Report Date: ${dateStr}`, { 
+                    x: 1.2, y: 3.7, w: 5.5, h: 0.3, 
+                    fontSize: 13, color: "475569", fontFace: font,
+                    rtl: isArabic, align: isArabic ? "right" : "left"
+                });
+                coverSlide.addText(`[${projectInfo?.contractorName || 'Contractor'}]`, { 
+                    x: 1.2, y: 4.1, w: 5.5, h: 0.3, 
+                    fontSize: 13, color: "475569", fontFace: font,
+                    rtl: isArabic, align: isArabic ? "right" : "left"
+                });
+            } else if (style === "corporate") {
+                coverSlide.background = { color: "F1F5F9" };
+                coverSlide.addShape(pres.ShapeType.rect, { x: 0, y: 0, w: 3.2, h: 5.625, fill: { color: primColor } });
+                
+                coverSlide.addText(isArabic ? "مراقبة وإدارة الوثائق" : "DOCUMENT CONTROL", { 
+                    x: 3.7, y: 1.0, w: 5.8, h: 0.8, 
+                    fontSize: 34, bold: true, color: primColor, 
+                    fontFace: font, rtl: isArabic, align: isArabic ? "right" : "left"
+                });
+                coverSlide.addText(isArabic ? "التقرير الإحصائي الشهري" : "MONTHLY PERFORMANCE REPORT", { 
+                    x: 3.7, y: 1.8, w: 5.8, h: 0.8, 
+                    fontSize: 24, bold: true, color: accColor, 
+                    fontFace: font, rtl: isArabic, align: isArabic ? "right" : "left"
+                });
+                coverSlide.addShape(pres.ShapeType.rect, { x: 3.7, y: 2.7, w: 5.5, h: 0.02, fill: { color: accColor } });
+                coverSlide.addText(`[${projectInfo?.projectName || 'Project'}]`, { 
+                    x: 3.7, y: 2.9, w: 5.5, h: 0.4, 
+                    fontSize: 14, color: "334155", fontFace: font, 
+                    rtl: isArabic, align: isArabic ? "right" : "left"
+                });
+                coverSlide.addShape(pres.ShapeType.rect, { x: 3.7, y: 3.5, w: 5.5, h: 0.02, fill: { color: accColor } });
+                const dateStr = new Date().toLocaleDateString('en-US', { day: '2-digit', month: 'long', year: 'numeric' });
+                coverSlide.addText(isArabic ? `تاريخ التقرير: ${dateStr}` : `Report Date: ${dateStr}`, { 
+                    x: 3.7, y: 3.7, w: 5.5, h: 0.3, 
+                    fontSize: 13, color: "334155", fontFace: font,
+                    rtl: isArabic, align: isArabic ? "right" : "left"
+                });
+                coverSlide.addText(`[${projectInfo?.contractorName || 'Contractor'}]`, { 
+                    x: 3.7, y: 4.1, w: 5.5, h: 0.3, 
+                    fontSize: 13, color: "334155", fontFace: font,
+                    rtl: isArabic, align: isArabic ? "right" : "left"
+                });
+            } else {
+                // Luxe Deep or Bold Geometric
+                coverSlide.background = { color: primColor };
+                coverSlide.addShape(pres.ShapeType.rect, { x: 0, y: 0, w: 0.15, h: 5.625, fill: { color: accColor } });
+                
+                coverSlide.addText(isArabic ? "مراقبة وإدارة الوثائق" : "DOCUMENT CONTROL", { 
+                    x: 1.2, y: 1.0, w: 7, h: 0.8, 
+                    fontSize: 36, bold: true, color: "FFFFFF", 
+                    fontFace: font, rtl: isArabic, align: isArabic ? "right" : "left"
+                });
+                coverSlide.addText(isArabic ? "التقرير الإحصائي الشهري" : "MONTHLY PERFORMANCE REPORT", { 
+                    x: 1.2, y: 1.8, w: 7, h: 0.8, 
+                    fontSize: 28, bold: true, color: accColor, 
+                    fontFace: font, rtl: isArabic, align: isArabic ? "right" : "left"
+                });
+                coverSlide.addShape(pres.ShapeType.rect, { x: 1.2, y: 2.7, w: 5.5, h: 0.02, fill: { color: accColor } });
+                coverSlide.addText(`[${projectInfo?.projectName || 'Project'}]`, { 
+                    x: 1.2, y: 2.9, w: 5.5, h: 0.4, 
+                    fontSize: 14, color: "FFFFFF", fontFace: font, 
+                    rtl: isArabic, align: isArabic ? "right" : "left"
+                });
+                coverSlide.addShape(pres.ShapeType.rect, { x: 1.2, y: 3.5, w: 5.5, h: 0.02, fill: { color: accColor } });
+                const dateStr = new Date().toLocaleDateString('en-US', { day: '2-digit', month: 'long', year: 'numeric' });
+                coverSlide.addText(isArabic ? `تاريخ التقرير: ${dateStr}` : `Report Date: ${dateStr}`, { 
+                    x: 1.2, y: 3.7, w: 5.5, h: 0.3, 
+                    fontSize: 13, color: "FFFFFF", fontFace: font,
+                    rtl: isArabic, align: isArabic ? "right" : "left"
+                });
+                coverSlide.addText(`[${projectInfo?.contractorName || 'Contractor'}]`, { 
+                    x: 1.2, y: 4.1, w: 5.5, h: 0.3, 
+                    fontSize: 13, color: "FFFFFF", fontFace: font,
+                    rtl: isArabic, align: isArabic ? "right" : "left"
+                });
+            }
+            // Cover slide logo using standardized premium badge layout
+            if (showLogo) {
+                renderLuxeLogoBox(pres, coverSlide, 7.2, 0.8, 2.2, 1.2, projectInfo, logoUrl);
+            }
         }
 
-        // 2. Index Slide
+        // Index Slide
         if (isSectionSelected('cover')) {
-            addInnovoIndexSlide(pres, projectInfo);
+            let idxSlide: any = pres.addSlide();
+            idxSlide.addShape(pres.ShapeType.rect, { x: 0, y: 0, w: 3.0, h: 5.625, fill: { color: primColor } });
+            idxSlide.addText(isArabic ? "الفهرس" : "INDEX", { 
+                x: 0.4, y: 2.0, w: 2.2, h: 0.6, 
+                fontSize: 34, bold: true, color: "FFFFFF", 
+                fontFace: font, rtl: isArabic, align: isArabic ? "right" : "left" 
+            });
+            idxSlide.addText(isArabic ? "جدول المحتويات" : "Table of Contents", { 
+                x: 0.4, y: 2.6, w: 2.2, h: 0.4, 
+                fontSize: 12, color: "CBD5E1", 
+                fontFace: font, rtl: isArabic, align: isArabic ? "right" : "left"
+            });
+            idxSlide.addShape(pres.ShapeType.rect, { x: 0.4, y: 3.2, w: 2.2, h: 0.03, fill: { color: accColor } });
+            
+            // Index slide logo using standardized premium badge layout
+            if (showLogo) {
+                renderLuxeLogoBox(pres, idxSlide, 8.2, 0.4, 1.4, 0.6, projectInfo, logoUrl);
+            }
+            let currentY = 1.0;
+            idxSlide.addText("01", { x: 3.5, y: currentY, w: 0.4, h: 0.25, fontSize: 10, bold: true, color: "FFFFFF", fill: { color: primColor }, align: "center", fontFace: font });
+            idxSlide.addText(isArabic ? "بيانات المشروع وفريق العمل" : "Project Information & Team", { 
+                x: 4.1, y: currentY, w: 4.0, h: 0.25, 
+                fontSize: 11, bold: true, color: "333333", 
+                fontFace: font, rtl: isArabic, align: isArabic ? "right" : "left"
+            });
+            currentY += 0.32;
+            baseTypes.forEach((bt, idx) => {
+                const lName = typeMap[bt] || bt;
+                idxSlide.addText(String(idx + 2).padStart(2, '0'), { x: 3.5, y: currentY, w: 0.4, h: 0.25, fontSize: 10, bold: true, color: "FFFFFF", fill: { color: primColor }, align: "center", fontFace: font });
+                idxSlide.addText(`${lName} (${bt})`, { 
+                    x: 4.1, y: currentY, w: 4.0, h: 0.25, 
+                    fontSize: 11, bold: true, color: "333333", 
+                    fontFace: font, rtl: isArabic, align: isArabic ? "right" : "left"
+                });
+                currentY += 0.32;
+            });
+            idxSlide.addText(String(baseTypes.length + 2).padStart(2, '0'), { x: 3.5, y: currentY, w: 0.4, h: 0.25, fontSize: 10, bold: true, color: "FFFFFF", fill: { color: "C00000" }, align: "center", fontFace: font });
+            idxSlide.addText(isArabic ? "الوثائق المرفوضة (المرفوضات)" : "Rejected Items (المرفوضات)", { 
+                x: 4.1, y: currentY, w: 4.0, h: 0.25, 
+                fontSize: 11, bold: true, color: "333333", 
+                fontFace: font, rtl: isArabic, align: isArabic ? "right" : "left"
+            });
+            currentY += 0.32;
+            idxSlide.addText(String(baseTypes.length + 3).padStart(2, '0'), { x: 3.5, y: currentY, w: 0.4, h: 0.25, fontSize: 10, bold: true, color: "FFFFFF", fill: { color: primColor }, align: "center", fontFace: font });
+            idxSlide.addText(isArabic ? "المعلقات والبنود المتأخرة" : "Pending Items (المعلقات)", { 
+                x: 4.1, y: currentY, w: 4.0, h: 0.25, 
+                fontSize: 11, bold: true, color: "333333", 
+                fontFace: font, rtl: isArabic, align: isArabic ? "right" : "left"
+            });
+            idxSlide.addText(`[${projectInfo?.projectName || 'Project'}]  |  Document Control Monthly Report  |  [${new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}]`, { x: 3.5, y: 5.15, w: 6.0, h: 0.25, fontSize: 8, color: "94A3B8", fontFace: font });
         }
 
-        // 3. Section 1: Project Information & Team Members
+        // Project Info Divider + Content Slides
         if (isSectionSelected('info')) {
-            addInnovoSectionDivider(pres, "1. PROJECT INFORMATION & TEAM Members");
-            addInnovoTeamMembersSlide(pres, projectInfo);
+            addDividerSlide(pres, isArabic ? "أعضاء الفريق وبيانات العقد" : "Team Members & Project Details", isArabic ? "01 معلومات المشروع" : "01 PROJECT INFORMATION", projectInfo, logoUrl, options);
+            let infoSlide = pres.addSlide({ masterName: "DOCUSIGHT_MASTER" });
+            addHeaderAndFooter(pres, infoSlide, isArabic ? "معلومات المشروع العامة" : "PROJECT INFORMATION", projectInfo, logoUrl, options);
+            infoSlide.addShape(pres.ShapeType.rect, { x: 0.6, y: 1.5, w: 2.7, h: 1.5, fill: { color: "FFFFFF" }, line: { color: "CBD5E1", width: 1 } });
+            infoSlide.addText(isArabic ? "صاحب العمل / المالك" : "Employer", { x: 0.6, y: 1.5, w: 2.7, h: 0.35, fontSize: 10, bold: true, color: "FFFFFF", fill: { color: primColor }, align: "center", fontFace: font });
+            infoSlide.addText(projectInfo?.clientName || "N/A", { x: 0.7, y: 1.9, w: 2.5, h: 0.9, fontSize: 14, bold: true, color: "333333", align: "center", valign: "middle", fontFace: font });
+            
+            infoSlide.addShape(pres.ShapeType.rect, { x: 3.65, y: 1.5, w: 2.7, h: 1.5, fill: { color: "FFFFFF" }, line: { color: "CBD5E1", width: 1 } });
+            infoSlide.addText(isArabic ? "الاستشاري المشرف" : "Consultant", { x: 3.65, y: 1.5, w: 2.7, h: 0.35, fontSize: 10, bold: true, color: "FFFFFF", fill: { color: primColor }, align: "center", fontFace: font });
+            infoSlide.addText(projectInfo?.consultantName || "N/A", { x: 3.75, y: 1.9, w: 2.5, h: 0.9, fontSize: 14, bold: true, color: "333333", align: "center", valign: "middle", fontFace: font });
+            
+            infoSlide.addShape(pres.ShapeType.rect, { x: 6.7, y: 1.5, w: 2.7, h: 1.5, fill: { color: "FFFFFF" }, line: { color: "CBD5E1", width: 1 } });
+            infoSlide.addText(isArabic ? "مدير المشروع المشرف" : "CA / PM", { x: 6.7, y: 1.5, w: 2.7, h: 0.35, fontSize: 10, bold: true, color: "FFFFFF", fill: { color: primColor }, align: "center", fontFace: font });
+            infoSlide.addText(projectInfo?.projectManager || "N/A", { x: 6.8, y: 1.9, w: 2.5, h: 0.9, fontSize: 14, bold: true, color: "333333", align: "center", valign: "middle", fontFace: font });
+            
+            infoSlide.addShape(pres.ShapeType.rect, { x: 0.6, y: 3.3, w: 4.2, h: 1.5, fill: { color: "FFFFFF" }, line: { color: "CBD5E1", width: 1 } });
+            infoSlide.addText(isArabic ? "المقاول الرئيسي للمشروع" : "Contractor", { x: 0.6, y: 3.3, w: 4.2, h: 0.35, fontSize: 10, bold: true, color: "FFFFFF", fill: { color: "5B9BD5" }, align: "center", fontFace: font });
+            infoSlide.addText(projectInfo?.contractorName || "N/A", { x: 0.7, y: 3.7, w: 4.0, h: 0.9, fontSize: 16, bold: true, color: "333333", align: "center", valign: "middle", fontFace: font });
+            
+            infoSlide.addShape(pres.ShapeType.rect, { x: 5.2, y: 3.3, w: 4.2, h: 1.5, fill: { color: "FFFFFF" }, line: { color: "CBD5E1", width: 1 } });
+            infoSlide.addText(isArabic ? "إدارة مراقبة وجرد المستندات" : "Document Control Manager / Team", { x: 5.2, y: 3.3, w: 4.2, h: 0.35, fontSize: 10, bold: true, color: "FFFFFF", fill: { color: "5B9BD5" }, align: "center", fontFace: font });
+            infoSlide.addText(projectInfo?.documentControlManager || "N/A", { x: 5.3, y: 3.7, w: 4.0, h: 0.9, fontSize: 16, bold: true, color: "333333", align: "center", valign: "middle", fontFace: font });
         }
 
-        // 4. Document Base Types Sections (SHD, MAR, DOC, RFI, WIR, MIR, NCR)
-        const categoriesList = [
-            { code: 'SHD', name: 'SHOP DRAWINGS (SHD)' },
-            { code: 'MAR', name: 'MATERIAL SUBMITTALS (MAR)' },
-            { code: 'DOC', name: 'DOCUMENT SUBMITTALS (DOC)' },
-            { code: 'RFI', name: 'REQUEST FOR INFORMATION (RFI)' },
-            { code: 'WIR', name: 'INSPECTION REQUEST (WIR)' },
-            { code: 'MIR', name: 'MATERIAL INSPECTION REQUEST (MIR)' },
-            { code: 'NCR', name: 'NON-CONFORMANCE REPORT (NCR)' }
-        ];
-
-        let catNumber = 2;
-        categoriesList.forEach((catObj) => {
-            const bt = catObj.code;
+        // Compile Slides For Base Types
+        baseTypes.forEach((bt, sectionIdx) => {
             if (!isSectionSelected('metrics') && !isSectionSelected('logs')) return;
-
             const monthlyStats = compileStatsForBaseType(monthlyWorkingData, bt, options?.monthlyStart, data);
             const cumulativeStats = compileStatsForBaseType(cumulativeWorkingData, bt, undefined, data);
-
-            // Divider Slide
-            addInnovoSectionDivider(pres, `${catNumber}. ${catObj.name}`);
-            catNumber++;
-
+            
+            if (!monthlyStats.hasData && !cumulativeStats.hasData) return;
+            
+            const longName = typeMap[bt] || bt;
+            let sectionNumber = sectionIdx + 2;
+            let sectionTitle = `${String(sectionNumber).padStart(2, '0')} ${longName}`;
+            
+            // 1. Section Divider
+            addDividerSlide(pres, bt, sectionTitle, projectInfo, logoUrl, options);
+            
+            // Columns variables
             let cols = [
-                { label: "Items", key: "discipline" },
-                { label: "Total Submittals", key: "Rev00" },
-                { label: "Total Sheets Rev.00", key: "Rev00" },
-                { label: "Total Sheets Further Rev.", key: "FurtherRev" },
-                { label: "Total", key: "Total" },
-                { label: "Approved", key: "Approved" },
-                { label: "Rejected", key: "RejectedOpen" },
-                { label: "Pending", key: "Pending" }
+               { label: "Items", key: "discipline" },
+               { label: "Total Rev.00", key: "Rev00" },
+               { label: "Total Further Rev.", key: "FurtherRev" },
+               { label: "Total", key: "Total" },
+               { label: "Approved", key: "Approved" },
+               { label: "Rejected", key: "RejectedOpen" },
+               { label: "Pending", key: "Pending" },
             ];
+            let pieLabels = ["Approved", "Rejected", "Pending"];
 
-            if (bt === 'RFI') {
-                cols = [
-                    { label: "Items", key: "discipline" },
-                    { label: "Total Rev.00", key: "Rev00" },
-                    { label: "Total Further Rev.", key: "FurtherRev" },
-                    { label: "Total", key: "Total" },
-                    { label: "Pending", key: "Pending" },
-                    { label: "Closed", key: "Closed" }
-                ];
-            } else if (bt === 'NCR') {
-                cols = [
-                    { label: "Items", key: "discipline" },
-                    { label: "Total Rev.00", key: "Rev00" },
-                    { label: "Total Further Rev.", key: "FurtherRev" },
-                    { label: "Total", key: "Total" },
-                    { label: "Closed", key: "Closed" },
-                    { label: "Open", key: "Open" },
-                    { label: "Pending", key: "Pending" }
-                ];
+            if (bt !== 'RFI' && bt !== 'NCR' && bt !== 'SOR' && bt !== 'LTR') {
+                monthlyStats.stats.forEach(s => { s.RejectedOpen = Number(s.RejectedOpen) + Number(s.RejectedClosed); });
+                cumulativeStats.stats.forEach(s => { s.RejectedOpen = Number(s.RejectedOpen) + Number(s.RejectedClosed); });
             }
 
-            const buildPeriodSlides = (statsData: any, isMonthlyPeriod: boolean) => {
+            if (bt === 'RFI') {
+               cols = [
+                  { label: "Items", key: "discipline" },
+                  { label: "Total Rev.00", key: "Rev00" },
+                  { label: "Total Further Rev.", key: "FurtherRev" },
+                  { label: "Total", key: "Total" },
+                  { label: "Pending", key: "Pending" },
+                  { label: "Closed", key: "Closed" },
+               ];
+               pieLabels = ["Closed", "Pending"];
+            } else if (bt === 'NCR' || bt === 'SOR') {
+               cols = [
+                  { label: "Items", key: "discipline" },
+                  { label: "Total Rev.00", key: "Rev00" },
+                  { label: "Total Further Rev.", key: "FurtherRev" },
+                  { label: "Total", key: "Total" },
+                  { label: "Closed", key: "Closed" },
+                  { label: "Open", key: "Open" },
+                  { label: "Pending", key: "Pending" },
+               ];
+               pieLabels = ["Closed", "Open", "Pending"];
+            } else if (bt === 'LTR') {
+               cols = [
+                  { label: "Stakeholder", key: "discipline" },
+                  { label: "Sent", key: "Rev00" }, 
+                  { label: "Received", key: "FurtherRev" }, 
+                  { label: "Total", key: "Total" },
+               ];
+               pieLabels = ["Sent", "Received"];
+            }
+
+            // Slide creation helper for both Monthly & Cumulative
+            const createPeriodSlidesForBaseType = (statsData: any, isMonthlyPeriod: boolean) => {
+                if (!statsData.hasData) return;
                 const periodLabel = isMonthlyPeriod ? "This Period" : "Cumulative";
-
-                // Slide A: Table + Stacked Column Chart
-                const slideA = pres.addSlide();
-                addInnovoSlideHeaderFooter(pres, slideA, `➢${catObj.name} ${periodLabel}`, projectInfo);
-
-                const tableRows = buildInnovoTableRows(statsData.stats, statsData.totalRow, cols);
-                const colW = cols.length === 8 
-                    ? [1.2, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5] 
-                    : [1.3, 0.65, 0.65, 0.65, 0.65, 0.65];
-
-                slideA.addTable(tableRows, {
-                    x: 0.4, y: 1.2, w: 4.6,
+                
+                // Slide A: Table + Bar Chart
+                let slideA = pres.addSlide({ masterName: "DOCUSIGHT_MASTER" });
+                addHeaderAndFooter(pres, slideA, `${longName} (${bt}) ${periodLabel}`, projectInfo, logoUrl, options);
+                
+                // Add Table
+                const tableRows = buildTableData(statsData.stats, statsData.totalRow, cols, options?.fontFace);
+                const colW = cols.length === 7 
+                    ? [1.3, 0.55, 0.55, 0.55, 0.55, 0.55, 0.55] 
+                    : [1.6, 1.0, 1.0, 1.0];
+                slideA.addTable(tableRows, { 
+                    x: 0.4, y: 1.25, w: 4.6, 
                     colW: colW,
-                    color: "111111", fontSize: 8,
+                    color: "333333", fontSize: 8.5,
                     border: { type: "solid", pt: 1, color: "CBD5E1" }
                 });
+                
+                // Add Native Stacked Column Chart
+                const chartVal1Label = bt === 'LTR' ? "Sent" : "Rev.00";
+                const chartVal2Label = bt === 'LTR' ? "Received" : "Further Rev.";
+                let barChartData = [
+                    {
+                        name: chartVal1Label,
+                        labels: statsData.stats.map((s: any) => s.discipline),
+                        values: statsData.stats.map((s: any) => Number(s.Rev00) || 0)
+                    },
+                    {
+                        name: chartVal2Label,
+                        labels: statsData.stats.map((s: any) => s.discipline),
+                        values: statsData.stats.map((s: any) => Number(s.FurtherRev) || 0)
+                    }
+                ];
+                
+                slideA.addChart(pres.ChartType.bar, barChartData, {
+                    x: 5.15, y: 1.25, w: 4.45, h: 3.65,
+                    barDir: "col",
+                    barGrouping: "stacked",
+                    showLegend: true,
+                    legendPos: "b",
+                    legendFontSize: 8,
+                    catAxisLabelFontSize: 8.5,
+                    chartColors: ["2F75B5", "BDD7EE"],
+                    valGridLine: { color: "E2E8F0" },
+                    showValue: false
+                });
 
-                const catNames = statsData.stats.map((s: any) => s.discipline);
-                const rev0Vals = statsData.stats.map((s: any) => Number(s.Rev00) || 0);
-                const furtherRevVals = statsData.stats.map((s: any) => Number(s.FurtherRev) || 0);
+                // Slide B: 3x2 Grid of Pie Charts
+                let slideB = pres.addSlide({ masterName: "DOCUSIGHT_MASTER" });
+                addHeaderAndFooter(pres, slideB, `${longName} (${bt}) ${periodLabel}`, projectInfo, logoUrl, options);
+                
+                // Centered Section Header inside slideB
+                slideB.addText(bt === 'LTR' ? "Correspondence Type Distribution" : `${bt} Quality Approval`, { x: 0.5, y: 1.05, w: 9.0, h: 0.3, fontSize: 12, bold: true, color: "1E3A5F", align: "center" });
 
-                addInnovoStackedColumnChart(
-                    pres, slideA,
-                    `${catObj.name.split(' ')[0]} Status`,
-                    catNames, rev0Vals, furtherRevVals,
-                    5.2, 1.2, 4.4, 3.8
-                );
+                // Construct 3x2 Grid
+                statsData.stats.slice(0, 6).forEach((s: any, idx: number) => {
+                    const colIdx = idx % 3;
+                    const rowIdx = Math.floor(idx / 3);
+                    const posX = 0.5 + colIdx * 3.0; // Column positions: 0.5, 3.5, 6.5
+                    const posY = 1.35 + rowIdx * 1.85; // Row positions: 1.35, 3.2
 
-                // Slide B: Quality Approval Pie Charts
-                const slideB = pres.addSlide();
-                addInnovoSlideHeaderFooter(pres, slideB, `• ${catObj.name} Quality Approval`, projectInfo);
+                    // Discipline name
+                    slideB.addText(s.discipline, { x: posX, y: posY, w: 2.6, h: 0.25, fontSize: 10, bold: true, color: "1E3A5F", align: "center" });
+                    
+                    let pieDataValues: number[] = [];
+                    let pieLabelsList: string[] = [];
+                    let colors: string[] = [];
 
-                addInnovoPieChartGrid(
-                    pres, slideB,
-                    statsData.stats,
-                    bt === 'RFI' ? 'rfi' : (bt === 'NCR' ? 'ncr' : 'approval')
-                );
+                    if (pieLabels.length === 2 && pieLabels[0] === "Closed") {
+                        pieDataValues = [Number(s.Closed) || 0, Number(s.Pending) || 0];
+                        pieLabelsList = ["Closed", "Pending"];
+                        colors = ["70AD47", "FFC000"];
+                    } else if (pieLabels.length === 3 && pieLabels[1] === "Open") {
+                        pieDataValues = [Number(s.Closed) || 0, Number(s.Open) || 0, Number(s.Pending) || 0];
+                        pieLabelsList = ["Closed", "Open", "Pending"];
+                        colors = ["70AD47", "C00000", "FFC000"];
+                    } else if (pieLabels.length === 2 && pieLabels[0] === "Sent") {
+                        pieDataValues = [Number(s.Rev00) || 0, Number(s.FurtherRev) || 0];
+                        pieLabelsList = ["Sent", "Received"];
+                        colors = ["5B9BD5", "ED7D31"];
+                    } else {
+                        pieDataValues = [Number(s.Approved) || 0, (Number(s.RejectedOpen) || 0), Number(s.Pending) || 0];
+                        pieLabelsList = ["Approved", "Rejected", "Pending"];
+                        colors = ["70AD47", "C00000", "FFC000"];
+                    }
+
+                    const pieTotal = pieDataValues.reduce((acc, curr) => acc + curr, 0);
+                    const isAllZero = (pieTotal === 0);
+                    
+                    let finalPieData = [
+                        { name: "Status", labels: pieLabelsList, values: pieDataValues }
+                    ];
+
+                    if (isAllZero) {
+                        finalPieData[0].values = finalPieData[0].values.map(() => 1);
+                    } else {
+                        const filteredLabels: string[] = [];
+                        const filteredValues: number[] = [];
+                        const filteredColors: string[] = [];
+                        finalPieData[0].values.forEach((v, vIdx) => {
+                            if (v > 0) {
+                                filteredValues.push(v);
+                                filteredLabels.push(finalPieData[0].labels[vIdx]);
+                                filteredColors.push(colors[vIdx]);
+                            }
+                        });
+                        finalPieData[0].values = filteredValues;
+                        finalPieData[0].labels = filteredLabels;
+                        colors = filteredColors;
+                    }
+
+                    // Native pie chart integration
+                    slideB.addChart(pres.ChartType.pie, finalPieData, {
+                        x: posX, y: posY + 0.25, w: 2.6, h: 1.45,
+                        showLegend: true,
+                        legendPos: "b",
+                        legendFontSize: 7,
+                        chartColors: colors,
+                        showValue: false,
+                        showPercent: !isAllZero
+                    });
+                });
             };
 
-            buildPeriodSlides(monthlyStats, true);
-            buildPeriodSlides(cumulativeStats, false);
+            // Compile slides for both Period & Cumulative
+            createPeriodSlidesForBaseType(monthlyStats, true);
+            createPeriodSlidesForBaseType(cumulativeStats, false);
         });
 
-        // 5. Section 6: LETTERS IN & OUT
-        if (isSectionSelected('metrics')) {
-            addInnovoSectionDivider(pres, "6. LETTERS IN & OUT");
+        // Rejected Items Section
+        if (isSectionSelected('rejected')) {
+            const presRejectedPageSize = options?.rejectedPageSize || 15;
+            const showRefCol = options?.showRefCol !== false;
+            const showTradeCol = options?.showTradeCol !== false;
+            const showRemarksCol = options?.showRemarksCol !== false;
 
-            // Slide 1: LETTERS OUT STATUS This Period
-            const slideL1 = pres.addSlide();
-            addInnovoSlideHeaderFooter(pres, slideL1, "➢Letters OUT & Letters IN", projectInfo);
-            addInnovoHorizontalBarChart(
-                pres, slideL1,
-                "• LETTERS OUT STATUS This Period",
-                ["Subcontractor", "Consultant", "Owner/PM"],
-                [4, 20, 0],
-                1.5, 1.3, 7.0, 3.5
-            );
+            const presRejectedItems = cumulativeWorkingData.filter(d => d.overdue && d.workflowStage === 'Rejected' && !d.documentType?.includes('LTR')).sort((a, b) => b.delayDays - a.delayDays);
+            const rejectedPages: SubmittalRow[][] = [];
+            for (let i = 0; i < presRejectedItems.length; i += presRejectedPageSize) {
+                rejectedPages.push(presRejectedItems.slice(i, i + presRejectedPageSize));
+            }
 
-            // Slide 2: LETTERS OUT STATUS Cumulative
-            const slideL2 = pres.addSlide();
-            addInnovoSlideHeaderFooter(pres, slideL2, "➢Letters OUT & Letters IN", projectInfo);
-            addInnovoHorizontalBarChart(
-                pres, slideL2,
-                "• LETTERS OUT STATUS Cumulative",
-                ["Subcontractor", "Consultant", "Owner/PM"],
-                [12, 45, 2],
-                1.5, 1.3, 7.0, 3.5
-            );
+            const sectionNumRejected = baseTypes.length + 2;
+            addDividerSlide(pres, isArabic ? "الوثائق التي تتطلب إعادة تقديم" : "Items Requiring Resubmission", `${String(sectionNumRejected).padStart(2, '0')} REJECTED ITEMS`, projectInfo, logoUrl, options);
 
-            // Slide 3: LETTERS IN STATUS This Period
-            const slideL3 = pres.addSlide();
-            addInnovoSlideHeaderFooter(pres, slideL3, "➢Letters OUT & Letters IN", projectInfo);
-            addInnovoHorizontalBarChart(
-                pres, slideL3,
-                "• LETTERS IN STATUS This Period",
-                ["Subcontractor", "Consultant", "Owner/PM"],
-                [2, 18, 1],
-                1.5, 1.3, 7.0, 3.5
-            );
+            if (rejectedPages.length === 0) {
+                let slide: any = pres.addSlide({ masterName: "DOCUSIGHT_MASTER" });
+                addHeaderAndFooter(pres, slide, "REJECTED ITEMS", projectInfo, logoUrl, options);
+                slide.addText(isArabic ? "لا توجد وثائق مرفوضة متأخرة" : "No Rejected Items", { x: 1.0, y: 2.2, w: 8, h: 0.6, fontSize: 24, bold: true, color: "7A1515", align: "center", rtl: isArabic });
+                slide.addText(isArabic ? "كل المستندات المرفوضة تم الرد عليها أو إغلاقها." : "All rejected submittals are resolved or resubmitted.", { x: 1.0, y: 2.9, w: 8, h: 0.4, fontSize: 14, color: "666666", align: "center", rtl: isArabic });
+            } else {
+                rejectedPages.forEach((pageData, pageIdx) => {
+                    let slide = pres.addSlide({ masterName: "DOCUSIGHT_MASTER" });
+                    addHeaderAndFooter(pres, slide, "REJECTED ITEMS", projectInfo, logoUrl, options);
+                    
+                    // Slide title
+                    slide.addText(isArabic ? `الوثائق المرفوضة (تتطلب إجراء) - صفحة ${pageIdx + 1} من ${rejectedPages.length}` : `Rejected Items (Action Required) / الوثائق المرفوضة  - Page ${pageIdx + 1} of ${rejectedPages.length}`, { x: 0.5, y: 1.0, w: 9.0, h: 0.35, fontSize: 13, bold: true, color: "7A1515" });
+                    
+                    // Build Table
+                    let tableDataRows: any[] = [];
+                    // Headers row
+                    let headersRow: any[] = [
+                        { text: isArabic ? "م" : "No.", options: { bold: true, fill: "7A1515", color: "FFFFFF", align: "center" } },
+                        { text: isArabic ? "نوع الوثيقة" : "Type of Documents", options: { bold: true, fill: "7A1515", color: "FFFFFF", align: "center" } }
+                    ];
+                    if (showRefCol) headersRow.push({ text: isArabic ? "الرقم المرجعي" : "Ref / Link", options: { bold: true, fill: "7A1515", color: "FFFFFF", align: "center" } });
+                    if (showTradeCol) headersRow.push({ text: isArabic ? "التخصص" : "Trade", options: { bold: true, fill: "7A1515", color: "FFFFFF", align: "center" } });
+                    if (showRemarksCol) headersRow.push({ text: isArabic ? "ملاحظات التأخير" : "Remarks", options: { bold: true, fill: "7A1515", color: "FFFFFF", align: "center" } });
+                    tableDataRows.push(headersRow);
 
-            // Slide 4: LETTERS IN STATUS Cumulative
-            const slideL4 = pres.addSlide();
-            addInnovoSlideHeaderFooter(pres, slideL4, "➢Letters OUT & Letters IN", projectInfo);
-            addInnovoHorizontalBarChart(
-                pres, slideL4,
-                "• LETTERS IN STATUS Cumulative",
-                ["Subcontractor", "Consultant", "Owner/PM"],
-                [8, 38, 3],
-                1.5, 1.3, 7.0, 3.5
-            );
+                    // Body rows
+                    pageData.forEach((row, i) => {
+                        const rowNo = pageIdx * presRejectedPageSize + i + 1;
+                        const isEven = i % 2 === 1;
+                        const fillBg = isEven ? "FFF5F5" : "FFFFFF";
+
+                        let bodyRow: any[] = [
+                            { text: String(rowNo), options: { fill: fillBg, align: "center" } },
+                            { text: String(row.documentType || "-"), options: { fill: fillBg, align: "center", bold: true, color: "7A1515" } }
+                        ];
+                        if (showRefCol) bodyRow.push({ text: String(row.docNo || "-"), options: { fill: fillBg, align: "center" } });
+                        if (showTradeCol) bodyRow.push({ text: String(row.trade || "-"), options: { fill: fillBg, align: "center" } });
+                        if (showRemarksCol) bodyRow.push({ text: isArabic ? `متأخر منذ ${row.delayDays} يوم` : `Overdue by ${row.delayDays} days`, options: { fill: fillBg, align: "center", color: "C00000", bold: true } });
+                        tableDataRows.push(bodyRow);
+                    });
+
+                    slide.addTable(tableDataRows, {
+                        x: 0.5, y: 1.45, w: 9.0,
+                        color: "333333", fontSize: 8.5,
+                        border: { type: "solid", pt: 1, color: "CBD5E1" }
+                    });
+                });
+            }
         }
 
-        // 6. Section 7: SITE WORK INSTRUCTION (SI/EI/SWI/MOM)
-        if (isSectionSelected('metrics')) {
-            addInnovoSectionDivider(pres, "7. SITE WORK INSTRUCTION (SI/EI/SWI)");
+        // Pending Items Section
+        if (isSectionSelected('pending')) {
+            const presPendingPageSize = options?.pendingPageSize || 15;
+            const showRefCol = options?.showRefCol !== false;
+            const showTradeCol = options?.showTradeCol !== false;
+            const showRemarksCol = options?.showRemarksCol !== false;
 
-            const slideS1 = pres.addSlide();
-            addInnovoSlideHeaderFooter(pres, slideS1, "➢Other Technical Documents This Period", projectInfo);
-            addInnovoHorizontalBarChart(
-                pres, slideS1,
-                "• OTHER TECHNICAL DOCUMENTS STATUS This Period",
-                ["Site Work", "MOM"],
-                [5, 2],
-                1.5, 1.3, 7.0, 3.5
-            );
+            const presPendingItems = cumulativeWorkingData.filter(d => d.overdue && d.workflowStage === 'Pending' && !d.documentType?.includes('LTR')).sort((a, b) => b.delayDays - a.delayDays);
+            const pendingPages: SubmittalRow[][] = [];
+            for (let i = 0; i < presPendingItems.length; i += presPendingPageSize) {
+                pendingPages.push(presPendingItems.slice(i, i + presPendingPageSize));
+            }
 
-            const slideS2 = pres.addSlide();
-            addInnovoSlideHeaderFooter(pres, slideS2, "➢Other Technical Documents Cumulative", projectInfo);
-            addInnovoHorizontalBarChart(
-                pres, slideS2,
-                "• OTHER TECHNICAL DOCUMENTS STATUS Cumulative",
-                ["Site Work", "MOM"],
-                [15, 8],
-                1.5, 1.3, 7.0, 3.5
-            );
+            const sectionNumPending = baseTypes.length + 3;
+            addDividerSlide(pres, isArabic ? "الوثائق تحت المراجعة المتأخرة" : "Items Requiring Response", `${String(sectionNumPending).padStart(2, '0')} PENDING ITEMS`, projectInfo, logoUrl, options);
+
+            if (pendingPages.length === 0) {
+                let slide: any = pres.addSlide({ masterName: "DOCUSIGHT_MASTER" });
+                addHeaderAndFooter(pres, slide, "PENDING ITEMS", projectInfo, logoUrl, options);
+                slide.addText(isArabic ? "لا توجد معلقات متأخرة" : "No Pending Items", { x: 1.0, y: 2.2, w: 8, h: 0.6, fontSize: 24, bold: true, color: "0A192F", align: "center", rtl: isArabic });
+                slide.addText(isArabic ? "كل المستندات المعلقة مغلقة بالكامل." : "All pending documents are closed.", { x: 1.0, y: 2.9, w: 8, h: 0.4, fontSize: 14, color: "666666", align: "center", rtl: isArabic });
+            } else {
+                pendingPages.forEach((pageData, pageIdx) => {
+                    let slide = pres.addSlide({ masterName: "DOCUSIGHT_MASTER" });
+                    addHeaderAndFooter(pres, slide, "PENDING ITEMS", projectInfo, logoUrl, options);
+                    
+                    // Slide title
+                    slide.addText(isArabic ? `المعلقات المتأخرة (قيد المراجعة) - صفحة ${pageIdx + 1} من ${pendingPages.length}` : `Pending Items (Overdue) / المعلقات المتأخرة  - Page ${pageIdx + 1} of ${pendingPages.length}`, { x: 0.5, y: 1.0, w: 9.0, h: 0.35, fontSize: 13, bold: true, color: "0A192F" });
+                    
+                    // Build Table
+                    let tableDataRows: any[] = [];
+                    // Headers row
+                    let headersRow: any[] = [
+                        { text: isArabic ? "م" : "No.", options: { bold: true, fill: "0A192F", color: "FFFFFF", align: "center" } },
+                        { text: isArabic ? "نوع الوثيقة" : "Type of Documents", options: { bold: true, fill: "0A192F", color: "FFFFFF", align: "center" } }
+                    ];
+                    if (showRefCol) headersRow.push({ text: isArabic ? "الرقم المرجعي" : "Ref / Link", options: { bold: true, fill: "0A192F", color: "FFFFFF", align: "center" } });
+                    if (showTradeCol) headersRow.push({ text: isArabic ? "التخصص" : "Trade", options: { bold: true, fill: "0A192F", color: "FFFFFF", align: "center" } });
+                    if (showRemarksCol) headersRow.push({ text: isArabic ? "ملاحظات الاستشاري" : "Remarks", options: { bold: true, fill: "0A192F", color: "FFFFFF", align: "center" } });
+                    tableDataRows.push(headersRow);
+
+                    // Body rows
+                    pageData.forEach((row, i) => {
+                        const rowNo = pageIdx * presPendingPageSize + i + 1;
+                        const isEven = i % 2 === 1;
+                        const fillBg = isEven ? "F8FAFC" : "FFFFFF";
+
+                        let bodyRow: any[] = [
+                            { text: String(rowNo), options: { fill: fillBg, align: "center" } },
+                            { text: String(row.documentType || "-"), options: { fill: fillBg, align: "center", bold: true, color: "0A192F" } }
+                        ];
+                        if (showRefCol) bodyRow.push({ text: String(row.docNo || "-"), options: { fill: fillBg, align: "center" } });
+                        if (showTradeCol) bodyRow.push({ text: String(row.trade || "-"), options: { fill: fillBg, align: "center" } });
+                        if (showRemarksCol) bodyRow.push({ text: isArabic ? `متأخر منذ ${row.delayDays} يوم` : `Overdue by ${row.delayDays} days`, options: { fill: fillBg, align: "center", color: "C00000", bold: true } });
+                        tableDataRows.push(bodyRow);
+                    });
+
+                    slide.addTable(tableDataRows, {
+                        x: 0.5, y: 1.45, w: 9.0,
+                        color: "333333", fontSize: 8.5,
+                        border: { type: "solid", pt: 1, color: "CBD5E1" }
+                    });
+                });
+            }
         }
 
-        // 7. Section 11: HOLD ITEMS
-        if (isSectionSelected('logs')) {
-            addInnovoSectionDivider(pres, "11. HOLD ITEMS");
-            addInnovoTableSlide(
-                pres, projectInfo,
-                "➢HOLD ITEMS",
-                ["No.", "Type of Documents", "Trade", "Subject", "Hold By.", "Remarks"],
-                [],
-                [0.6, 1.8, 1.5, 2.5, 1.4, 1.2]
-            );
-        }
-
-        // 8. Section 12: REJECTED & PENDING ITEMS
-        if (isSectionSelected('rejected') || isSectionSelected('pending')) {
-            addInnovoSectionDivider(pres, "12. REJECTED & PENDING ITEMS");
-
-            const presRejectedItems = cumulativeWorkingData.filter(d => d.overdue && d.workflowStage === 'Rejected').slice(0, 15);
-            const rejRows = presRejectedItems.map((r, i) => [
-                String(i + 1),
-                r.documentType || "Submittal",
-                r.trade || "STR",
-                r.docNo || "REF-001",
-                `Overdue by ${r.delayDays || 0} days`
-            ]);
-
-            addInnovoTableSlide(
-                pres, projectInfo,
-                "• Rejected Items (Action Required)",
-                ["No.", "Type of Documents", "Trade", "Link / Ref", "Remarks"],
-                rejRows,
-                [0.6, 2.2, 1.8, 2.2, 2.2]
-            );
-
-            const presPendingItems = cumulativeWorkingData.filter(d => d.overdue && d.workflowStage === 'Pending').slice(0, 15);
-            const pendRows = presPendingItems.map((r, i) => [
-                String(i + 1),
-                r.documentType || "Submittal",
-                r.trade || "Arch",
-                r.docNo || "REF-002",
-                `Under Review for ${r.delayDays || 0} days`
-            ]);
-
-            addInnovoTableSlide(
-                pres, projectInfo,
-                "• Pending Items (Overdue)",
-                ["No.", "Type of Documents", "Trade", "Link / Ref", "Remarks"],
-                pendRows,
-                [0.6, 2.2, 1.8, 2.2, 2.2]
-            );
-        }
-
-        // 9. Section 13: FILLING ROOM PHOTOS
-        if (isSectionSelected('logs')) {
-            addInnovoSectionDivider(pres, "13. FILLING ROOM PHOTOS");
-            addInnovoACCNoticeSlide(
-                pres, projectInfo,
-                "➢FILLING ROOM PHOTOS",
-                "All project documents are submitted and archived exclusively through the Autodesk Construction Cloud (ACC) platform. Please note that there is no physical (hard copy) archive maintained for this project."
-            );
-        }
-
-        // 10. Section 14: DOCUMENT CONTROL ISSUE
-        if (isSectionSelected('logs')) {
-            addInnovoSectionDivider(pres, "14. DOCUMENT CONTROL ISSUE");
-            addInnovoACCNoticeSlide(
-                pres, projectInfo,
-                "➢DOCUMENT CONTROL ISSUE",
-                "All Document Control Issues are managed and resolved exclusively through the ACC platform. There is no physical tracking or hard copy archive for these issues."
-            );
-        }
-
-        // 11. Closing Slide
+        // Thank you Slide
         if (isSectionSelected('thanks')) {
-            addInnovoThanksSlide(pres);
+            addDividerSlide(pres, isArabic ? "فريق مراقبة وجودة الوثائق" : "Document Control Team", isArabic ? "شكراً لكم" : "Thanks", projectInfo, logoUrl, options);
         }
 
         // Slice slide ranges if custom range is requested
@@ -393,7 +642,7 @@ export const generatePptxReport = async (
             }
         }
 
-        await pres.writeFile({ fileName: `Corporate_Document_Control_Report_${projectInfo?.projectName || 'Alburouj'}.pptx` });
+        await pres.writeFile({ fileName: `DocuSight-Presentation-${new Date().toISOString().split('T')[0]}.pptx` });
         return;
     }
 
@@ -521,8 +770,8 @@ export const generatePptxReport = async (
         masterTableRows.push([
             { text: String(s.documentType), options: { align: "center", fontFace: "Calibri"} },
             { text: String(s.stats.totalSubmittedSheets), options: { align: "center", fontFace: "Calibri"} },
-            { text: String(s.stats.totalDrawingsRev0 ?? s.stats.totalSheetsRev0 ?? 0), options: { align: "center", fontFace: "Calibri"} },
-            { text: String(s.stats.totalDrawingsFurtherRev ?? s.stats.totalSheetsFurtherRev ?? 0), options: { align: "center", fontFace: "Calibri"} },
+            { text: String(s.stats.totalSheetsRev0), options: { align: "center", fontFace: "Calibri"} },
+            { text: String(s.stats.totalSheetsFurtherRev), options: { align: "center", fontFace: "Calibri"} },
             { text: String(s.stats.approved), options: { align: "center", fontFace: "Calibri"} },
             { text: String(s.stats.rejectedOpen), options: { align: "center", fontFace: "Calibri"} },
             { text: String(s.stats.rejectedClosed), options: { align: "center", fontFace: "Calibri"} },
@@ -614,14 +863,12 @@ export const generatePptxReport = async (
                 });
                 
                 const s = bt === 'NCR' ? calculateNCRStats(dData, false) : (bt === 'SOR' ? calculateSORStats(dData, false) : (bt === 'LTR' ? calculateLTRStats(dData, false) : calculateStats(dData, data)));
-                const rev0Count = s.totalDrawingsRev0 ?? s.totalSheetsRev0 ?? 0;
-                const furtherRevCount = s.totalDrawingsFurtherRev ?? s.totalSheetsFurtherRev ?? 0;
-                const uniqueItems = s.totalUniqueDrawings !== undefined ? s.totalUniqueDrawings : (rev0Count + furtherRevCount);
+                const uniqueItems = s.totalUniqueDrawings !== undefined ? s.totalUniqueDrawings : ((s.totalSheetsRev0 || 0) + (s.totalSheetsFurtherRev || 0));
                 
                 return {
                     discipline: disc,
-                    Rev00: rev0Count,
-                    FurtherRev: furtherRevCount,
+                    Rev00: s.totalSheetsRev0 || 0,
+                    FurtherRev: s.totalSheetsFurtherRev || 0,
                     Approved: s.approved,
                     RejectedOpen: s.rejectedOpen,
                     RejectedClosed: s.rejectedClosed,

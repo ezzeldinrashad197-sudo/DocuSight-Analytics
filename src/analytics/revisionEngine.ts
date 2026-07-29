@@ -1,49 +1,61 @@
 import { AnyRecord } from './models';
+import { compareRevisions, isValidRevision } from './analyticsCore';
+import { getRevisionWeight } from '../utils/enterpriseUpgradeEngine';
 
 /**
- * Calculates which records are the latest revision, and flags Rev0.
- * Should be run on dataset after parsing but before analytics.
+ * Calculates which records are the latest revision, and flags Rev0 based on Latest Resolved Revision.
+ * Ignore blank / invalid revision values when resolving latest revision.
  */
 export const runRevisionEngine = (records: AnyRecord[]): AnyRecord[] => {
     const processed = [...records];
     
-    // 1. Mark Rev0
+    // Reset flags
     processed.forEach(r => {
-        const rev = r.rev.trim();
-        r.isRev0 = (rev === '00' || rev === '0' || rev === '');
-        r.isLatestRev = false; // Reset first
+        r.isRev0 = false;
+        r.isLatestRev = false;
     });
 
     // Group by document number
     const grouped = new Map<string, AnyRecord[]>();
     processed.forEach(r => {
-        const key = r.docNo.trim().toUpperCase();
-        if (!key) return; // Ignore empty document numbers
+        const key = (r.docNo || '').trim().toUpperCase();
+        if (!key) {
+            r.isLatestRev = true;
+            r.isRev0 = isValidRevision(r.rev) && getRevisionWeight(r.rev) === 0;
+            return;
+        }
         if (!grouped.has(key)) grouped.set(key, []);
         grouped.get(key)!.push(r);
     });
 
-    // 2. Determine Latest Rev per group
-    grouped.forEach((history, docNo) => {
-        if (history.length === 1) {
-            history[0].isLatestRev = true;
-            return;
-        }
-
-        // Sort by numeric revision value if possible, fallback to submission date
-        const sorted = history.sort((a, b) => {
-             const revA = parseInt(a.rev.replace(/\D/g, ''), 10) || 0;
-             const revB = parseInt(b.rev.replace(/\D/g, ''), 10) || 0;
-             if (revA !== revB) return revA - revB;
-             
-             // Fallback to date
+    // Determine Latest Rev per group and classify document
+    grouped.forEach((history) => {
+        const validHistory = history.filter(r => isValidRevision(r.rev));
+        const sortedAll = [...history].sort((a, b) => {
              const da = new Date(a.submissionDate).getTime() || 0;
              const db = new Date(b.submissionDate).getTime() || 0;
-             return da - db;
+             if (da !== db) return da - db;
+             return compareRevisions(a.rev, b.rev);
         });
 
-        const latest = sorted[sorted.length - 1];
-        latest.isLatestRev = true;
+        const latestOverall = sortedAll[sortedAll.length - 1];
+
+        let isLatestRev0 = false;
+        if (validHistory.length > 0) {
+            const sortedValid = [...validHistory].sort((a, b) => {
+                 const da = new Date(a.submissionDate).getTime() || 0;
+                 const db = new Date(b.submissionDate).getTime() || 0;
+                 if (da !== db) return da - db;
+                 return compareRevisions(a.rev, b.rev);
+            });
+            const latestValid = sortedValid[sortedValid.length - 1];
+            isLatestRev0 = getRevisionWeight(latestValid.rev) === 0;
+        }
+
+        history.forEach(r => {
+            r.isLatestRev = (r === latestOverall);
+            r.isRev0 = isLatestRev0;
+        });
     });
 
     return processed;

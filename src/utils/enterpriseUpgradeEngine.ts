@@ -25,55 +25,46 @@ export type { StatusMapConfig };
 export { DEFAULT_STATUS_MAP, getProjectStatusMap, getNormalizedStatus, checkIfOverdueDynamically };
 
 // 1. REVISION SEQUENCE WEIGHT ENGINE (Priority 4)
-// Supporting formats: 0, 00, 01, 1, 2; Rev0, Rev 0, Rev.0, Rev 00, Rev 01, Rev.01; A, B, C; AA, AB; P01, P02; C01; IFA, IFC, AS-BUILT
-export const getRevisionWeight = (revStr: string | undefined): number => {
-  if (!revStr) return 0;
-  let val = revStr.trim().toUpperCase();
-  if (!val) return 0;
+// Supporting formats: 0, 1, 2; A, B, C; AA, AB, AC; P01, P02, P03; C1, C2; IFC, AS-BUILT
 
+export const isValidRevision = (revStr: string | number | null | undefined): boolean => {
+  if (revStr === undefined || revStr === null) return false;
+  const val = String(revStr).trim().toUpperCase();
+  if (val === '' || val === 'N/A' || val === '-' || val === 'NONE' || val === 'NULL' || val === 'UNDEFINED' || val === 'BLANK' || val === '(BLANK)') return false;
+  return true;
+};
+
+export const getRevisionWeight = (revStr: string | number | null | undefined): number => {
+  if (!isValidRevision(revStr)) return -1;
+  const val = String(revStr).trim().toUpperCase();
   if (val === '0' || val === '00' || val === '0.0' || val === 'REV 0' || val === 'REV 00' || val === 'REV.0' || val === 'REV.00' || val === 'REV0' || val === 'REV00' || val === 'R0' || val === 'R00' || val === 'R0.0') return 0;
-
-  if (val.includes('AS-BUILT') || val.includes('AS BUILT') || val.includes('ASBUILT')) return 100000;
+  
+  if (val === 'AS-BUILT' || val === 'ASBUILT') return 100000;
   if (val === 'IFC') return 90000;
+  
   if (val.startsWith('IFC')) {
     const num = parseInt(val.replace(/[^\d]/g, ''), 10) || 0;
     return 90000 + num;
   }
-  if (val === 'IFA') return 80000;
-  if (val.startsWith('IFA')) {
-    const num = parseInt(val.replace(/[^\d]/g, ''), 10) || 0;
-    return 80000 + num;
-  }
-
-  // Strip 'REV', 'REV.', 'REV-', 'R-', 'R ' prefixes if followed by number/letters
-  const revStripped = val.replace(/^(REV[.\-\s]?|R[.\-\s])/i, '').trim();
-  if (revStripped && revStripped !== val) {
-    if (revStripped === '0' || revStripped === '00' || revStripped === '0.0') return 0;
-    const num = parseInt(revStripped, 10);
-    if (!isNaN(num) && String(num) === revStripped.replace(/^0+/, '') || revStripped.match(/^0*\d+$/)) {
-      return num;
-    }
-    val = revStripped;
-  }
-
+  
   if (val.startsWith('P')) {
     const num = parseInt(val.substring(1), 10);
     if (num === 0) return 0;
     if (!isNaN(num)) return 1000 + num;
   }
-
+  
   if (val.startsWith('C') && val.length > 1 && !isNaN(parseInt(val.substring(1), 10))) {
     const num = parseInt(val.substring(1), 10);
     if (num === 0) return 0;
     return 2000 + num;
   }
-
+  
   // Numerical fallback
   const numCheck = parseInt(val, 10);
   if (!isNaN(numCheck) && (String(numCheck) === val || String(numCheck).padStart(val.length, '0') === val)) {
     return numCheck;
   }
-
+  
   // Letter sequence (A, B, C ... AA, AB, AC)
   if (/^[A-Z]+$/.test(val)) {
     let score = 0;
@@ -82,14 +73,14 @@ export const getRevisionWeight = (revStr: string | undefined): number => {
     }
     return 5000 + score; // Alphabetic safe offset buffer
   }
-
+  
   // Clean alphanumeric fallback
   const cleanedNum = parseInt(val.replace(/[^\d]/g, ''), 10);
   if (!isNaN(cleanedNum)) {
     if (cleanedNum === 0) return 0;
     return 3000 + cleanedNum;
   }
-
+  
   let alphaSum = 0;
   for (let i = 0; i < Math.min(val.length, 5); i++) {
     alphaSum += val.charCodeAt(i) * Math.pow(10, (5 - i));

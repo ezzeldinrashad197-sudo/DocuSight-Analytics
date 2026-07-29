@@ -1,6 +1,8 @@
 import { SubmittalRow, ProjectSettings } from '../types';
 import { getNormalizedStatus, checkIfOverdueDynamically } from '../utils/statusMatrixEngine';
-import { getRevisionWeight } from '../utils/enterpriseUpgradeEngine';
+import { getRevisionWeight, isValidRevision } from '../utils/enterpriseUpgradeEngine';
+
+export { isValidRevision };
 
 export type NormalizedStatus = 'OPEN' | 'CLOSED' | 'REJECTED' | 'OVERDUE' | 'UNKNOWN';
 
@@ -50,7 +52,12 @@ export const isStatusOverdueCore = (
 /**
  * Revision Engine Integration
  */
-export const compareRevisions = (revA: string | undefined, revB: string | undefined): number => {
+export const compareRevisions = (revA: string | number | undefined | null, revB: string | number | undefined | null): number => {
+  const validA = isValidRevision(revA);
+  const validB = isValidRevision(revB);
+  if (!validA && !validB) return 0;
+  if (!validA) return -1;
+  if (!validB) return 1;
   const weightA = getRevisionWeight(revA);
   const weightB = getRevisionWeight(revB);
   return weightA - weightB;

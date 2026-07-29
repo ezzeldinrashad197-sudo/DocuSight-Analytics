@@ -1,0 +1,24 @@
+{
+  "datasetId": "MAR-REF-V1.0.0",
+  "documentType": "MAR",
+  "description": "Frozen Reference Dataset for Material Approval Requests",
+  "totalRecords": 620,
+  "verifiedBy": "PMC QA Director",
+  "checksum": "sha256-mar-3910ab54",
+  "kpis": {
+    "Total": 620,
+    "Open": 55,
+    "Closed": 565,
+    "Approved": 540,
+    "Rejected": 25
+  },
+  "outputs": {
+    "monthlyReports": { "monthlyTotalSubmissions": 620, "carryForwardPending": 0, "currentMonthPending": 55, "monthlyApproved": 540, "monthlyRejected": 25, "approvalRatePercentage": 87.10 },
+    "cumulativeReports": { "cumulativeTotalSubmissions": 620, "uniqueDocumentBalance": 620, "openPendingBalance": 55, "closedTotal": 565, "approvedTotal": 540, "rejectedTotal": 25, "cumulativeApprovalRatePercentage": 87.10 },
+    "kpiDashboard": { "totalSubmittals": 620, "approvalRate": 87.10, "slaComplianceRatio": 92.5, "overdueRatio": 7.5, "underReviewRatio": 8.87, "averageTurnaroundDays": 10.1 },
+    "revisionAnalysis": { "totalSubmissions": 620, "uniqueDocuments": 620, "rev0Count": 510, "subsequentRevisionsCount": 110, "rev0ApprovalRatePercentage": 88.2, "subsequentRevisionsApprovalRatePercentage": 81.82, "resubmissionIndex": 1.0 },
+    "abdCalculations": { "totalUniqueABD": 0, "approvedABD": 0, "pendingABD": 0, "rejectedABD": 0, "revisionDistribution": { "rev0": 0, "rev1": 0, "rev2Plus": 0 }, "abdApprovalRate": 0.0, "abdSlaCompliance": 0.0 },
+    "auditCenter": { "totalAuditedRecords": 620, "verifiedParityCount": 620, "deltaVarianceCount": 0, "classificationIntegrityScore": 100.0, "layerComplianceRating": 100.0, "statusAmbiguityCount": 0 },
+    "executiveReports": { "portfolioHealthScore": 94.8, "highRiskItemsCount": 8, "overdueItemsCount": 12, "overallApprovalRate": 87.10, "qaSlaTurnaroundAverageDays": 10.1, "executiveStatusBreakdown": { "approved": 540, "pending": 55, "rejected": 25 } }
+  }
+}

@@ -1,6 +1,5 @@
 import { useState, useMemo } from 'react';
 import { SubmittalRow } from '../types';
-import { parseDateTimestamp } from '../analytics/calculationFoundation';
 
 export interface FilterState {
   documentType: string;
@@ -153,33 +152,12 @@ export function useFilters(data: SubmittalRow[], startDate: string, endDate: str
   const filterMonthly = (row: SubmittalRow) => {
      if (!row.submissionDate) return false;
      if (!matchesFilters(row)) return false;
-
-     const subTime = parseDateTimestamp(row.submissionDate);
-     const startTime = parseDateTimestamp(startDate);
-     const endTime = parseDateTimestamp(endDate);
-
-     if (subTime > 0 && startTime > 0 && endTime > 0) {
-       return subTime >= startTime && subTime <= (endTime + 86400000 - 1);
-     }
-     if (subTime > 0 && startTime > 0) {
-       return subTime >= startTime;
-     }
-     if (subTime > 0 && endTime > 0) {
-       return subTime <= (endTime + 86400000 - 1);
-     }
      return row.submissionDate >= startDate && row.submissionDate <= endDate;
   };
 
   const filterCumulative = (row: SubmittalRow) => {
      if (!matchesFilters(row)) return false;
      if (!row.submissionDate) return true;
-
-     const subTime = parseDateTimestamp(row.submissionDate);
-     const endTime = parseDateTimestamp(endDate);
-
-     if (subTime > 0 && endTime > 0) {
-       return subTime <= (endTime + 86400000 - 1);
-     }
      return row.submissionDate <= endDate;
   };
 

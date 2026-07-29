@@ -8,6 +8,15 @@ export interface BusinessRuleDefinition {
   status: 'Approved' | 'Implemented' | 'Validated';
 }
 
+export const ENGINE_RULE_VERSIONS = {
+  revisionEngine: 'v1.0.0',
+  statusEngine: 'v1.0.0',
+  workflowEngine: 'v1.0.0',
+  governanceRules: 'v1.0.0',
+  baselineDate: '2026-07-29',
+  status: 'Production Baseline Candidate'
+};
+
 export const OFFICIAL_BUSINESS_RULES: BusinessRuleDefinition[] = [
   {
     ruleId: 'BR-0001',
@@ -77,6 +86,42 @@ export const OFFICIAL_BUSINESS_RULES: BusinessRuleDefinition[] = [
     ruleName: 'Single Source of Truth',
     description: 'All KPIs must derive exclusively from the official calculation foundation datasets.',
     appliesTo: 'All Engines',
+    priority: 'Critical',
+    version: '1.0',
+    status: 'Validated'
+  },
+  {
+    ruleId: 'INV-01',
+    ruleName: 'Invariant: Revision Sum Parity',
+    description: 'Rev0 + Further Revision + Missing Revision must equal Total Unique Business Documents.',
+    appliesTo: 'Revision Engine & Audit Center',
+    priority: 'Critical',
+    version: '1.0',
+    status: 'Validated'
+  },
+  {
+    ruleId: 'INV-02',
+    ruleName: 'Invariant: Status Sum Parity',
+    description: 'Approved + Pending + Rejected Open + Rejected Closed must equal Total Classified Documents.',
+    appliesTo: 'Status Engine & KPI Engine',
+    priority: 'Critical',
+    version: '1.0',
+    status: 'Validated'
+  },
+  {
+    ruleId: 'INV-03',
+    ruleName: 'Invariant: Workflow Family Isolation',
+    description: 'Each document reference must belong strictly to a single Workflow Family without cross-type bleeding.',
+    appliesTo: 'Workflow Engine',
+    priority: 'Critical',
+    version: '1.0',
+    status: 'Validated'
+  },
+  {
+    ruleId: 'INV-04',
+    ruleName: 'Invariant: Mutually Exclusive Revision Classification',
+    description: 'No document can be classified as both Rev0 and Further Revision simultaneously.',
+    appliesTo: 'Revision Engine',
     priority: 'Critical',
     version: '1.0',
     status: 'Validated'

@@ -1,95 +1,44 @@
 import { SubmittalRow, KPIStats } from "../types";
 import { buildCanonicalDataset, evaluateSubmissionLayer, evaluatePerformanceLayer, getBusinessEntityKey, parseDateTimestamp } from "../analytics/calculationFoundation";
+export { parseDateTimestamp };
 import { compareRevisions } from "../analytics/analyticsCore";
 import { getRevisionWeight } from "./enterpriseUpgradeEngine";
 import { mapDocumentToWorkflow } from "./workflowMapping";
 
-export interface StatusResolutionInfo {
-  rawStatus: string;
-  normalizedCode: string;
-  resolvedStatus: 'Approved' | 'Rejected Open' | 'Rejected Closed' | 'Pending';
-  category: 'APPROVED' | 'REJECTED_OPEN' | 'REJECTED_CLOSED' | 'PENDING';
-  mappingReason: string;
-}
+export const getStatusCodeCategory = (code?: string): 'APPROVED' | 'REJECTED_OPEN' | 'REJECTED_CLOSED' | 'PENDING' | 'UNKNOWN' => {
+  if (!code) return 'PENDING'; // Assume pending if no status
+  const upper = code.toUpperCase().trim();
+  if (!upper) return 'PENDING';
 
-export function resolveStatusInfo(raw?: string): StatusResolutionInfo {
-  const rawStr = (raw || '').trim();
-  if (!rawStr) {
-    return {
-      rawStatus: '(Empty)',
-      normalizedCode: 'P',
-      resolvedStatus: 'Pending',
-      category: 'PENDING',
-      mappingReason: 'Default rule: Empty status resolved as Pending'
-    };
-  }
-
-  const upper = rawStr.toUpperCase().trim();
+  // Normalize by shrinking quotes, colons, dashes, and multiple spaces into a single space
   const normalized = upper.replace(/["':\-\s]+/g, ' ').trim();
 
-  // 1. Explicit Rejected Closed
-  if (normalized.includes('C CLOSED') || (normalized.includes('REJ') && normalized.includes('CLOS')) || (normalized.includes('RET') && normalized.includes('CLOS'))) {
-    return {
-      rawStatus: rawStr,
-      normalizedCode: 'C (CLOSED)',
-      resolvedStatus: 'Rejected Closed',
-      category: 'REJECTED_CLOSED',
-      mappingReason: 'Rule C-CLOSED: Matches Rejected Closed (Code C + Closed)'
-    };
+  // Explicit Rejected Closed mappings
+  if (normalized.includes('C CLOSED') || (normalized.includes('REJ') && normalized.includes('CLOS'))) {
+    return 'REJECTED_CLOSED';
   }
 
-  // 2. Explicit Rejected Open
-  if (normalized === 'C' || normalized === 'CODE C' || normalized.startsWith('C ') || normalized.endsWith(' C') || normalized.includes('C OPEN') || normalized.includes('REJ') || normalized.includes('RET')) {
-    return {
-      rawStatus: rawStr,
-      normalizedCode: 'C',
-      resolvedStatus: 'Rejected Open',
-      category: 'REJECTED_OPEN',
-      mappingReason: 'Rule C: Matches Code C or REJECTED / RETURNED'
-    };
+  // Explicit Rejected Open mappings
+  if (normalized === 'C' || normalized === 'CODE C' || normalized.startsWith('C ') || normalized.endsWith(' C') || normalized.includes('C OPEN') || normalized.includes('REJ')) {
+    return 'REJECTED_OPEN';
   }
 
-  // 3. Approved
-  if (normalized === 'A' || normalized === 'B' || normalized === 'D' ||
-      normalized.startsWith('A ') || normalized.startsWith('B ') || normalized.startsWith('D ') ||
-      normalized.endsWith(' A') || normalized.endsWith(' B') || normalized.endsWith(' D') ||
-      normalized.includes('CODE A') || normalized.includes('CODE B') || normalized.includes('CODE D') ||
-      normalized.includes('APP') || normalized.includes('ACC') || normalized.includes('SUPER') || normalized.includes('CLOS')) {
-    let code = 'A';
-    if (normalized.includes('B')) code = 'B';
-    if (normalized.includes('D')) code = 'D';
-    return {
-      rawStatus: rawStr,
-      normalizedCode: code,
-      resolvedStatus: 'Approved',
-      category: 'APPROVED',
-      mappingReason: `Rule ${code}: Matches Approved (Code A/B/D or Approved/Closed)`
-    };
+  // Approved codes map -> A, B, SUPERSEDED, ACCEPTED, CLOSED, D
+  if (['A', 'B', 'D'].includes(normalized) || 
+      normalized.startsWith('A ') || normalized.startsWith('B ') || normalized.startsWith('D ') || 
+      normalized.includes('CODE A') || normalized.includes('CODE B') || normalized.includes('CODE D') || 
+      normalized.includes('APP') || normalized.includes('ACC') || 
+      normalized.includes('SUPER') || normalized.includes('CLOS')) {
+    return 'APPROVED';
   }
 
-  // 4. Pending
-  if (normalized === 'W' || normalized === 'P' || normalized.startsWith('W ') || normalized.startsWith('P ') || normalized.includes('CODE W') || normalized.includes('PEN') || normalized.includes('WAIT') || normalized.includes('REVIEW') || normalized.includes('SUBMIT') || normalized === 'OPEN') {
-    return {
-      rawStatus: rawStr,
-      normalizedCode: 'P',
-      resolvedStatus: 'Pending',
-      category: 'PENDING',
-      mappingReason: 'Rule P: Matches Pending / Under Review / Waiting'
-    };
+  // Pending map -> W, WAITING, PEND
+  if (['W'].includes(normalized) || normalized.startsWith('W ') || normalized.includes('CODE W') || normalized.includes('PEN') || normalized.includes('WAIT')) {
+    return 'PENDING';
   }
 
-  return {
-    rawStatus: rawStr,
-    normalizedCode: 'P',
-    resolvedStatus: 'Pending',
-    category: 'PENDING',
-    mappingReason: 'Fallback rule: Unrecognized status code resolved as Pending'
-  };
+  return 'UNKNOWN';
 }
-
-export const getStatusCodeCategory = (code?: string): 'APPROVED' | 'REJECTED_OPEN' | 'REJECTED_CLOSED' | 'PENDING' | 'UNKNOWN' => {
-  return resolveStatusInfo(code).category;
-};
 
 export const normalizeData = (rows: SubmittalRow[]): SubmittalRow[] => {
   // Sort rows originally by docNo and then by rev, or just group them to find the highest rev
@@ -571,14 +520,15 @@ export const calculateSORStats = (data: SubmittalRow[], isMonthly: boolean): KPI
 
   sorMap.forEach((history) => {
      history.sort((a, b) => {
-        const revA = Number(a.rev.replace(/[^0-9]/g, '')) || 0;
-        const revB = Number(b.rev.replace(/[^0-9]/g, '')) || 0;
-        if (revA !== revB) return revA - revB;
-        return a.rev.localeCompare(b.rev);
+        const timeA = parseDateTimestamp(a.submissionDate);
+        const timeB = parseDateTimestamp(b.submissionDate);
+        if (timeA !== timeB) return timeA - timeB;
+        return compareRevisions(a.rev, b.rev);
      });
      
      const latest = history[history.length - 1];
-     const isRev0 = getRevisionWeight(String(latest.rev || '').trim()) === 0;
+     const revVal = (latest.rev || '').trim();
+     const isRev0 = getRevisionWeight(revVal) === 0 || compareRevisions(revVal, '0') <= 0;
      if (isRev0) {
        totalSheetsRev0++;
      } else {
@@ -646,14 +596,15 @@ export const calculateNCRStats = (data: SubmittalRow[], isMonthly: boolean): KPI
 
   ncrMap.forEach((history) => {
      history.sort((a, b) => {
-        const revA = Number(a.rev.replace(/[^0-9]/g, '')) || 0;
-        const revB = Number(b.rev.replace(/[^0-9]/g, '')) || 0;
-        if (revA !== revB) return revA - revB;
-        return a.rev.localeCompare(b.rev);
+        const timeA = parseDateTimestamp(a.submissionDate);
+        const timeB = parseDateTimestamp(b.submissionDate);
+        if (timeA !== timeB) return timeA - timeB;
+        return compareRevisions(a.rev, b.rev);
      });
      
      const latest = history[history.length - 1];
-     const isRev0 = getRevisionWeight(String(latest.rev || '').trim()) === 0;
+     const revVal = (latest.rev || '').trim();
+     const isRev0 = getRevisionWeight(revVal) === 0 || compareRevisions(revVal, '0') <= 0;
      if (isRev0) {
        totalSheetsRev0++;
      } else {
@@ -769,36 +720,9 @@ export const calculateStats = (data: SubmittalRow[], fullDataset?: SubmittalRow[
     });
 
     const latest = sorted[sorted.length - 1];
-
-    // Calculate maximum revision weight across group rows and history for this entity
-    let maxGroupWeight = 0;
-    let highestRevStr = '';
-
-    groupRows.forEach(r => {
-      const revVal = (r.rev || (r as any).revision || (r as any).revNo || '').trim();
-      const w = getRevisionWeight(revVal);
-      if (w >= maxGroupWeight) {
-        maxGroupWeight = w;
-        if (revVal) highestRevStr = revVal;
-      }
-    });
-
-    historyRows.forEach(r => {
-      const revVal = (r.rev || (r as any).revision || (r as any).revNo || '').trim();
-      const w = getRevisionWeight(revVal);
-      if (w >= maxGroupWeight) {
-        maxGroupWeight = w;
-        if (revVal) highestRevStr = revVal;
-      }
-    });
-
-    const rev0Before = rev00;
-    const furtherBefore = furtherRevisions;
-
-    // Rule:
-    // Rev0 Item (totalDrawingsRev0): Highest resolved revision is 00 / 0 / R0 / empty (maxGroupWeight === 0)
-    // Further Rev Item (totalDrawingsFurtherRev): Highest resolved revision > 00 (maxGroupWeight > 0)
-    const isFurtherRev = maxGroupWeight > 0;
+    const latestRevVal = (latest.rev || (latest as any).revision || (latest as any).revNo || '').trim();
+    const latestRevWeight = getRevisionWeight(latestRevVal);
+    const isFurtherRev = latestRevWeight > 0 || compareRevisions(latestRevVal, '0') > 0;
 
     if (isFurtherRev) {
       furtherRevisions++;
@@ -806,14 +730,11 @@ export const calculateStats = (data: SubmittalRow[], fullDataset?: SubmittalRow[
       rev00++;
     }
 
-    console.log(`[KPI ENGINE AUDIT] SUB Ref: ${entityKey} | Highest Revision: ${highestRevStr || '00'} | Revision Weight: ${maxGroupWeight} | Classification: ${isFurtherRev ? 'Further Rev' : 'Rev0'}`);
-    console.log(`[KPI ENGINE AUDIT] Rev0 Counter: Before=${rev0Before}, After=${rev00} | Further Counter: Before=${furtherBefore}, After=${furtherRevisions}`);
-
     // Count sheet-level Rev0 vs Further Rev for sheets in this group
-    sorted.forEach((r) => {
+    sorted.forEach((r, idx) => {
       const revVal = (r.rev || (r as any).revision || (r as any).revNo || '').trim().toUpperCase();
       const w = getRevisionWeight(revVal);
-      const isRev0Sheet = w === 0 && revVal !== 'AS-BUILT' && revVal !== 'IFC';
+      const isRev0Sheet = (idx === 0 && w === 0 && revVal !== 'AS-BUILT' && revVal !== 'IFC') || (r.isRev0 && w === 0);
       if (isRev0Sheet) {
         totalSheetsRev0++;
       } else {
@@ -848,10 +769,6 @@ export const calculateStats = (data: SubmittalRow[], fullDataset?: SubmittalRow[
 
   const totalDecided = approved + rejectedOpen + rejectedClosed;
 
-  if (typeof console !== 'undefined') {
-    console.log(`[KPI ENGINE AUDIT] Rows Loaded: ${data ? data.length : 0} | Rows Evaluated: ${rowsToUse.length} | Unique SUB Refs: ${totalUniqueDrawings} | Rev0 Items: ${rev00} | Further Rev Items: ${furtherRevisions} | Approved: ${approved} | Rejected Open: ${rejectedOpen} | Rejected Closed: ${rejectedClosed} | Pending: ${pending} | Overdue: ${overdue}`);
-  }
-
   return {
      totalSubmittedSheets,
      totalSheetsRev0,
@@ -874,230 +791,6 @@ export const calculateStats = (data: SubmittalRow[], fullDataset?: SubmittalRow[
      delayRate: totalSubmittedSheets > 0 ? (overdue / totalSubmittedSheets) * 100 : 0
   };
 };
-
-export interface SubmittalAuditRecord {
-  entityKey: string;
-  subRef: string;
-  logType: string;
-  discipline: string;
-  sheetCount: number;
-  highestRevision: string;
-  revisionWeight: number;
-  classification: 'Rev0 Item' | 'Further Revision Item';
-  rawStatus: string;
-  normalizedCode: string;
-  resolvedStatus: 'Approved' | 'Rejected Open' | 'Rejected Closed' | 'Pending';
-  statusMappingReason: string;
-  allRevisionsFound: string;
-}
-
-export function generateSubmittalAuditRecords(rows: SubmittalRow[]): SubmittalAuditRecord[] {
-  if (!rows || rows.length === 0) return [];
-
-  const entityMap = new Map<string, SubmittalRow[]>();
-  rows.forEach(r => {
-    const key = getBusinessEntityKey(r) || r.id;
-    if (key) {
-      if (!entityMap.has(key)) entityMap.set(key, []);
-      entityMap.get(key)!.push(r);
-    }
-  });
-
-  const auditRecords: SubmittalAuditRecord[] = [];
-
-  entityMap.forEach((groupRows, entityKey) => {
-    const sorted = [...groupRows].sort((a, b) => {
-      const timeA = parseDateTimestamp(a.submissionDate);
-      const timeB = parseDateTimestamp(b.submissionDate);
-      if (timeA !== timeB) return timeA - timeB;
-      const revA = a.rev || (a as any).revision || (a as any).revNo || '';
-      const revB = b.rev || (b as any).revision || (b as any).revNo || '';
-      return compareRevisions(revA, revB);
-    });
-
-    const latest = sorted[sorted.length - 1];
-    let maxWeight = 0;
-    let highestRevStr = '';
-    const revsFoundSet = new Set<string>();
-
-    groupRows.forEach(r => {
-      const revVal = (r.rev || (r as any).revision || (r as any).revNo || '').trim();
-      if (revVal) revsFoundSet.add(revVal);
-      const w = getRevisionWeight(revVal);
-      if (w >= maxWeight) {
-        maxWeight = w;
-        if (revVal) highestRevStr = revVal;
-      }
-    });
-
-    const isFurtherRev = maxWeight > 0;
-    const logType = (latest.logType || latest.documentType || 'GEN').toUpperCase();
-    const discipline = resolveRowDiscipline(latest, logType);
-    const subRef = (latest.docNo || (latest as any).submittalRef || (latest as any).subRef || entityKey.replace(/^ABD:/, '')).trim();
-
-    const rawStatusVal = latest.status || (latest as any).recordStatus || (latest as any).ncrStatus || (latest as any).workflowStage || '';
-    const statusInfo = resolveStatusInfo(rawStatusVal);
-
-    auditRecords.push({
-      entityKey,
-      subRef,
-      logType,
-      discipline,
-      sheetCount: groupRows.length,
-      highestRevision: highestRevStr || '00',
-      revisionWeight: maxWeight,
-      classification: isFurtherRev ? 'Further Revision Item' : 'Rev0 Item',
-      rawStatus: statusInfo.rawStatus,
-      normalizedCode: statusInfo.normalizedCode,
-      resolvedStatus: statusInfo.resolvedStatus,
-      statusMappingReason: statusInfo.mappingReason,
-      allRevisionsFound: Array.from(revsFoundSet).join(', ') || '00'
-    });
-  });
-
-  return auditRecords.sort((a, b) => a.subRef.localeCompare(b.subRef));
-}
-
-export interface AuditValidationResult {
-  totalUnique: number;
-  rev0Count: number;
-  furtherRevCount: number;
-  approvedCount: number;
-  rejectedOpenCount: number;
-  rejectedClosedCount: number;
-  pendingCount: number;
-  weightGtZeroCount: number;
-  weightZeroCount: number;
-  inconsistencyCount: number;
-  status: 'PASS' | 'FAIL';
-  anomalies: string[];
-}
-
-export function validateAuditRecords(records: SubmittalAuditRecord[]): AuditValidationResult {
-  let rev0Count = 0;
-  let furtherRevCount = 0;
-  let approvedCount = 0;
-  let rejectedOpenCount = 0;
-  let rejectedClosedCount = 0;
-  let pendingCount = 0;
-  let weightGtZeroCount = 0;
-  let weightZeroCount = 0;
-  const anomalies: string[] = [];
-
-  records.forEach(r => {
-    if (r.classification === 'Rev0 Item') rev0Count++;
-    if (r.classification === 'Further Revision Item') furtherRevCount++;
-    if (r.revisionWeight > 0) weightGtZeroCount++;
-    if (r.revisionWeight === 0) weightZeroCount++;
-
-    if (r.resolvedStatus === 'Approved') approvedCount++;
-    if (r.resolvedStatus === 'Rejected Open') rejectedOpenCount++;
-    if (r.resolvedStatus === 'Rejected Closed') rejectedClosedCount++;
-    if (r.resolvedStatus === 'Pending') pendingCount++;
-
-    // Revision classification integrity check
-    if (r.revisionWeight > 0 && r.classification === 'Rev0 Item') {
-      anomalies.push(`Revision Anomaly on ${r.subRef}: Weight is ${r.revisionWeight} (${r.highestRevision}) but classified as Rev0 Item.`);
-    }
-    if (r.revisionWeight === 0 && r.classification === 'Further Revision Item') {
-      anomalies.push(`Revision Anomaly on ${r.subRef}: Weight is 0 (${r.highestRevision}) but classified as Further Revision Item.`);
-    }
-
-    // Status resolution integrity check: if rawStatus clearly contains 'A', 'B', 'APPROVED', 'CLOSED' but resolved as Pending
-    const rawUpper = r.rawStatus.toUpperCase();
-    if ((rawUpper.includes('APPROVED') || rawUpper.startsWith('A ') || rawUpper.startsWith('B ') || rawUpper === 'A' || rawUpper === 'B') && r.resolvedStatus === 'Pending') {
-      anomalies.push(`Status Resolution Anomaly on ${r.subRef}: Raw Status is "${r.rawStatus}" but resolved as Pending.`);
-    }
-    if ((rawUpper.includes('REJECTED') || rawUpper.startsWith('C ') || rawUpper === 'C') && r.resolvedStatus === 'Pending') {
-      anomalies.push(`Status Resolution Anomaly on ${r.subRef}: Raw Status is "${r.rawStatus}" but resolved as Pending.`);
-    }
-  });
-
-  const inconsistencyCount = anomalies.length;
-  const status = inconsistencyCount === 0 ? 'PASS' : 'FAIL';
-
-  return {
-    totalUnique: records.length,
-    rev0Count,
-    furtherRevCount,
-    approvedCount,
-    rejectedOpenCount,
-    rejectedClosedCount,
-    pendingCount,
-    weightGtZeroCount,
-    weightZeroCount,
-    inconsistencyCount,
-    status,
-    anomalies
-  };
-}
-
-export function exportSubmittalAuditCSV(rows: SubmittalRow[], filename = 'SUB_Ref_Classification_Audit.csv'): void {
-  const records = generateSubmittalAuditRecords(rows);
-  if (records.length === 0) return;
-
-  const validation = validateAuditRecords(records);
-
-  const summaryRows = [
-    '=== DOCUSIGHT KPI ENGINE - VERIFICATION SUMMARY & AUDIT TRAIL ===',
-    `Validation Status,${validation.status}`,
-    `Inconsistency Count,${validation.inconsistencyCount}`,
-    `Total Unique Submittals,${validation.totalUnique}`,
-    `Rev0 Items Count,${validation.rev0Count}`,
-    `Further Revision Items Count,${validation.furtherRevCount}`,
-    `Submittals with Weight > 0,${validation.weightGtZeroCount}`,
-    `Submittals with Weight == 0,${validation.weightZeroCount}`,
-    `Approved Submittals,${validation.approvedCount}`,
-    `Rejected Open Submittals,${validation.rejectedOpenCount}`,
-    `Rejected Closed Submittals,${validation.rejectedClosedCount}`,
-    `Pending Submittals,${validation.pendingCount}`,
-    `Audit Generated At,${new Date().toISOString()}`,
-    ''
-  ];
-
-  const headers = [
-    'Submittal Ref',
-    'Log Type',
-    'Discipline',
-    'Sheet Count',
-    'Highest Revision',
-    'Revision Weight',
-    'KPI Classification',
-    'Raw Status',
-    'Normalized Code',
-    'Resolved Status (Counted As)',
-    'Status Mapping Rule',
-    'Revisions History'
-  ];
-
-  const csvRows = [
-    ...summaryRows,
-    headers.join(','),
-    ...records.map(r => [
-      `"${r.subRef.replace(/"/g, '""')}"`,
-      `"${r.logType}"`,
-      `"${r.discipline}"`,
-      r.sheetCount,
-      `"${r.highestRevision}"`,
-      r.revisionWeight,
-      `"${r.classification}"`,
-      `"${r.rawStatus.replace(/"/g, '""')}"`,
-      `"${r.normalizedCode}"`,
-      `"${r.resolvedStatus}"`,
-      `"${r.statusMappingReason.replace(/"/g, '""')}"`,
-      `"${r.allRevisionsFound.replace(/"/g, '""')}"`
-    ].join(','))
-  ];
-
-  const blob = new Blob([csvRows.join('\n')], { type: 'text/csv;charset=utf-8;' });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement('a');
-  link.setAttribute('href', url);
-  link.setAttribute('download', filename);
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-}
 
 export function resolveRowDiscipline(d: SubmittalRow, bt: string): string {
   if (bt === 'LTR') {

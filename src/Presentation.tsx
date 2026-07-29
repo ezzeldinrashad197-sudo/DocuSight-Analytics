@@ -267,13 +267,11 @@ export default function Presentation({
       });
 
       const s = bt === 'NCR' ? calculateNCRStats(dData, false) : (bt === 'SOR' ? calculateSORStats(dData, false) : (bt === 'LTR' ? calculateLTRStats(dData, false) : calculateStats(dData, dataset)));
-      const rev0Count = s.totalDrawingsRev0 ?? s.totalSheetsRev0 ?? 0;
-      const furtherRevCount = s.totalDrawingsFurtherRev ?? s.totalSheetsFurtherRev ?? 0;
-      const uniqueItems = s.totalUniqueDrawings !== undefined ? s.totalUniqueDrawings : (rev0Count + furtherRevCount);
+      const uniqueItems = s.totalUniqueDrawings !== undefined ? s.totalUniqueDrawings : ((s.totalSheetsRev0 || 0) + (s.totalSheetsFurtherRev || 0));
       return {
         discipline: disc,
-        Rev00: rev0Count,
-        FurtherRev: furtherRevCount,
+        Rev00: s.totalSheetsRev0 || 0,
+        FurtherRev: s.totalSheetsFurtherRev || 0,
         Approved: s.approved,
         RejectedOpen: s.rejectedOpen,
         RejectedClosed: s.rejectedClosed,

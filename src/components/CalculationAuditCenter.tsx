@@ -7,7 +7,9 @@ import {
   CheckCircle, HelpCircle, Eye, Cpu, Zap, Lock, Sparkles, Code
 } from 'lucide-react';
 import { SubmittalRow, ProjectSettings } from '../types';
-import { calculateStats, calculateNCRStats, calculateSORStats } from '../utils/calculations';
+import { calculateStats, calculateNCRStats, calculateSORStats, parseDateTimestamp } from '../utils/calculations';
+import { compareRevisions, isValidRevision } from '../analytics/analyticsCore';
+import { getRevisionWeight } from '../utils/enterpriseUpgradeEngine';
 
 interface CalculationAuditCenterProps {
   data: SubmittalRow[];
@@ -40,11 +42,13 @@ export const CalculationAuditCenter: React.FC<CalculationAuditCenterProps> = ({
       discipline: string;
       contractor: string;
       history: SubmittalRow[];
+      revHistoryChain: string;
+      invalidRevCount: number;
       latestRow: SubmittalRow;
       latestRevStr: string;
       latestRevNum: number;
       isRev0: boolean;
-      classification: 'Rev0' | 'Further Rev';
+      classification: 'Rev0' | 'Further Rev' | 'Missing Revision';
       ruleApplied: string;
       reason: string;
       approvalCode: string;
@@ -62,6 +66,8 @@ export const CalculationAuditCenter: React.FC<CalculationAuditCenterProps> = ({
           discipline: row.discipline || row.trade || 'General',
           contractor: row.contractor || 'N/A',
           history: [],
+          revHistoryChain: '',
+          invalidRevCount: 0,
           latestRow: row,
           latestRevStr: '0',
           latestRevNum: 0,
@@ -77,47 +83,68 @@ export const CalculationAuditCenter: React.FC<CalculationAuditCenterProps> = ({
     });
 
     return Array.from(map.values()).map(item => {
-      // Sort history chronologically / by revision
+      // Sort history chronologically then by revision
       item.history.sort((a, b) => {
-        const revA = parseInt((a.rev || '').replace(/\D/g, ''), 10) || 0;
-        const revB = parseInt((b.rev || '').replace(/\D/g, ''), 10) || 0;
-        if (revA !== revB) return revA - revB;
-        const da = new Date(a.submissionDate || 0).getTime();
-        const db = new Date(b.submissionDate || 0).getTime();
-        return da - db;
+        const da = parseDateTimestamp(a.submissionDate);
+        const db = parseDateTimestamp(b.submissionDate);
+        if (da !== db) return da - db;
+        return compareRevisions(a.rev, b.rev);
       });
 
-      const latest = item.history[item.history.length - 1];
-      item.latestRow = latest;
-      const revRaw = (latest.rev || '').trim();
-      const revClean = revRaw.replace(/^rev\.?/i, '').trim();
-      const revNum = parseInt(revClean.replace(/\D/g, ''), 10) || 0;
+      const invalidCount = item.history.filter(h => !isValidRevision(h.rev)).length;
+      item.invalidRevCount = invalidCount;
 
-      item.latestRevStr = revRaw || '0';
-      item.latestRevNum = revNum;
-      item.approvalCode = (latest as any).code || latest.status || 'Pending';
-      item.currentStatus = latest.status || 'Under Review';
+      item.revHistoryChain = item.history.map(h => isValidRevision(h.rev) ? String(h.rev).trim() : '(blank)').join(' → ');
 
-      const isRev0 = revClean === '0' || revClean === '00' || revClean === '' || revNum === 0;
-      item.isRev0 = isRev0;
-      item.classification = isRev0 ? 'Rev0' : 'Further Rev';
+      const validHistory = item.history.filter(h => isValidRevision(h.rev));
 
-      if (item.history.length === 1) {
-        if (isRev0) {
-          item.ruleApplied = 'ER-REV-001 (Initial Clean Release)';
-          item.reason = `Single transmittal row recorded in master log. Latest resolved revision is "${revRaw || '0'}". Classified as Rev0 (Initial Submission).`;
+      const latestOverall = item.history[item.history.length - 1];
+      item.latestRow = latestOverall;
+      item.approvalCode = (latestOverall as any).code || latestOverall.status || 'Pending';
+      item.currentStatus = latestOverall.status || 'Under Review';
+
+      if (validHistory.length > 0) {
+        const sortedValid = [...validHistory].sort((a, b) => {
+          const da = parseDateTimestamp(a.submissionDate);
+          const db = parseDateTimestamp(b.submissionDate);
+          if (da !== db) return da - db;
+          return compareRevisions(a.rev, b.rev);
+        });
+        const latestValid = sortedValid[sortedValid.length - 1];
+        const revRaw = (latestValid.rev || '').trim();
+        item.latestRevStr = revRaw;
+        item.latestRevNum = getRevisionWeight(revRaw);
+
+        const isRev0 = getRevisionWeight(revRaw) === 0;
+        item.isRev0 = isRev0;
+        item.classification = isRev0 ? 'Rev0' : 'Further Rev';
+
+        const ignoredNote = invalidCount > 0 ? ` (Ignored ${invalidCount} blank/invalid revision value(s)).` : '';
+
+        if (item.history.length === 1) {
+          if (isRev0) {
+            item.ruleApplied = 'ER-REV-001 (Initial Release)';
+            item.reason = `Single transmittal row recorded. Latest resolved revision is "${revRaw}". Classified as Rev0.${ignoredNote}`;
+          } else {
+            item.ruleApplied = 'ER-REV-002 (Single-Entry Revision >0)';
+            item.reason = `Single transmittal row recorded with pre-incremented revision "${revRaw}". Classified as Further Rev.${ignoredNote}`;
+          }
         } else {
-          item.ruleApplied = 'ER-REV-002 (Single-Entry Revision >0)';
-          item.reason = `Single transmittal row recorded with pre-incremented revision "${revRaw}". Classified as Further Rev.`;
+          if (isRev0) {
+            item.ruleApplied = 'ER-REV-003 (Multi-Transmittal Rev0 Maintenance)';
+            item.reason = `Document has ${item.history.length} transmittal cycles. Latest resolved revision remains "${revRaw}". Classified as Rev0.${ignoredNote}`;
+          } else {
+            item.ruleApplied = 'ER-REV-004 (Multi-Transmittal Revision Increment)';
+            item.reason = `Document re-submitted across ${item.history.length} transmittal cycles. Latest resolved revision is "${revRaw}". Classified as Further Rev.${ignoredNote}`;
+          }
         }
       } else {
-        if (isRev0) {
-          item.ruleApplied = 'ER-REV-003 (Multi-Transmittal Rev0 Maintenance)';
-          item.reason = `Document has ${item.history.length} transmittal cycles. Latest resolved revision remains "${revRaw || '0'}". Classified as Rev0.`;
-        } else {
-          item.ruleApplied = 'ER-REV-004 (Multi-Transmittal Revision Increment)';
-          item.reason = `Document re-submitted across ${item.history.length} transmittal cycles. Latest resolved revision is "${revRaw}". Classified as Further Rev.`;
-        }
+        item.latestRevStr = '(blank)';
+        item.latestRevNum = -1;
+        item.isRev0 = false;
+        item.classification = 'Missing Revision';
+        item.ruleApplied = 'ER-REV-000 (No Valid Revision)';
+        item.reason = `Document has ${item.history.length} row(s) but all revision values are blank/invalid. Excluded from Rev0/Further Rev classification.`;
       }
 
       return item;
@@ -414,11 +441,13 @@ export const CalculationAuditCenter: React.FC<CalculationAuditCenterProps> = ({
                 <thead>
                   <tr className="bg-slate-100/80 text-slate-700 font-bold uppercase tracking-wider text-[10px] border-b border-slate-200">
                     <th className="p-3">Document Number</th>
+                    <th className="p-3">Revision History</th>
+                    <th className="p-3 text-center">Latest Revision</th>
+                    <th className="p-3 text-center">Invalid Revision Values</th>
+                    <th className="p-3 text-center">Classification</th>
                     <th className="p-3">Log / Workflow</th>
                     <th className="p-3">Discipline</th>
                     <th className="p-3 text-center">Transmittals</th>
-                    <th className="p-3 text-center">Latest Resolved Rev</th>
-                    <th className="p-3 text-center">Classification</th>
                     <th className="p-3">Rule Applied</th>
                     <th className="p-3 text-right font-mono">Timeline & Trace</th>
                   </tr>
@@ -437,6 +466,28 @@ export const CalculationAuditCenter: React.FC<CalculationAuditCenterProps> = ({
                       <tr key={idx} className="hover:bg-slate-50/80 transition-colors">
                         <td className="p-3 font-mono font-bold text-slate-900">{item.docNo}</td>
                         <td className="p-3">
+                          <span className="px-2 py-0.5 rounded bg-slate-100 text-slate-700 font-semibold font-mono text-[11px]">
+                            {item.revHistoryChain || item.latestRevStr}
+                          </span>
+                        </td>
+                        <td className="p-3 text-center font-mono font-bold text-slate-900">
+                          {item.latestRevStr}
+                        </td>
+                        <td className="p-3 text-center font-mono">
+                          <span className={`px-2 py-0.5 rounded text-[11px] font-bold ${item.invalidRevCount > 0 ? 'bg-amber-100 text-amber-800 border border-amber-300' : 'bg-slate-100 text-slate-500'}`}>
+                            {item.invalidRevCount}
+                          </span>
+                        </td>
+                        <td className="p-3 text-center">
+                          <span className={`px-2.5 py-1 rounded-full font-bold text-[10px] border ${
+                            item.classification === 'Rev0' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
+                            item.classification === 'Further Rev' ? 'bg-purple-50 text-purple-700 border-purple-200' :
+                            'bg-red-50 text-red-700 border-red-200'
+                          }`}>
+                            {item.classification}
+                          </span>
+                        </td>
+                        <td className="p-3">
                           <span className="px-2 py-0.5 rounded bg-slate-100 text-slate-700 font-semibold text-[11px]">
                             {item.logType}
                           </span>
@@ -444,14 +495,6 @@ export const CalculationAuditCenter: React.FC<CalculationAuditCenterProps> = ({
                         <td className="p-3 text-slate-600 font-medium">{item.discipline}</td>
                         <td className="p-3 text-center font-mono font-bold text-slate-700">
                           {item.history.length}
-                        </td>
-                        <td className="p-3 text-center font-mono font-bold text-slate-900">
-                          {item.latestRevStr || '0'}
-                        </td>
-                        <td className="p-3 text-center">
-                          <span className={`px-2.5 py-1 rounded-full font-bold text-[10px] border ${item.isRev0 ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-purple-50 text-purple-700 border-purple-200'}`}>
-                            {item.classification}
-                          </span>
                         </td>
                         <td className="p-3 font-mono text-[10px] text-slate-600">
                           {item.ruleApplied}

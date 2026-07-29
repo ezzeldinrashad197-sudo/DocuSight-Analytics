@@ -4,6 +4,9 @@ import { OFFICIAL_BUSINESS_RULES, BusinessRuleDefinition } from './businessRuleR
 import { OFFICIAL_FORMULAS, FormulaDefinition } from './formulaRegistry';
 import { buildCanonicalDataset, evaluatePerformanceLayer, evaluateSubmissionLayer } from '../calculationFoundation';
 import { calculateStats, getStatusCodeCategory } from '../../utils/calculations';
+import { runInvariantGuards, runGoldenRegressionSuite, ENGINE_VERSIONS } from './goldenRegressionSuite';
+
+export { runInvariantGuards, runGoldenRegressionSuite, ENGINE_VERSIONS };
 
 export interface ValidationResult {
   isValid: boolean;
@@ -217,6 +220,17 @@ export function validateAllBusinessRules(rows: SubmittalRow[]): RuleVerification
     name: 'Single Source of Truth',
     passed: canonical.length > 0,
     details: `Canonical orchestration layer built ${canonical.length} Single Source of Truth instances from raw inputs.`
+  });
+
+  // BR-0009 .. BR-0012: Invariant Guards Assertions
+  const invariants = runInvariantGuards(rows);
+  invariants.forEach(inv => {
+    results.push({
+      ruleId: inv.invariantId,
+      name: `Invariant Guard: ${inv.name}`,
+      passed: inv.passed,
+      details: inv.details
+    });
   });
 
   return results;

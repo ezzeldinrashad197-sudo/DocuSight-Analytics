@@ -69,99 +69,46 @@ export const parseExcelFile = (file: File): Promise<SubmittalRow[]> => {
           const detectedType = classification.detectedFamily;
 
           const getColIdx = (aliases: string[], exclusions: string[] = []) => {
-            // Pass 1: Exact match priority
-            const exactIdx = headers.findIndex((h) => {
-              if (!h || typeof h !== "string") return false;
-              const lower = h.toLowerCase().trim();
-              if (exclusions.some((exc) => lower.includes(exc))) return false;
-              return aliases.some((alias) => lower === alias);
-            });
-            if (exactIdx !== -1) return exactIdx;
-
-            // Pass 2: Word boundary or distinct token match
             return headers.findIndex((h) => {
               if (!h || typeof h !== "string") return false;
               const lower = h.toLowerCase().trim();
               if (exclusions.some((exc) => lower.includes(exc))) return false;
-              return aliases.some((alias) => {
-                if (lower === alias) return true;
-                if (alias.length <= 4) {
-                  const escaped = alias.replace('.', '\\.');
-                  const regex = new RegExp(`(?:^|[^a-z0-9])${escaped}(?:$|[^a-z0-9])`, 'i');
-                  return regex.test(lower);
-                }
-                return lower.includes(alias);
-              });
+              return aliases.some(
+                (alias) => lower === alias || lower.includes(alias),
+              );
             });
           };
 
           const colDocNo = getColIdx([
-            "submittal ref.",
-            "submittal ref",
-            "sub ref.",
-            "sub ref",
-            "document no.",
             "document no",
-            "doc no.",
             "doc no",
-            "document number",
-            "submittal reference",
-            "letter ref.",
+            "submittal ref",
+            "sub ref",
+            "ref",
             "letter ref",
-            "ref.",
-            "doc. no.",
-            "doc. no"
-          ], ["drawing", "sheet", "cross", "client", "our", "your", "site", "area", "zone", "file"]);
-
-          const colRev = getColIdx([
-            "rev",
-            "revision",
-            "rev.",
-            "rev no",
-            "rev. no",
-            "rev no.",
-            "revision no",
-            "revision no.",
-            "revision number"
-          ], ["review", "received", "date", "time", "duration", "status", "by", "comment", "action", "corrective", "last"]);
-
-          const colSheet = getColIdx([
-            "sheet no",
-            "sheet no.",
-            "sheet number",
-            "sheet",
-            "dwg no",
-            "dwg no.",
-            "drawing no",
-            "drawing no.",
-            "drawing number",
-            "drawing"
-          ], ["submittal", "document", "letter", "ref"]);
-
+            "letter ref.",
+          ]);
+          const colRev = getColIdx(["rev", "revision"]);
+          const colSheet = getColIdx(["sheet no", "sheet"]);
           const colDiscipline = getColIdx([
             "discipline",
             "trade",
             "department",
-            "related discipline"
-          ], ["system", "code"]);
-
+            "related discipline",
+          ]);
           const colContractor = getColIdx(["contractor"]);
           const colConsultant = getColIdx(["consultant"]);
-
           const colSubmissionDate = getColIdx(
-            ["submission date", "date sent", "sent date", "issue date", "date issued", "date of receipt", "received date"],
-            ["corrective", "response", "action", "received corrective", "sent corrective", "consultant"]
+            ["submission date", "date sent", "sent date", "received date", "issue date", "date issued", "date of receipt"],
+            ["corrective", "response", "action", "received corrective", "sent corrective"]
           );
-
           const colDueDate = getColIdx(["due date"]);
-
           const colResponseDate = getColIdx(
-            ["received corrective", "received date corrective", "response date", "received date corrective action", "consultant response", "response date corrective action", "consultant response date"],
+            ["received corrective", "received date corrective", "response date", "received date corrective action", "consultant response", "response date corrective action"],
             ["submission", "sent corrective", "sent date corrective"]
           );
-
-          const colCode = getColIdx(["approval code", "code", "consultant code", "action code"], ["zip", "postal", "area", "type", "discipline"]);
-          const colStatus = getColIdx(["status", "consultant status", "current status", "approval status"], ["log", "file", "rev", "date"]);
+          const colCode = getColIdx(["code", "approval code"]);
+          const colStatus = getColIdx(["status"]);
           const colRemarks = getColIdx(["remarks", "comment"]);
           const colArea = getColIdx(["area", "zone"]);
           const colSystem = getColIdx(["system", "trade"]);

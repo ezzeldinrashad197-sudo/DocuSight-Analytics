@@ -1,14 +1,10 @@
 import express from "express";
 import path from "path";
-import crypto from "crypto";
 import { GoogleGenAI } from "@google/genai";
 import helmet from "helmet";
 import cors from "cors";
 import rateLimit from "express-rate-limit";
 import NodeCache from "node-cache";
-import { runSecurityRegressionSuite } from './src/utils/securityRegressionSuite';
-import { runLoadTestingSuite } from './src/utils/loadTestingSuite';
-import { runExportTelemetrySuite } from './src/analytics/exportTelemetryTestSuite';
 
 // Initialize cache
 const cache = new NodeCache({ stdTTL: 600 }); // 10 minutes cache
@@ -295,6 +291,7 @@ async function startServer() {
   // --- AUTOMATED REGRESSION & COMPLIANCE ENDPOINT ---
   app.get("/api/security-regression-tests", async (req, res) => {
     try {
+      const { runSecurityRegressionSuite } = await import('./src/utils/securityRegressionSuite');
       const testReport = await runSecurityRegressionSuite();
       
       logSecurityEvent('SECURITY_REGRESSION_RUN', 'INFO', `Security regression test suite finished execution. Passed: ${testReport.passedTests}/${testReport.totalTests}`, { version: testReport.version, commit: testReport.commitHash });
@@ -309,6 +306,7 @@ async function startServer() {
   // --- PRODUCTION LOAD & WORKLOAD CONCURRENCY TESTER ---
   app.get("/api/load-stress-tests", async (req, res) => {
     try {
+      const { runLoadTestingSuite } = await import('./src/utils/loadTestingSuite');
       const loadReport = await runLoadTestingSuite();
       
       logSecurityEvent('LOAD_TESTS_RUN', 'INFO', `Production load and simulation suites executed. Overall heap: ${loadReport.heapAllocationsMegaBytes} MB`, { simulationsCount: loadReport.totalSimulationsExecuted });
@@ -358,6 +356,7 @@ async function startServer() {
   // --- EXPORT TELEMETRY UNIT AND STRESS TEST ROUTE (Issue #6) ---
   app.get("/api/export-performance-tests", async (req, res) => {
     try {
+      const { runExportTelemetrySuite } = await import('./src/analytics/exportTelemetryTestSuite');
       const testCases = await runExportTelemetrySuite();
       res.json({
         timestamp: new Date().toISOString(),

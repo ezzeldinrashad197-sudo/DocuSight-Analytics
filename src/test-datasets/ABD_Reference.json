@@ -1,0 +1,24 @@
+{
+  "datasetId": "ABD-REF-V1.0.0",
+  "documentType": "ABD",
+  "description": "Frozen Reference Dataset for As-Built Drawings",
+  "totalRecords": 450,
+  "verifiedBy": "PMC QA Director",
+  "checksum": "sha256-abd-4029df81",
+  "kpis": {
+    "Total": 450,
+    "Open": 35,
+    "Closed": 415,
+    "Approved": 400,
+    "Rejected": 15
+  },
+  "outputs": {
+    "monthlyReports": { "monthlyTotalSubmissions": 450, "carryForwardPending": 0, "currentMonthPending": 35, "monthlyApproved": 400, "monthlyRejected": 15, "approvalRatePercentage": 88.89 },
+    "cumulativeReports": { "cumulativeTotalSubmissions": 450, "uniqueDocumentBalance": 450, "openPendingBalance": 35, "closedTotal": 415, "approvedTotal": 400, "rejectedTotal": 15, "cumulativeApprovalRatePercentage": 88.89 },
+    "kpiDashboard": { "totalSubmittals": 450, "approvalRate": 88.89, "slaComplianceRatio": 97.1, "overdueRatio": 2.9, "underReviewRatio": 7.78, "averageTurnaroundDays": 6.2 },
+    "revisionAnalysis": { "totalSubmissions": 450, "uniqueDocuments": 450, "rev0Count": 380, "subsequentRevisionsCount": 70, "rev0ApprovalRatePercentage": 90.0, "subsequentRevisionsApprovalRatePercentage": 82.86, "resubmissionIndex": 1.0 },
+    "abdCalculations": { "totalUniqueABD": 450, "approvedABD": 400, "pendingABD": 35, "rejectedABD": 15, "revisionDistribution": { "rev0": 380, "rev1": 50, "rev2Plus": 20 }, "abdApprovalRate": 88.89, "abdSlaCompliance": 97.1 },
+    "auditCenter": { "totalAuditedRecords": 450, "verifiedParityCount": 450, "deltaVarianceCount": 0, "classificationIntegrityScore": 100.0, "layerComplianceRating": 100.0, "statusAmbiguityCount": 0 },
+    "executiveReports": { "portfolioHealthScore": 98.2, "highRiskItemsCount": 3, "overdueItemsCount": 5, "overallApprovalRate": 88.89, "qaSlaTurnaroundAverageDays": 6.2, "executiveStatusBreakdown": { "approved": 400, "pending": 35, "rejected": 15 } }
+  }
+}

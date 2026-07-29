@@ -1,7 +1,7 @@
 import { SubmittalRow } from '../types';
-import { compareRevisions, getNormalizedStatusCore } from './analyticsCore';
+import { compareRevisions, getNormalizedStatusCore, isValidRevision } from './analyticsCore';
 import { getRevisionWeight } from '../utils/enterpriseUpgradeEngine';
-import { resolveStatusInfo } from '../utils/calculations';
+import { getStatusCodeCategory } from '../utils/calculations';
 
 export interface CanonicalRecord {
   id: string;
@@ -36,45 +36,11 @@ export interface PerformanceLayerResult {
 }
 
 /**
- * Helper to safely parse any date string or number into timestamp for comparison.
+ * Helper to safely parse any date string into timestamp for comparison.
  */
-export function parseDateTimestamp(dateStr?: string | number): number {
+export function parseDateTimestamp(dateStr?: string): number {
   if (!dateStr) return 0;
-  if (typeof dateStr === 'number') {
-    if (dateStr > 25000 && dateStr < 60000) {
-      return Math.round((dateStr - 25569) * 86400 * 1000);
-    }
-    return dateStr;
-  }
-  const str = String(dateStr).trim();
-  if (!str) return 0;
-
-  if (/^\d{5}(\.\d+)?$/.test(str)) {
-    const num = parseFloat(str);
-    return Math.round((num - 25569) * 86400 * 1000);
-  }
-
-  // 1. ISO format: YYYY-MM-DD or YYYY/MM/DD
-  const isoMatch = str.match(/^(\d{4})[\-\/](\d{1,2})[\-\/](\d{1,2})/);
-  if (isoMatch) {
-    const y = parseInt(isoMatch[1], 10);
-    const m = parseInt(isoMatch[2], 10) - 1;
-    const d = parseInt(isoMatch[3], 10);
-    return new Date(Date.UTC(y, m, d)).getTime();
-  }
-
-  // 2. DMY format: DD/MM/YYYY or DD-MM-YYYY
-  const dmyMatch = str.match(/^(\d{1,2})[\-\/](\d{1,2})[\-\/](\d{4})/);
-  if (dmyMatch) {
-    const d = parseInt(dmyMatch[1], 10);
-    const m = parseInt(dmyMatch[2], 10) - 1;
-    const y = parseInt(dmyMatch[3], 10);
-    if (d <= 31 && m >= 0 && m < 12) {
-      return new Date(Date.UTC(y, m, d)).getTime();
-    }
-  }
-
-  const parsed = new Date(str).getTime();
+  const parsed = new Date(dateStr).getTime();
   return isNaN(parsed) ? 0 : parsed;
 }
 
@@ -97,18 +63,17 @@ export function getBusinessEntityKey(row: SubmittalRow): string {
     return '';
   };
 
-  let commonRef = extractRef('submittalRef', 'subRef', 'subNo', 'docNo', 'docNumber', 'documentNo', 'documentNumber', 'drawingNo', 'drawingNumber', 'sheetNo', 'ref', 'id');
-  if (!commonRef) {
-    commonRef = row.id || 'ITEM';
-  }
+  const commonRef = extractRef('docNo', 'docNumber', 'documentNo', 'documentNumber', 'drawingNo', 'drawingNumber', 'submittalRef', 'subNo', 'subRef', 'sheetNo', 'ref', 'id');
   const upperDocNo = extractRef('docNo', 'docNumber', 'documentNo').toUpperCase();
   const upperLog = (row.logType || '').toUpperCase();
+  const upperSrc = ((row as any).sourceFile || '').toUpperCase();
 
   // Explicit ABD detection to ensure 100% key symmetry across raw and normalized datasets
   const isABD = family === 'ABD' ||
                 type.startsWith('ABD') || type.includes('AS-BUILT') || type.includes('AS BUILT') || type.includes('ASBUILT') ||
                 upperDocNo.startsWith('ABD-') || upperDocNo.includes('AS-BUILT') || upperDocNo.includes('AS BUILT') || upperDocNo.includes('ASBUILT') ||
-                upperLog.includes('ABD') || upperLog === 'AS-BUILT' || upperLog === 'AS BUILT' || upperLog === 'ASBUILT';
+                upperLog.includes('ABD') || upperLog.includes('AS-BUILT') || upperLog.includes('AS BUILT') || upperLog.includes('ASBUILT') ||
+                upperSrc.includes('ABD') || upperSrc.includes('AS-BUILT') || upperSrc.includes('AS BUILT') || upperSrc.includes('ASBUILT');
 
   if (isABD) {
     return `ABD:${commonRef.toUpperCase()}`;
@@ -213,8 +178,7 @@ export function buildCanonicalDataset(rows: SubmittalRow[], fullCumulativeRows?:
 
   revisionMap.forEach((groupInfo) => {
     groupInfo.all.forEach((row, index) => {
-      const revStr = (row.rev || '').trim().toUpperCase();
-      const isRowRev0 = revStr === '0' || revStr === '00' || revStr === '' || compareRevisions(revStr, '0') <= 0;
+      const isRowRev0 = isValidRevision(row.rev) && getRevisionWeight(row.rev) === 0;
       isRev0Map.set(row.id, isRowRev0);
       if (index === 0) {
         firstSubDateMap.set(row.id, row.submissionDate || '');
@@ -240,15 +204,18 @@ export function buildCanonicalDataset(rows: SubmittalRow[], fullCumulativeRows?:
     const isLatest = isLatestMap.get(row.id) ?? true;
 
     const registerType = (row.documentType || row.logType || 'DOC').toUpperCase().trim();
-    const rawStatus = row.status || (row as any).recordStatus || (row as any).ncrStatus || '';
     let resolvedStatus = getResolvedStatusCategory(row);
     const revStr = (row.rev || '').trim();
 
     // Document Control workflow rule:
-    // Latest submission with no explicit status or explicitly pending status must be PENDING.
+    // Latest submission with pending status must be PENDING,
+    // overriding any historical consultant decisions from earlier revisions.
     if (isLatest) {
-      const statusInfo = resolveStatusInfo(rawStatus);
-      if (statusInfo.category === 'PENDING') {
+      const rawStatus = row.status || row.recordStatus || (row as any).ncrStatus || (row as any).sorStatus || '';
+      const cat = getStatusCodeCategory(rawStatus);
+      const statusStr = rawStatus.toUpperCase().trim();
+      const isPendingStatus = !statusStr || statusStr === 'W' || statusStr.includes('PEND') || statusStr.includes('WAIT') || statusStr.includes('AWAI') || cat === 'PENDING';
+      if (isPendingStatus) {
         resolvedStatus = 'PENDING';
       }
     }
@@ -276,8 +243,28 @@ export function buildCanonicalDataset(rows: SubmittalRow[], fullCumulativeRows?:
 }
 
 function getResolvedStatusCategory(row: SubmittalRow): 'APPROVED' | 'REJECTED_OPEN' | 'REJECTED_CLOSED' | 'PENDING' {
-  const rawStatus = row.status || (row as any).recordStatus || (row as any).ncrStatus || '';
-  return resolveStatusInfo(rawStatus).category;
+  const rawStatus = row.status || row.recordStatus || (row as any).ncrStatus || (row as any).sorStatus || '';
+  const cat = getStatusCodeCategory(rawStatus);
+  if (cat === 'APPROVED') return 'APPROVED';
+  if (cat === 'REJECTED_OPEN') return 'REJECTED_OPEN';
+  if (cat === 'REJECTED_CLOSED') return 'REJECTED_CLOSED';
+
+  const statusStr = rawStatus.toUpperCase().trim();
+  const workflow = (row.workflowStage || '').toUpperCase().trim();
+  
+  if (['APPROVED', 'ACCEPTED', 'CODE A', 'CODE B', 'A', 'B', 'CLOSED'].includes(statusStr) || workflow.includes('APPROV') || workflow.includes('CLOSED')) {
+    if (statusStr.includes('CLOSED') || workflow.includes('CLOSED') || row.recordStatus?.toUpperCase() === 'CLOSED') {
+      return 'APPROVED';
+    }
+    return 'APPROVED';
+  }
+  if (['REJECTED', 'CODE C', 'CODE D', 'C', 'D', 'REJECT'].includes(statusStr) || workflow.includes('REJECT')) {
+    if (statusStr.includes('CLOSE') || row.recordStatus?.toUpperCase() === 'CLOSED') {
+      return 'REJECTED_CLOSED';
+    }
+    return 'REJECTED_OPEN';
+  }
+  return 'PENDING';
 }
 
 /**
@@ -291,7 +278,8 @@ export interface EngineeringItemClassification {
   submissionRef: string;
   firstSubmissionDate: string;
   firstRevision: string;
-  classification: 'Rev00' | 'Further Revision';
+  invalidRevCount: number;
+  classification: 'Rev00' | 'Further Revision' | 'Missing Revision';
   ruleApplied: string;
   explanation: string;
   latestRevision: string;
@@ -304,6 +292,9 @@ export function evaluateEngineeringItemClassification(rows: SubmittalRow[]): Eng
   const results: EngineeringItemClassification[] = [];
 
   revisionMap.forEach((groupInfo, key) => {
+    const invalidRevCount = groupInfo.all.filter(r => !isValidRevision(r.rev)).length;
+    const validRows = groupInfo.all.filter(r => isValidRevision(r.rev));
+
     const sorted = [...groupInfo.all].sort((a, b) => {
       const timeA = parseDateTimestamp(a.submissionDate);
       const timeB = parseDateTimestamp(b.submissionDate);
@@ -314,43 +305,55 @@ export function evaluateEngineeringItemClassification(rows: SubmittalRow[]): Eng
     if (sorted.length === 0) return;
 
     const first = sorted[0];
-    const latest = groupInfo.latest || sorted[sorted.length - 1];
-    
-    let maxWeight = 0;
-    let highestRevStr = '';
-    sorted.forEach(r => {
-      const revStr = (r.rev || '').trim();
-      const w = getRevisionWeight(revStr);
-      if (w >= maxWeight) {
-        maxWeight = w;
-        if (revStr) highestRevStr = revStr;
+    const latestOverall = groupInfo.latest || sorted[sorted.length - 1];
+    const drawingNo = (latestOverall as any).drawingNo || latestOverall.docNo || '';
+    const trade = latestOverall.trade || 'General';
+
+    let classification: 'Rev00' | 'Further Revision' | 'Missing Revision' = 'Missing Revision';
+    let latestRevStr = '(blank)';
+    let ruleApplied = '';
+    let explanation = '';
+
+    if (validRows.length > 0) {
+      const sortedValid = [...validRows].sort((a, b) => {
+        const timeA = parseDateTimestamp(a.submissionDate);
+        const timeB = parseDateTimestamp(b.submissionDate);
+        if (timeA !== timeB) return timeA - timeB;
+        return compareRevisions(a.rev, b.rev);
+      });
+      const latestValid = sortedValid[sortedValid.length - 1];
+      latestRevStr = (latestValid.rev || '').trim();
+      const isRev0 = getRevisionWeight(latestRevStr) === 0;
+
+      if (isRev0) {
+        classification = 'Rev00';
+        ruleApplied = 'Rev00 Baseline Rule: Resolved latest valid revision is 0, 00, or Rev0.';
+      } else {
+        classification = 'Further Revision';
+        ruleApplied = 'Further Revision Rule: Resolved latest valid revision is greater than 0 (e.g., 01, Rev1).';
       }
-    });
-
-    const isRev0 = maxWeight === 0;
-    const drawingNo = (latest as any).drawingNo || latest.docNo || '';
-    const trade = latest.trade || 'General';
-
-    const classification: 'Rev00' | 'Further Revision' = isRev0 ? 'Rev00' : 'Further Revision';
-    const ruleApplied = isRev0 
-      ? 'Rev00 Baseline Rule: Resolved latest revision produced by Revision Resolution Engine is 0, 00, or empty.' 
-      : 'Further Revision Rule: Resolved latest revision produced by Revision Resolution Engine is greater than 0 (e.g., 01, 02), indicating a further revision.';
-    const explanation = `BusinessEntityKey '${key}' has ${sorted.length} total submission(s). Latest resolved revision: '${latest.rev || '0'}' via Revision Resolution Engine.`;
+      explanation = `BusinessEntityKey '${key}' has ${sorted.length} total submission(s). Latest resolved valid revision: '${latestRevStr}'.${invalidRevCount > 0 ? ` (Ignored ${invalidRevCount} blank/invalid revision value(s)).` : ''}`;
+    } else {
+      classification = 'Missing Revision';
+      ruleApplied = 'Missing Revision Rule: Document has no valid revision values across all history rows.';
+      explanation = `BusinessEntityKey '${key}' has ${sorted.length} total submission(s), but all revision values are blank or invalid. Excluded from Rev00/Further Revision.`;
+    }
 
     results.push({
       businessEntityKey: key,
       trade,
       drawingNo,
-      sheetNo: latest.sheetNo || '',
-      submissionRef: latest.docNo || latest.sheetNo || latest.id,
+      sheetNo: latestOverall.sheetNo || '',
+      submissionRef: latestOverall.docNo || latestOverall.sheetNo || latestOverall.id,
       firstSubmissionDate: first.submissionDate || 'N/A',
-      firstRevision: first.rev || '0',
+      firstRevision: first.rev || 'N/A',
+      invalidRevCount,
       classification,
       ruleApplied,
       explanation,
-      latestRevision: latest.rev || '0',
-      latestStatus: latest.status || 'Pending',
-      includeInPerformance: true,
+      latestRevision: latestRevStr,
+      latestStatus: latestOverall.status || 'Pending',
+      includeInPerformance: classification !== 'Missing Revision',
     });
   });
 
@@ -414,10 +417,11 @@ export function evaluatePerformanceLayer(canonicalRecords: CanonicalRecord[]): P
 
     latestWorkflowRows.forEach(row => {
       let resolved = row.resolvedStatus;
-      const statusStr = (row.status || '').toUpperCase().trim();
-      const isPendingStatus = !statusStr || statusStr === 'W' || statusStr.includes('PEND') || statusStr.includes('WAIT') || statusStr.includes('AWAI');
-      const hasResponseDate = Boolean(row.responseDate && row.responseDate.trim() !== '');
-      if (isPendingStatus || !hasResponseDate) {
+      const rawStatus = row.status || (row.originalRow ? row.originalRow.recordStatus || (row.originalRow as any).ncrStatus || (row.originalRow as any).sorStatus : '') || '';
+      const cat = getStatusCodeCategory(rawStatus);
+      const statusStr = rawStatus.toUpperCase().trim();
+      const isPendingStatus = !statusStr || statusStr === 'W' || statusStr.includes('PEND') || statusStr.includes('WAIT') || statusStr.includes('AWAI') || cat === 'PENDING';
+      if (isPendingStatus) {
         resolved = 'PENDING';
       }
 

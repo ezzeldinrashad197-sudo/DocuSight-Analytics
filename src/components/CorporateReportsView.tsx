@@ -9,15 +9,7 @@ import {
   FileSpreadsheet, 
   Presentation as PresentationIcon, 
   Lock, 
-  Layers,
-  Search,
-  Table,
-  Filter,
-  CheckCircle2,
-  AlertCircle,
-  X,
-  FileText,
-  Database
+  Layers
 } from 'lucide-react';
 import { 
   BarChart, 
@@ -31,16 +23,11 @@ import {
   Cell 
 } from 'recharts';
 import { SubmittalRow, ProjectSettings } from '../types';
-import { generatePptxReport } from '../analytics/exportEngine';
 import { 
   calculateStats, 
   calculateNCRStats, 
   calculateSORStats, 
-  resolveRowDiscipline,
-  generateSubmittalAuditRecords,
-  exportSubmittalAuditCSV,
-  validateAuditRecords,
-  SubmittalAuditRecord
+  resolveRowDiscipline 
 } from '../utils/calculations';
 import * as XLSX from 'xlsx';
 import html2canvas from 'html2canvas';
@@ -131,43 +118,6 @@ export const CorporateReportsView: React.FC<CorporateReportsViewProps> = ({
   const monthlyData = useMemo(() => data.filter(filterMonthly), [data, filterMonthly]);
   const cumulativeData = useMemo(() => data.filter(filterCumulative), [data, filterCumulative]);
 
-  // Audit Modal State
-  const [showAuditModal, setShowAuditModal] = useState<boolean>(false);
-  const [auditScope, setAuditScope] = useState<'full' | 'monthly' | 'cumulative'>('full');
-  const [auditSearch, setAuditSearch] = useState<string>('');
-  const [auditLogFilter, setAuditLogFilter] = useState<string>('ALL');
-  const [auditClassFilter, setAuditClassFilter] = useState<string>('ALL');
-
-  const auditDataset = useMemo(() => {
-    if (auditScope === 'monthly') return monthlyData;
-    if (auditScope === 'cumulative') return cumulativeData;
-    return data;
-  }, [auditScope, data, monthlyData, cumulativeData]);
-
-  const auditRecords = useMemo(() => {
-    return generateSubmittalAuditRecords(auditDataset);
-  }, [auditDataset]);
-
-  const auditValidation = useMemo(() => {
-    return validateAuditRecords(auditRecords);
-  }, [auditRecords]);
-
-  const filteredAuditRecords = useMemo(() => {
-    return auditRecords.filter(r => {
-      const matchesSearch = !auditSearch || 
-        r.subRef.toLowerCase().includes(auditSearch.toLowerCase()) || 
-        r.logType.toLowerCase().includes(auditSearch.toLowerCase()) || 
-        r.discipline.toLowerCase().includes(auditSearch.toLowerCase());
-      
-      const matchesLog = auditLogFilter === 'ALL' || r.logType === auditLogFilter || (auditLogFilter === 'ABD' && r.logType.includes('ABD'));
-      const matchesClass = auditClassFilter === 'ALL' || 
-        (auditClassFilter === 'REV0' && r.classification === 'Rev0 Item') || 
-        (auditClassFilter === 'FURTHER' && r.classification === 'Further Revision Item');
-
-      return matchesSearch && matchesLog && matchesClass;
-    });
-  }, [auditRecords, auditSearch, auditLogFilter, auditClassFilter]);
-
   // Helper to compute stats per log type & discipline
   const getLogTypeStats = (logType: string, isMonthly: boolean) => {
     const workingSet = isMonthly ? monthlyData : cumulativeData;
@@ -178,7 +128,7 @@ export const CorporateReportsView: React.FC<CorporateReportsViewProps> = ({
       const wf = (d.workflowFamily || '').toUpperCase();
       const docNo = (d.docNo || '').toUpperCase();
 
-      const matches = (key: string) => dt.includes(key) || lt.includes(key) || wf === key || docNo.startsWith(`${key}-`);
+      const matches = (key: string) => dt.includes(key) || lt.includes(key) || sf.includes(key) || wf === key || docNo.startsWith(`${key}-`);
 
       const isABD = matches('ABD') || matches('AS-BUILT') || matches('AS BUILT') || wf === 'ABD' || docNo.startsWith('ABD-') || docNo.includes('AS-BUILT') || dt.startsWith('ABD');
 
@@ -206,9 +156,9 @@ export const CorporateReportsView: React.FC<CorporateReportsViewProps> = ({
       return {
         discipline: disc,
         submittals: s.totalSubmittedSheets || 0,
-        rev00: s.totalDrawingsRev0 ?? s.totalSheetsRev0 ?? 0,
-        furtherRev: s.totalDrawingsFurtherRev ?? s.totalSheetsFurtherRev ?? 0,
-        total: (s.totalDrawingsRev0 ?? s.totalSheetsRev0 ?? 0) + (s.totalDrawingsFurtherRev ?? s.totalSheetsFurtherRev ?? 0) || s.totalSubmittedSheets || 0,
+        rev00: s.totalSheetsRev0 || 0,
+        furtherRev: s.totalSheetsFurtherRev || 0,
+        total: (s.totalSheetsRev0 || 0) + (s.totalSheetsFurtherRev || 0) || s.totalSubmittedSheets || 0,
         approved: s.approved || 0,
         rejected: rejectedCount,
         pending: s.pending || 0,
@@ -302,51 +252,34 @@ export const CorporateReportsView: React.FC<CorporateReportsViewProps> = ({
       XLSX.utils.book_append_sheet(wb, ws, sec);
     });
 
-    // Add SUB Ref Classification Audit Worksheet
-    const auditRecs = generateSubmittalAuditRecords(data);
-    const auditVal = validateAuditRecords(auditRecs);
-
-    const auditRows = [
-      ['DOCUSIGHT KPI ENGINE - VERIFICATION SUMMARY & MATHEMATICAL AUDIT LOG'],
-      [`Project: ${projectInfo.projectName || 'Alburouj Project'}`],
-      [`Audit Timestamp: ${new Date().toISOString()}`],
-      [`Validation Status: ${auditVal.status}`, `Inconsistencies Count: ${auditVal.inconsistencyCount}`],
-      [`Total Unique Submittals: ${auditVal.totalUnique}`, `Rev0 Count: ${auditVal.rev0Count}`, `Further Rev Count: ${auditVal.furtherRevCount}`],
-      [`Submittals with Revision Weight > 0: ${auditVal.weightGtZeroCount}`, `Submittals with Revision Weight == 0: ${auditVal.weightZeroCount}`],
-      [],
-      ['Submittal Ref', 'Log Type', 'Discipline', 'Sheet Count', 'Highest Revision', 'Revision Weight', 'KPI Classification', 'Raw Status', 'Normalized Code', 'Resolved Status', 'Mapping Reason', 'Revisions History'],
-      ...auditRecs.map(r => [
-        r.subRef,
-        r.logType,
-        r.discipline,
-        r.sheetCount,
-        r.highestRevision,
-        r.revisionWeight,
-        r.classification,
-        r.rawStatus,
-        r.normalizedCode,
-        r.resolvedStatus,
-        r.statusMappingReason,
-        r.allRevisionsFound
-      ])
-    ];
-    const auditWs = XLSX.utils.aoa_to_sheet(auditRows);
-    XLSX.utils.book_append_sheet(wb, auditWs, 'SUB Ref Audit');
-
     XLSX.writeFile(wb, `Corporate_Document_Control_Report_${projectInfo.projectName || 'Alburouj'}.xlsx`);
   };
 
-  // Export to PPTX (Native Editable Elements)
+  // Export to PPTX
   const handleExportPPTX = async () => {
     setIsExporting(true);
+    await new Promise(resolve => setTimeout(resolve, 300));
     try {
-      await generatePptxReport(
-        data, 
-        projectInfo, 
-        'presentation', 
-        { filterMonthly, filterCumulative }, 
-        { monthlyStart: startDate }
-      );
+      const pptx = new pptxgen();
+      pptx.layout = 'LAYOUT_16x9';
+
+      const slides = deckRef.current?.querySelectorAll('.corporate-slide-card');
+      if (slides && slides.length > 0) {
+        for (let i = 0; i < slides.length; i++) {
+          const slideEl = slides[i] as HTMLElement;
+          const canvas = await html2canvas(slideEl, {
+            scale: 2,
+            useCORS: true,
+            logging: false,
+            backgroundColor: '#ffffff'
+          });
+          const imgData = canvas.toDataURL('image/png');
+          const slide = pptx.addSlide();
+          slide.addImage({ data: imgData, x: 0, y: 0, w: '100%', h: '100%' });
+        }
+      }
+
+      await pptx.writeFile({ fileName: `Corporate_Monthly_Report_${projectInfo.projectName || 'Alburouj'}.pptx` });
     } catch (e) {
       console.error('PPTX Export Error:', e);
     } finally {
@@ -475,13 +408,6 @@ export const CorporateReportsView: React.FC<CorporateReportsViewProps> = ({
           </button>
 
           <button
-            onClick={() => setShowAuditModal(true)}
-            className="px-3.5 py-2 text-xs font-bold bg-[#8b5cf6] hover:bg-[#7c3aed] text-white rounded-lg flex items-center gap-1.5 transition-all shadow-md"
-          >
-            <Table className="w-4 h-4" /> SUB Ref Audit Log
-          </button>
-
-          <button
             onClick={handleExportExcel}
             className="px-3.5 py-2 text-xs font-bold bg-[#10b981] hover:bg-[#059669] text-white rounded-lg flex items-center gap-1.5 transition-all shadow-md"
           >
@@ -557,7 +483,7 @@ export const CorporateReportsView: React.FC<CorporateReportsViewProps> = ({
               }}
             >
               {/* SLIDE CONTENT BASED ON INDEX */}
-              {idx === 0 && <Slide1Cover projectInfo={projectInfo} startDate={startDate} endDate={endDate} dateStr={endDate || '01-07-2026'} />}
+              {idx === 0 && <Slide1Cover projectInfo={projectInfo} dateStr={endDate || '01-07-2026'} />}
               {idx === 1 && <Slide2Index />}
               {idx === 2 && <Slide3ProjectInfo projectInfo={projectInfo} startDate={startDate} />}
               {idx === 3 && <SlideTableAndBar logType="SHD" isMonthly={true} projectInfo={projectInfo} getLogTypeStats={getLogTypeStats} />}
@@ -598,288 +524,6 @@ export const CorporateReportsView: React.FC<CorporateReportsViewProps> = ({
           <p className="text-xs text-slate-400">Rendering high-resolution 16:9 slides into presentation (27 slides total)</p>
         </div>
       )}
-
-      {/* Submittal Classification Audit Inspector Modal */}
-      {showAuditModal && (
-        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
-          <div className="bg-[#1e293b] border border-slate-700 w-full max-w-6xl max-h-[90vh] rounded-2xl shadow-2xl flex flex-col overflow-hidden text-slate-100">
-            
-            {/* Modal Header */}
-            <div className="p-5 bg-slate-900 border-b border-slate-700 flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-purple-500/20 text-purple-400 rounded-xl border border-purple-500/30">
-                  <Database className="w-6 h-6" />
-                </div>
-                <div>
-                  <h2 className="text-lg font-bold text-white flex items-center gap-2">
-                    Submittal Ref Classification Audit Inspector
-                    <span className="text-xs bg-purple-500/20 text-purple-300 border border-purple-500/40 px-2 py-0.5 rounded-full font-mono">
-                      SSOT Mathematical Engine
-                    </span>
-                  </h2>
-                  <p className="text-xs text-slate-400">
-                    Row-by-row classification audit for every Submittal Ref across all project disciplines and logs.
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => exportSubmittalAuditCSV(auditDataset, `SUB_Ref_Audit_${auditScope}_${new Date().toISOString().slice(0, 10)}.csv`)}
-                  className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-lg flex items-center gap-1.5 transition-all shadow"
-                >
-                  <Download className="w-3.5 h-3.5" /> Export Audit CSV
-                </button>
-                <button
-                  onClick={() => setShowAuditModal(false)}
-                  className="p-1.5 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-all"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-            </div>
-
-            {/* Modal Controls & Filter Bar */}
-            <div className="p-4 bg-slate-900/60 border-b border-slate-700/80 flex flex-wrap items-center justify-between gap-3">
-              
-              {/* Dataset Scope Toggle */}
-              <div className="flex items-center bg-slate-950 p-1 rounded-xl border border-slate-800 text-xs">
-                <button
-                  onClick={() => setAuditScope('full')}
-                  className={`px-3 py-1.5 rounded-lg font-semibold transition-all ${
-                    auditScope === 'full' ? 'bg-purple-600 text-white shadow' : 'text-slate-400 hover:text-white'
-                  }`}
-                >
-                  Full Master Register ({data.length} rows)
-                </button>
-                <button
-                  onClick={() => setAuditScope('monthly')}
-                  className={`px-3 py-1.5 rounded-lg font-semibold transition-all ${
-                    auditScope === 'monthly' ? 'bg-purple-600 text-white shadow' : 'text-slate-400 hover:text-white'
-                  }`}
-                >
-                  Active Period ({monthlyData.length} rows)
-                </button>
-                <button
-                  onClick={() => setAuditScope('cumulative')}
-                  className={`px-3 py-1.5 rounded-lg font-semibold transition-all ${
-                    auditScope === 'cumulative' ? 'bg-purple-600 text-white shadow' : 'text-slate-400 hover:text-white'
-                  }`}
-                >
-                  Cumulative Period ({cumulativeData.length} rows)
-                </button>
-              </div>
-
-              {/* Filters */}
-              <div className="flex items-center flex-wrap gap-2 text-xs">
-                {/* Search */}
-                <div className="relative">
-                  <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5" />
-                  <input
-                    type="text"
-                    value={auditSearch}
-                    onChange={(e) => setAuditSearch(e.target.value)}
-                    placeholder="Search SUB Ref..."
-                    className="bg-slate-950 border border-slate-700 text-white rounded-lg pl-8 pr-3 py-1.5 text-xs focus:outline-none focus:border-purple-500 w-44"
-                  />
-                </div>
-
-                {/* Log Filter */}
-                <select
-                  value={auditLogFilter}
-                  onChange={(e) => setAuditLogFilter(e.target.value)}
-                  className="bg-slate-950 border border-slate-700 text-white rounded-lg px-2.5 py-1.5 text-xs focus:outline-none focus:border-purple-500"
-                >
-                  <option value="ALL">All Logs</option>
-                  <option value="ABD">ABD (As-Built)</option>
-                  <option value="SHD">SHD (Shop Drawings)</option>
-                  <option value="MAR">MAR (Materials)</option>
-                  <option value="DOC">DOC (Documents)</option>
-                  <option value="RFI">RFI</option>
-                  <option value="WIR">WIR</option>
-                  <option value="MIR">MIR</option>
-                  <option value="NCR">NCR</option>
-                </select>
-
-                {/* Classification Filter */}
-                <select
-                  value={auditClassFilter}
-                  onChange={(e) => setAuditClassFilter(e.target.value)}
-                  className="bg-slate-950 border border-slate-700 text-white rounded-lg px-2.5 py-1.5 text-xs focus:outline-none focus:border-purple-500"
-                >
-                  <option value="ALL">All Classifications</option>
-                  <option value="REV0">Rev0 Items Only</option>
-                  <option value="FURTHER">Further Rev Items Only</option>
-                </select>
-              </div>
-            </div>
-
-            {/* Verification Summary Card & Mathematical Proof */}
-            <div className="p-4 bg-slate-900/80 border-b border-slate-800 text-xs">
-              <div className="mb-3 flex flex-wrap items-center justify-between gap-2 bg-slate-950 p-3 rounded-xl border border-slate-800">
-                <div className="flex items-center gap-2.5">
-                  <div className={`p-1.5 rounded-lg border ${
-                    auditValidation.status === 'PASS' 
-                      ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' 
-                      : 'bg-rose-500/20 text-rose-400 border-rose-500/30'
-                  }`}>
-                    <CheckCircle2 className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <span className="font-extrabold text-white text-sm">Self-Auditing Mathematical Verification:</span>
-                      <span className={`px-2 py-0.5 rounded-full text-[11px] font-black tracking-wider ${
-                        auditValidation.status === 'PASS' 
-                          ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40' 
-                          : 'bg-rose-500/20 text-rose-300 border border-rose-500/40'
-                      }`}>
-                        VALIDATION {auditValidation.status}
-                      </span>
-                    </div>
-                    <p className="text-[11px] text-slate-400">
-                      {auditValidation.status === 'PASS' 
-                        ? 'Zero anomalies detected. 100% mathematical consistency verified across all unique submittals.' 
-                        : `${auditValidation.inconsistencyCount} inconsistencies detected between revision weight and KPI classification.`}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-4 text-slate-300 text-[11px]">
-                  <div>Weight &gt; 0 Sync: <span className="font-bold text-purple-300">{auditValidation.weightGtZeroCount} / {auditValidation.furtherRevCount}</span></div>
-                  <div>Weight == 0 Sync: <span className="font-bold text-emerald-300">{auditValidation.weightZeroCount} / {auditValidation.rev0Count}</span></div>
-                </div>
-              </div>
-
-              {/* Anomaly Callout if FAIL */}
-              {auditValidation.anomalies.length > 0 && (
-                <div className="mb-3 p-3 bg-rose-950/60 border border-rose-800/80 rounded-xl text-rose-200">
-                  <div className="font-bold mb-1 flex items-center gap-1.5">
-                    <AlertCircle className="w-4 h-4 text-rose-400" /> Detected Classification Anomalies:
-                  </div>
-                  <ul className="list-disc list-inside text-[11px] space-y-0.5">
-                    {auditValidation.anomalies.map((anom, idx) => (
-                      <li key={idx}>{anom}</li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-
-              {/* Summary KPI Badges */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-2">
-                <div className="bg-slate-950/80 p-2.5 rounded-xl border border-slate-800 flex flex-col justify-between">
-                  <span className="text-slate-400 font-medium text-[10px]">Total Unique Refs</span>
-                  <span className="text-base font-extrabold text-white mt-0.5">{auditValidation.totalUnique}</span>
-                </div>
-                <div className="bg-slate-950/80 p-2.5 rounded-xl border border-slate-800 flex flex-col justify-between">
-                  <span className="text-emerald-400 font-medium text-[10px]">Rev0 Items</span>
-                  <span className="text-base font-extrabold text-emerald-300 mt-0.5">{auditValidation.rev0Count}</span>
-                </div>
-                <div className="bg-slate-950/80 p-2.5 rounded-xl border border-slate-800 flex flex-col justify-between">
-                  <span className="text-purple-400 font-medium text-[10px]">Further Rev Items</span>
-                  <span className="text-base font-extrabold text-purple-300 mt-0.5">{auditValidation.furtherRevCount}</span>
-                </div>
-                <div className="bg-slate-950/80 p-2.5 rounded-xl border border-slate-800 flex flex-col justify-between">
-                  <span className="text-blue-400 font-medium text-[10px]">Approved</span>
-                  <span className="text-base font-extrabold text-blue-300 mt-0.5">{auditValidation.approvedCount}</span>
-                </div>
-                <div className="bg-slate-950/80 p-2.5 rounded-xl border border-slate-800 flex flex-col justify-between">
-                  <span className="text-amber-400 font-medium text-[10px]">Rejected Open</span>
-                  <span className="text-base font-extrabold text-amber-300 mt-0.5">{auditValidation.rejectedOpenCount}</span>
-                </div>
-                <div className="bg-slate-950/80 p-2.5 rounded-xl border border-slate-800 flex flex-col justify-between">
-                  <span className="text-rose-400 font-medium text-[10px]">Rejected Closed</span>
-                  <span className="text-base font-extrabold text-rose-300 mt-0.5">{auditValidation.rejectedClosedCount}</span>
-                </div>
-                <div className="bg-slate-950/80 p-2.5 rounded-xl border border-slate-800 flex flex-col justify-between">
-                  <span className="text-sky-400 font-medium text-[10px]">Pending</span>
-                  <span className="text-base font-extrabold text-sky-300 mt-0.5">{auditValidation.pendingCount}</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Table Area */}
-            <div className="flex-1 overflow-auto p-4">
-              <table className="w-full text-left text-xs border-collapse">
-                <thead>
-                  <tr className="bg-slate-900 text-slate-300 font-bold border-b border-slate-700 sticky top-0 z-10">
-                    <th className="p-2.5 w-10 text-center">#</th>
-                    <th className="p-2.5">Submittal Ref</th>
-                    <th className="p-2.5">Log Type</th>
-                    <th className="p-2.5">Discipline</th>
-                    <th className="p-2.5 text-center">Highest Rev (Weight)</th>
-                    <th className="p-2.5 text-center">KPI Classification</th>
-                    <th className="p-2.5">Raw Status</th>
-                    <th className="p-2.5 text-center">Normalized</th>
-                    <th className="p-2.5 text-center">Resolved Status</th>
-                    <th className="p-2.5">Mapping Reason</th>
-                    <th className="p-2.5">Revisions History</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-800 text-slate-300 font-mono">
-                  {filteredAuditRecords.length === 0 ? (
-                    <tr>
-                      <td colSpan={11} className="p-8 text-center text-slate-500 font-sans">
-                        No submittal references matched the active filter parameters.
-                      </td>
-                    </tr>
-                  ) : (
-                    filteredAuditRecords.map((r, idx) => (
-                      <tr key={r.entityKey || idx} className="hover:bg-slate-800/50 transition-colors">
-                        <td className="p-2.5 text-center text-slate-500">{idx + 1}</td>
-                        <td className="p-2.5 font-bold text-white">{r.subRef}</td>
-                        <td className="p-2.5 font-sans font-semibold text-slate-300">{r.logType}</td>
-                        <td className="p-2.5 font-sans text-slate-400">{r.discipline}</td>
-                        <td className="p-2.5 text-center font-bold text-amber-300">
-                          {r.highestRevision} <span className="text-[10px] text-slate-500">({r.revisionWeight})</span>
-                        </td>
-                        <td className="p-2.5 text-center">
-                          {r.classification === 'Rev0 Item' ? (
-                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
-                              <CheckCircle2 className="w-3 h-3" /> Rev0 Item
-                            </span>
-                          ) : (
-                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-500/20 text-purple-300 border border-purple-500/40">
-                              <AlertCircle className="w-3 h-3" /> Further Rev
-                            </span>
-                          )}
-                        </td>
-                        <td className="p-2.5 font-sans font-medium text-slate-200">{r.rawStatus || '(Empty)'}</td>
-                        <td className="p-2.5 text-center font-bold text-slate-400">{r.normalizedCode}</td>
-                        <td className="p-2.5 text-center">
-                          <span className={`inline-block px-2 py-0.5 rounded text-[10px] font-bold ${
-                            r.resolvedStatus === 'Approved' ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' :
-                            r.resolvedStatus === 'Rejected Open' ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30' :
-                            r.resolvedStatus === 'Rejected Closed' ? 'bg-rose-500/20 text-rose-300 border border-rose-500/30' :
-                            'bg-slate-700/50 text-slate-300 border border-slate-600/30'
-                          }`}>
-                            {r.resolvedStatus}
-                          </span>
-                        </td>
-                        <td className="p-2.5 font-sans text-slate-400 text-[11px] truncate max-w-[180px]" title={r.statusMappingReason}>
-                          {r.statusMappingReason}
-                        </td>
-                        <td className="p-2.5 text-slate-400 text-[11px]">{r.allRevisionsFound}</td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </div>
-
-            {/* Modal Footer */}
-            <div className="p-3 bg-slate-900 border-t border-slate-700 flex items-center justify-between text-xs text-slate-400">
-              <span>Showing {filteredAuditRecords.length} of {auditRecords.length} Submittal Refs</span>
-              <button
-                onClick={() => setShowAuditModal(false)}
-                className="px-4 py-1.5 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-lg transition-all"
-              >
-                Close Audit View
-              </button>
-            </div>
-
-          </div>
-        </div>
-      )}
     </div>
   );
 };
@@ -888,7 +532,7 @@ export const CorporateReportsView: React.FC<CorporateReportsViewProps> = ({
 // INDIVIDUAL SLIDE COMPONENTS
 // ==========================================
 
-const Slide1Cover: React.FC<{ projectInfo: ProjectSettings; startDate?: string; endDate?: string; dateStr: string }> = ({ projectInfo, startDate, endDate, dateStr }) => (
+const Slide1Cover: React.FC<{ projectInfo: ProjectSettings; dateStr: string }> = ({ projectInfo, dateStr }) => (
   <div className="relative w-full h-full bg-[#0e1f26] text-white flex flex-col justify-between p-12 -m-8 w-[960px] h-[540px]">
     <ConcentricArcs theme="dark" position="left" />
     <div className="flex justify-end items-center relative z-10">
@@ -904,9 +548,8 @@ const Slide1Cover: React.FC<{ projectInfo: ProjectSettings; startDate?: string; 
       </h2>
     </div>
 
-    <div className="relative z-10 text-xs text-slate-400 font-mono flex justify-between items-center">
-      <span>Reporting Period: {startDate ? `${startDate} to ${endDate || dateStr}` : `Period Ending ${dateStr}`}</span>
-      <span>ISO 9001:2015 Doc Control Report</span>
+    <div className="relative z-10 text-xs text-slate-400 font-mono">
+      Date: {dateStr}
     </div>
   </div>
 );
@@ -1480,17 +1123,54 @@ const SlideACCControlIssue: React.FC<{ projectInfo: ProjectSettings }> = ({ proj
 );
 
 const SlideClosing: React.FC<{ projectInfo: ProjectSettings }> = ({ projectInfo }) => (
-  <div className="relative w-full h-full bg-white flex flex-col justify-between p-12 -m-8 w-[960px] h-[540px]">
+  <div className="relative w-full h-full bg-white flex flex-col justify-between p-10 -m-8 w-[960px] h-[540px]">
     <ConcentricArcs theme="light" position="left" />
-    <div className="flex justify-end items-center relative z-10">
+    <div className="flex justify-between items-center relative z-10">
+      <div className="flex items-center gap-2 text-xs font-bold text-slate-500 font-mono">
+        <ShieldCheck className="w-4 h-4 text-[#0d9488]" />
+        ISO 9001:2015 QMS APPROVED REPORT
+      </div>
       <InnovoLogo />
     </div>
 
     <div className="relative z-10 my-auto">
-      <h2 className="text-4xl font-extrabold text-[#0f172a] tracking-tight">Thanks</h2>
-      <p className="text-xs text-[#0d9488] font-bold mt-2 uppercase tracking-widest">
-        Document Control Department | {projectInfo.projectName || 'Alburouj Project'}
+      <h2 className="text-4xl font-extrabold text-[#0f172a] tracking-tight">Thank You</h2>
+      <p className="text-xs text-[#0d9488] font-bold mt-1 uppercase tracking-widest">
+        Document Control Department | {projectInfo.projectName || 'Alburouj Project, Parcel 1.17'}
       </p>
+
+      {/* Corporate Sign-off & Audit Matrix Block */}
+      <div className="grid grid-cols-3 gap-4 mt-8 pt-4 border-t border-slate-300 text-slate-800">
+        <div className="bg-slate-50 p-3 rounded-lg border border-slate-200">
+          <div className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Prepared By</div>
+          <div className="text-xs font-extrabold text-[#0f172a] mt-1">Ezzeldin Mohamed Rashad</div>
+          <div className="text-[10px] text-slate-500">Project Document Control Lead</div>
+          <div className="mt-3 pt-2 border-t border-slate-200 text-[10px] text-emerald-700 font-bold flex items-center justify-between font-mono">
+            <span>Status: Verified</span>
+            <span>Date: 2026-07-29</span>
+          </div>
+        </div>
+
+        <div className="bg-slate-50 p-3 rounded-lg border border-slate-200">
+          <div className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Checked By</div>
+          <div className="text-xs font-extrabold text-[#0f172a] mt-1">Lead QA/QC Manager</div>
+          <div className="text-[10px] text-slate-500">Quality Assurance Department</div>
+          <div className="mt-3 pt-2 border-t border-slate-200 text-[10px] text-emerald-700 font-bold flex items-center justify-between font-mono">
+            <span>Status: Approved</span>
+            <span>Date: 2026-07-29</span>
+          </div>
+        </div>
+
+        <div className="bg-slate-50 p-3 rounded-lg border border-slate-200">
+          <div className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Approved By</div>
+          <div className="text-xs font-extrabold text-[#0f172a] mt-1">Project Director</div>
+          <div className="text-[10px] text-slate-500">{projectInfo.contractorName || 'INNOVO Build S.A.E'}</div>
+          <div className="mt-3 pt-2 border-t border-slate-200 text-[10px] text-emerald-700 font-bold flex items-center justify-between font-mono">
+            <span>Status: Certified</span>
+            <span>Date: 2026-07-29</span>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 );

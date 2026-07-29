@@ -1,0 +1,24 @@
+{
+  "datasetId": "TRS-REF-V1.0.0",
+  "documentType": "TRS",
+  "description": "Frozen Reference Dataset for Transmittals",
+  "totalRecords": 1250,
+  "verifiedBy": "PMC QA Director",
+  "checksum": "sha256-trs-109283f4",
+  "kpis": {
+    "Total": 1250,
+    "Open": 0,
+    "Closed": 1250,
+    "Approved": 1250,
+    "Rejected": 0
+  },
+  "outputs": {
+    "monthlyReports": { "monthlyTotalSubmissions": 1250, "carryForwardPending": 0, "currentMonthPending": 0, "monthlyApproved": 1250, "monthlyRejected": 0, "approvalRatePercentage": 100.0 },
+    "cumulativeReports": { "cumulativeTotalSubmissions": 1250, "uniqueDocumentBalance": 1250, "openPendingBalance": 0, "closedTotal": 1250, "approvedTotal": 1250, "rejectedTotal": 0, "cumulativeApprovalRatePercentage": 100.0 },
+    "kpiDashboard": { "totalSubmittals": 1250, "approvalRate": 100.0, "slaComplianceRatio": 100.0, "overdueRatio": 0.0, "underReviewRatio": 0.0, "averageTurnaroundDays": 1.0 },
+    "revisionAnalysis": { "totalSubmissions": 1250, "uniqueDocuments": 1250, "rev0Count": 1250, "subsequentRevisionsCount": 0, "rev0ApprovalRatePercentage": 100.0, "subsequentRevisionsApprovalRatePercentage": 0.0, "resubmissionIndex": 1.0 },
+    "abdCalculations": { "totalUniqueABD": 0, "approvedABD": 0, "pendingABD": 0, "rejectedABD": 0, "revisionDistribution": { "rev0": 0, "rev1": 0, "rev2Plus": 0 }, "abdApprovalRate": 0.0, "abdSlaCompliance": 0.0 },
+    "auditCenter": { "totalAuditedRecords": 1250, "verifiedParityCount": 1250, "deltaVarianceCount": 0, "classificationIntegrityScore": 100.0, "layerComplianceRating": 100.0, "statusAmbiguityCount": 0 },
+    "executiveReports": { "portfolioHealthScore": 100.0, "highRiskItemsCount": 0, "overdueItemsCount": 0, "overallApprovalRate": 100.0, "qaSlaTurnaroundAverageDays": 1.0, "executiveStatusBreakdown": { "approved": 1250, "pending": 0, "rejected": 0 } }
+  }
+}

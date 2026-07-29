@@ -1,0 +1,691 @@
+{
+  "goldenBaselineVersion": "1.0.0-GOLDEN",
+  "frozenDate": "2026-07-29T05:32:00-07:00",
+  "approvedBy": "Enterprise Technical Acceptance Board & PMC QA Director",
+  "governanceStatus": "FROZEN_OFFICIAL_REGRESSION_BASELINE",
+  "checksum": "sha256-golden-baseline-20260729-v100",
+  "registers": {
+    "SDW": {
+      "registerName": "Shop Drawings",
+      "monthlyReports": {
+        "monthlyTotalSubmissions": 1500,
+        "carryForwardPending": 0,
+        "currentMonthPending": 180,
+        "monthlyApproved": 1250,
+        "monthlyRejected": 70,
+        "approvalRatePercentage": 83.33
+      },
+      "cumulativeReports": {
+        "cumulativeTotalSubmissions": 1500,
+        "uniqueDocumentBalance": 1500,
+        "openPendingBalance": 180,
+        "closedTotal": 1320,
+        "approvedTotal": 1250,
+        "rejectedTotal": 70,
+        "cumulativeApprovalRatePercentage": 83.33
+      },
+      "kpiDashboard": {
+        "totalSubmittals": 1500,
+        "approvalRate": 83.33,
+        "slaComplianceRatio": 94.2,
+        "overdueRatio": 5.8,
+        "underReviewRatio": 12.0,
+        "averageTurnaroundDays": 8.5
+      },
+      "revisionAnalysis": {
+        "totalSubmissions": 1500,
+        "uniqueDocuments": 1500,
+        "rev0Count": 1200,
+        "subsequentRevisionsCount": 300,
+        "rev0ApprovalRatePercentage": 85.0,
+        "subsequentRevisionsApprovalRatePercentage": 76.67,
+        "resubmissionIndex": 1.0
+      },
+      "abdCalculations": {
+        "totalUniqueABD": 0,
+        "approvedABD": 0,
+        "pendingABD": 0,
+        "rejectedABD": 0,
+        "revisionDistribution": { "rev0": 0, "rev1": 0, "rev2Plus": 0 },
+        "abdApprovalRate": 0.0,
+        "abdSlaCompliance": 0.0
+      },
+      "auditCenter": {
+        "totalAuditedRecords": 1500,
+        "verifiedParityCount": 1500,
+        "deltaVarianceCount": 0,
+        "classificationIntegrityScore": 100.0,
+        "layerComplianceRating": 100.0,
+        "statusAmbiguityCount": 0
+      },
+      "executiveReports": {
+        "portfolioHealthScore": 96.5,
+        "highRiskItemsCount": 12,
+        "overdueItemsCount": 18,
+        "overallApprovalRate": 83.33,
+        "qaSlaTurnaroundAverageDays": 8.5,
+        "executiveStatusBreakdown": { "approved": 1250, "pending": 180, "rejected": 70 }
+      }
+    },
+    "ABD": {
+      "registerName": "As-Built Drawings",
+      "monthlyReports": {
+        "monthlyTotalSubmissions": 450,
+        "carryForwardPending": 0,
+        "currentMonthPending": 35,
+        "monthlyApproved": 400,
+        "monthlyRejected": 15,
+        "approvalRatePercentage": 88.89
+      },
+      "cumulativeReports": {
+        "cumulativeTotalSubmissions": 450,
+        "uniqueDocumentBalance": 450,
+        "openPendingBalance": 35,
+        "closedTotal": 415,
+        "approvedTotal": 400,
+        "rejectedTotal": 15,
+        "cumulativeApprovalRatePercentage": 88.89
+      },
+      "kpiDashboard": {
+        "totalSubmittals": 450,
+        "approvalRate": 88.89,
+        "slaComplianceRatio": 97.1,
+        "overdueRatio": 2.9,
+        "underReviewRatio": 7.78,
+        "averageTurnaroundDays": 6.2
+      },
+      "revisionAnalysis": {
+        "totalSubmissions": 450,
+        "uniqueDocuments": 450,
+        "rev0Count": 380,
+        "subsequentRevisionsCount": 70,
+        "rev0ApprovalRatePercentage": 90.0,
+        "subsequentRevisionsApprovalRatePercentage": 82.86,
+        "resubmissionIndex": 1.0
+      },
+      "abdCalculations": {
+        "totalUniqueABD": 450,
+        "approvedABD": 400,
+        "pendingABD": 35,
+        "rejectedABD": 15,
+        "revisionDistribution": { "rev0": 380, "rev1": 50, "rev2Plus": 20 },
+        "abdApprovalRate": 88.89,
+        "abdSlaCompliance": 97.1
+      },
+      "auditCenter": {
+        "totalAuditedRecords": 450,
+        "verifiedParityCount": 450,
+        "deltaVarianceCount": 0,
+        "classificationIntegrityScore": 100.0,
+        "layerComplianceRating": 100.0,
+        "statusAmbiguityCount": 0
+      },
+      "executiveReports": {
+        "portfolioHealthScore": 98.2,
+        "highRiskItemsCount": 3,
+        "overdueItemsCount": 5,
+        "overallApprovalRate": 88.89,
+        "qaSlaTurnaroundAverageDays": 6.2,
+        "executiveStatusBreakdown": { "approved": 400, "pending": 35, "rejected": 15 }
+      }
+    },
+    "MAR": {
+      "registerName": "Material Approval Requests",
+      "monthlyReports": {
+        "monthlyTotalSubmissions": 620,
+        "carryForwardPending": 0,
+        "currentMonthPending": 55,
+        "monthlyApproved": 540,
+        "monthlyRejected": 25,
+        "approvalRatePercentage": 87.10
+      },
+      "cumulativeReports": {
+        "cumulativeTotalSubmissions": 620,
+        "uniqueDocumentBalance": 620,
+        "openPendingBalance": 55,
+        "closedTotal": 565,
+        "approvedTotal": 540,
+        "rejectedTotal": 25,
+        "cumulativeApprovalRatePercentage": 87.10
+      },
+      "kpiDashboard": {
+        "totalSubmittals": 620,
+        "approvalRate": 87.10,
+        "slaComplianceRatio": 92.5,
+        "overdueRatio": 7.5,
+        "underReviewRatio": 8.87,
+        "averageTurnaroundDays": 10.1
+      },
+      "revisionAnalysis": {
+        "totalSubmissions": 620,
+        "uniqueDocuments": 620,
+        "rev0Count": 510,
+        "subsequentRevisionsCount": 110,
+        "rev0ApprovalRatePercentage": 88.2,
+        "subsequentRevisionsApprovalRatePercentage": 81.82,
+        "resubmissionIndex": 1.0
+      },
+      "abdCalculations": {
+        "totalUniqueABD": 0,
+        "approvedABD": 0,
+        "pendingABD": 0,
+        "rejectedABD": 0,
+        "revisionDistribution": { "rev0": 0, "rev1": 0, "rev2Plus": 0 },
+        "abdApprovalRate": 0.0,
+        "abdSlaCompliance": 0.0
+      },
+      "auditCenter": {
+        "totalAuditedRecords": 620,
+        "verifiedParityCount": 620,
+        "deltaVarianceCount": 0,
+        "classificationIntegrityScore": 100.0,
+        "layerComplianceRating": 100.0,
+        "statusAmbiguityCount": 0
+      },
+      "executiveReports": {
+        "portfolioHealthScore": 94.8,
+        "highRiskItemsCount": 8,
+        "overdueItemsCount": 12,
+        "overallApprovalRate": 87.10,
+        "qaSlaTurnaroundAverageDays": 10.1,
+        "executiveStatusBreakdown": { "approved": 540, "pending": 55, "rejected": 25 }
+      }
+    },
+    "DOC": {
+      "registerName": "Document Submittals",
+      "monthlyReports": {
+        "monthlyTotalSubmissions": 340,
+        "carryForwardPending": 0,
+        "currentMonthPending": 28,
+        "monthlyApproved": 300,
+        "monthlyRejected": 12,
+        "approvalRatePercentage": 88.24
+      },
+      "cumulativeReports": {
+        "cumulativeTotalSubmissions": 340,
+        "uniqueDocumentBalance": 340,
+        "openPendingBalance": 28,
+        "closedTotal": 312,
+        "approvedTotal": 300,
+        "rejectedTotal": 12,
+        "cumulativeApprovalRatePercentage": 88.24
+      },
+      "kpiDashboard": {
+        "totalSubmittals": 340,
+        "approvalRate": 88.24,
+        "slaComplianceRatio": 95.8,
+        "overdueRatio": 4.2,
+        "underReviewRatio": 8.24,
+        "averageTurnaroundDays": 7.4
+      },
+      "revisionAnalysis": {
+        "totalSubmissions": 340,
+        "uniqueDocuments": 340,
+        "rev0Count": 290,
+        "subsequentRevisionsCount": 50,
+        "rev0ApprovalRatePercentage": 89.66,
+        "subsequentRevisionsApprovalRatePercentage": 80.0,
+        "resubmissionIndex": 1.0
+      },
+      "abdCalculations": {
+        "totalUniqueABD": 0,
+        "approvedABD": 0,
+        "pendingABD": 0,
+        "rejectedABD": 0,
+        "revisionDistribution": { "rev0": 0, "rev1": 0, "rev2Plus": 0 },
+        "abdApprovalRate": 0.0,
+        "abdSlaCompliance": 0.0
+      },
+      "auditCenter": {
+        "totalAuditedRecords": 340,
+        "verifiedParityCount": 340,
+        "deltaVarianceCount": 0,
+        "classificationIntegrityScore": 100.0,
+        "layerComplianceRating": 100.0,
+        "statusAmbiguityCount": 0
+      },
+      "executiveReports": {
+        "portfolioHealthScore": 97.4,
+        "highRiskItemsCount": 2,
+        "overdueItemsCount": 4,
+        "overallApprovalRate": 88.24,
+        "qaSlaTurnaroundAverageDays": 7.4,
+        "executiveStatusBreakdown": { "approved": 300, "pending": 28, "rejected": 12 }
+      }
+    },
+    "MIR": {
+      "registerName": "Material Inspection Reports",
+      "monthlyReports": {
+        "monthlyTotalSubmissions": 312,
+        "carryForwardPending": 0,
+        "currentMonthPending": 42,
+        "monthlyApproved": 255,
+        "monthlyRejected": 15,
+        "approvalRatePercentage": 81.73
+      },
+      "cumulativeReports": {
+        "cumulativeTotalSubmissions": 312,
+        "uniqueDocumentBalance": 312,
+        "openPendingBalance": 42,
+        "closedTotal": 270,
+        "approvedTotal": 255,
+        "rejectedTotal": 15,
+        "cumulativeApprovalRatePercentage": 81.73
+      },
+      "kpiDashboard": {
+        "totalSubmittals": 312,
+        "approvalRate": 81.73,
+        "slaComplianceRatio": 96.4,
+        "overdueRatio": 3.6,
+        "underReviewRatio": 13.46,
+        "averageTurnaroundDays": 5.8
+      },
+      "revisionAnalysis": {
+        "totalSubmissions": 312,
+        "uniqueDocuments": 312,
+        "rev0Count": 260,
+        "subsequentRevisionsCount": 52,
+        "rev0ApprovalRatePercentage": 83.08,
+        "subsequentRevisionsApprovalRatePercentage": 75.0,
+        "resubmissionIndex": 1.0
+      },
+      "abdCalculations": {
+        "totalUniqueABD": 0,
+        "approvedABD": 0,
+        "pendingABD": 0,
+        "rejectedABD": 0,
+        "revisionDistribution": { "rev0": 0, "rev1": 0, "rev2Plus": 0 },
+        "abdApprovalRate": 0.0,
+        "abdSlaCompliance": 0.0
+      },
+      "auditCenter": {
+        "totalAuditedRecords": 312,
+        "verifiedParityCount": 312,
+        "deltaVarianceCount": 0,
+        "classificationIntegrityScore": 100.0,
+        "layerComplianceRating": 100.0,
+        "statusAmbiguityCount": 0
+      },
+      "executiveReports": {
+        "portfolioHealthScore": 96.0,
+        "highRiskItemsCount": 5,
+        "overdueItemsCount": 6,
+        "overallApprovalRate": 81.73,
+        "qaSlaTurnaroundAverageDays": 5.8,
+        "executiveStatusBreakdown": { "approved": 255, "pending": 42, "rejected": 15 }
+      }
+    },
+    "WIR": {
+      "registerName": "Work Inspection Reports",
+      "monthlyReports": {
+        "monthlyTotalSubmissions": 850,
+        "carryForwardPending": 0,
+        "currentMonthPending": 120,
+        "monthlyApproved": 690,
+        "monthlyRejected": 40,
+        "approvalRatePercentage": 81.18
+      },
+      "cumulativeReports": {
+        "cumulativeTotalSubmissions": 850,
+        "uniqueDocumentBalance": 850,
+        "openPendingBalance": 120,
+        "closedTotal": 730,
+        "approvedTotal": 690,
+        "rejectedTotal": 40,
+        "cumulativeApprovalRatePercentage": 81.18
+      },
+      "kpiDashboard": {
+        "totalSubmittals": 850,
+        "approvalRate": 81.18,
+        "slaComplianceRatio": 98.0,
+        "overdueRatio": 2.0,
+        "underReviewRatio": 14.12,
+        "averageTurnaroundDays": 4.2
+      },
+      "revisionAnalysis": {
+        "totalSubmissions": 850,
+        "uniqueDocuments": 850,
+        "rev0Count": 750,
+        "subsequentRevisionsCount": 100,
+        "rev0ApprovalRatePercentage": 82.0,
+        "subsequentRevisionsApprovalRatePercentage": 75.0,
+        "resubmissionIndex": 1.0
+      },
+      "abdCalculations": {
+        "totalUniqueABD": 0,
+        "approvedABD": 0,
+        "pendingABD": 0,
+        "rejectedABD": 0,
+        "revisionDistribution": { "rev0": 0, "rev1": 0, "rev2Plus": 0 },
+        "abdApprovalRate": 0.0,
+        "abdSlaCompliance": 0.0
+      },
+      "auditCenter": {
+        "totalAuditedRecords": 850,
+        "verifiedParityCount": 850,
+        "deltaVarianceCount": 0,
+        "classificationIntegrityScore": 100.0,
+        "layerComplianceRating": 100.0,
+        "statusAmbiguityCount": 0
+      },
+      "executiveReports": {
+        "portfolioHealthScore": 98.0,
+        "highRiskItemsCount": 6,
+        "overdueItemsCount": 8,
+        "overallApprovalRate": 81.18,
+        "qaSlaTurnaroundAverageDays": 4.2,
+        "executiveStatusBreakdown": { "approved": 690, "pending": 120, "rejected": 40 }
+      }
+    },
+    "RFI": {
+      "registerName": "Request for Information",
+      "monthlyReports": {
+        "monthlyTotalSubmissions": 1050,
+        "carryForwardPending": 0,
+        "currentMonthPending": 85,
+        "monthlyApproved": 900,
+        "monthlyRejected": 65,
+        "approvalRatePercentage": 85.71
+      },
+      "cumulativeReports": {
+        "cumulativeTotalSubmissions": 1050,
+        "uniqueDocumentBalance": 1050,
+        "openPendingBalance": 85,
+        "closedTotal": 965,
+        "approvedTotal": 900,
+        "rejectedTotal": 65,
+        "cumulativeApprovalRatePercentage": 85.71
+      },
+      "kpiDashboard": {
+        "totalSubmittals": 1050,
+        "approvalRate": 85.71,
+        "slaComplianceRatio": 91.8,
+        "overdueRatio": 8.2,
+        "underReviewRatio": 8.10,
+        "averageTurnaroundDays": 9.3
+      },
+      "revisionAnalysis": {
+        "totalSubmissions": 1050,
+        "uniqueDocuments": 1050,
+        "rev0Count": 900,
+        "subsequentRevisionsCount": 150,
+        "rev0ApprovalRatePercentage": 87.78,
+        "subsequentRevisionsApprovalRatePercentage": 73.33,
+        "resubmissionIndex": 1.0
+      },
+      "abdCalculations": {
+        "totalUniqueABD": 0,
+        "approvedABD": 0,
+        "pendingABD": 0,
+        "rejectedABD": 0,
+        "revisionDistribution": { "rev0": 0, "rev1": 0, "rev2Plus": 0 },
+        "abdApprovalRate": 0.0,
+        "abdSlaCompliance": 0.0
+      },
+      "auditCenter": {
+        "totalAuditedRecords": 1050,
+        "verifiedParityCount": 1050,
+        "deltaVarianceCount": 0,
+        "classificationIntegrityScore": 100.0,
+        "layerComplianceRating": 100.0,
+        "statusAmbiguityCount": 0
+      },
+      "executiveReports": {
+        "portfolioHealthScore": 94.2,
+        "highRiskItemsCount": 15,
+        "overdueItemsCount": 20,
+        "overallApprovalRate": 85.71,
+        "qaSlaTurnaroundAverageDays": 9.3,
+        "executiveStatusBreakdown": { "approved": 900, "pending": 85, "rejected": 65 }
+      }
+    },
+    "NCR": {
+      "registerName": "Non-Conformance Reports",
+      "monthlyReports": {
+        "monthlyTotalSubmissions": 401,
+        "carryForwardPending": 0,
+        "currentMonthPending": 70,
+        "monthlyApproved": 324,
+        "monthlyRejected": 1,
+        "approvalRatePercentage": 80.80
+      },
+      "cumulativeReports": {
+        "cumulativeTotalSubmissions": 401,
+        "uniqueDocumentBalance": 395,
+        "openPendingBalance": 70,
+        "closedTotal": 325,
+        "approvedTotal": 324,
+        "rejectedTotal": 1,
+        "cumulativeApprovalRatePercentage": 82.03
+      },
+      "kpiDashboard": {
+        "totalSubmittals": 401,
+        "approvalRate": 80.80,
+        "slaComplianceRatio": 89.2,
+        "overdueRatio": 10.8,
+        "underReviewRatio": 17.46,
+        "averageTurnaroundDays": 12.4
+      },
+      "revisionAnalysis": {
+        "totalSubmissions": 401,
+        "uniqueDocuments": 395,
+        "rev0Count": 395,
+        "subsequentRevisionsCount": 6,
+        "rev0ApprovalRatePercentage": 82.03,
+        "subsequentRevisionsApprovalRatePercentage": 100.0,
+        "resubmissionIndex": 1.015
+      },
+      "abdCalculations": {
+        "totalUniqueABD": 0,
+        "approvedABD": 0,
+        "pendingABD": 0,
+        "rejectedABD": 0,
+        "revisionDistribution": { "rev0": 0, "rev1": 0, "rev2Plus": 0 },
+        "abdApprovalRate": 0.0,
+        "abdSlaCompliance": 0.0
+      },
+      "auditCenter": {
+        "totalAuditedRecords": 401,
+        "verifiedParityCount": 401,
+        "deltaVarianceCount": 0,
+        "classificationIntegrityScore": 100.0,
+        "layerComplianceRating": 100.0,
+        "statusAmbiguityCount": 0
+      },
+      "executiveReports": {
+        "portfolioHealthScore": 91.5,
+        "highRiskItemsCount": 18,
+        "overdueItemsCount": 22,
+        "overallApprovalRate": 80.80,
+        "qaSlaTurnaroundAverageDays": 12.4,
+        "executiveStatusBreakdown": { "approved": 324, "pending": 70, "rejected": 1 }
+      }
+    },
+    "SOR": {
+      "registerName": "Site Observation Reports",
+      "monthlyReports": {
+        "monthlyTotalSubmissions": 280,
+        "carryForwardPending": 0,
+        "currentMonthPending": 35,
+        "monthlyApproved": 220,
+        "monthlyRejected": 25,
+        "approvalRatePercentage": 78.57
+      },
+      "cumulativeReports": {
+        "cumulativeTotalSubmissions": 280,
+        "uniqueDocumentBalance": 280,
+        "openPendingBalance": 35,
+        "closedTotal": 245,
+        "approvedTotal": 220,
+        "rejectedTotal": 25,
+        "cumulativeApprovalRatePercentage": 78.57
+      },
+      "kpiDashboard": {
+        "totalSubmittals": 280,
+        "approvalRate": 78.57,
+        "slaComplianceRatio": 93.6,
+        "overdueRatio": 6.4,
+        "underReviewRatio": 12.50,
+        "averageTurnaroundDays": 6.9
+      },
+      "revisionAnalysis": {
+        "totalSubmissions": 280,
+        "uniqueDocuments": 280,
+        "rev0Count": 240,
+        "subsequentRevisionsCount": 40,
+        "rev0ApprovalRatePercentage": 80.0,
+        "subsequentRevisionsApprovalRatePercentage": 70.0,
+        "resubmissionIndex": 1.0
+      },
+      "abdCalculations": {
+        "totalUniqueABD": 0,
+        "approvedABD": 0,
+        "pendingABD": 0,
+        "rejectedABD": 0,
+        "revisionDistribution": { "rev0": 0, "rev1": 0, "rev2Plus": 0 },
+        "abdApprovalRate": 0.0,
+        "abdSlaCompliance": 0.0
+      },
+      "auditCenter": {
+        "totalAuditedRecords": 280,
+        "verifiedParityCount": 280,
+        "deltaVarianceCount": 0,
+        "classificationIntegrityScore": 100.0,
+        "layerComplianceRating": 100.0,
+        "statusAmbiguityCount": 0
+      },
+      "executiveReports": {
+        "portfolioHealthScore": 94.5,
+        "highRiskItemsCount": 4,
+        "overdueItemsCount": 7,
+        "overallApprovalRate": 78.57,
+        "qaSlaTurnaroundAverageDays": 6.9,
+        "executiveStatusBreakdown": { "approved": 220, "pending": 35, "rejected": 25 }
+      }
+    },
+    "TRS": {
+      "registerName": "Transmittals",
+      "monthlyReports": {
+        "monthlyTotalSubmissions": 1250,
+        "carryForwardPending": 0,
+        "currentMonthPending": 0,
+        "monthlyApproved": 1250,
+        "monthlyRejected": 0,
+        "approvalRatePercentage": 100.0
+      },
+      "cumulativeReports": {
+        "cumulativeTotalSubmissions": 1250,
+        "uniqueDocumentBalance": 1250,
+        "openPendingBalance": 0,
+        "closedTotal": 1250,
+        "approvedTotal": 1250,
+        "rejectedTotal": 0,
+        "cumulativeApprovalRatePercentage": 100.0
+      },
+      "kpiDashboard": {
+        "totalSubmittals": 1250,
+        "approvalRate": 100.0,
+        "slaComplianceRatio": 100.0,
+        "overdueRatio": 0.0,
+        "underReviewRatio": 0.0,
+        "averageTurnaroundDays": 1.0
+      },
+      "revisionAnalysis": {
+        "totalSubmissions": 1250,
+        "uniqueDocuments": 1250,
+        "rev0Count": 1250,
+        "subsequentRevisionsCount": 0,
+        "rev0ApprovalRatePercentage": 100.0,
+        "subsequentRevisionsApprovalRatePercentage": 0.0,
+        "resubmissionIndex": 1.0
+      },
+      "abdCalculations": {
+        "totalUniqueABD": 0,
+        "approvedABD": 0,
+        "pendingABD": 0,
+        "rejectedABD": 0,
+        "revisionDistribution": { "rev0": 0, "rev1": 0, "rev2Plus": 0 },
+        "abdApprovalRate": 0.0,
+        "abdSlaCompliance": 0.0
+      },
+      "auditCenter": {
+        "totalAuditedRecords": 1250,
+        "verifiedParityCount": 1250,
+        "deltaVarianceCount": 0,
+        "classificationIntegrityScore": 100.0,
+        "layerComplianceRating": 100.0,
+        "statusAmbiguityCount": 0
+      },
+      "executiveReports": {
+        "portfolioHealthScore": 100.0,
+        "highRiskItemsCount": 0,
+        "overdueItemsCount": 0,
+        "overallApprovalRate": 100.0,
+        "qaSlaTurnaroundAverageDays": 1.0,
+        "executiveStatusBreakdown": { "approved": 1250, "pending": 0, "rejected": 0 }
+      }
+    },
+    "LTR": {
+      "registerName": "Letters / Correspondence",
+      "monthlyReports": {
+        "monthlyTotalSubmissions": 980,
+        "carryForwardPending": 0,
+        "currentMonthPending": 0,
+        "monthlyApproved": 980,
+        "monthlyRejected": 0,
+        "approvalRatePercentage": 100.0
+      },
+      "cumulativeReports": {
+        "cumulativeTotalSubmissions": 980,
+        "uniqueDocumentBalance": 980,
+        "openPendingBalance": 0,
+        "closedTotal": 980,
+        "approvedTotal": 980,
+        "rejectedTotal": 0,
+        "cumulativeApprovalRatePercentage": 100.0
+      },
+      "kpiDashboard": {
+        "totalSubmittals": 980,
+        "approvalRate": 100.0,
+        "slaComplianceRatio": 99.5,
+        "overdueRatio": 0.5,
+        "underReviewRatio": 0.0,
+        "averageTurnaroundDays": 2.1
+      },
+      "revisionAnalysis": {
+        "totalSubmissions": 980,
+        "uniqueDocuments": 980,
+        "rev0Count": 980,
+        "subsequentRevisionsCount": 0,
+        "rev0ApprovalRatePercentage": 100.0,
+        "subsequentRevisionsApprovalRatePercentage": 0.0,
+        "resubmissionIndex": 1.0
+      },
+      "abdCalculations": {
+        "totalUniqueABD": 0,
+        "approvedABD": 0,
+        "pendingABD": 0,
+        "rejectedABD": 0,
+        "revisionDistribution": { "rev0": 0, "rev1": 0, "rev2Plus": 0 },
+        "abdApprovalRate": 0.0,
+        "abdSlaCompliance": 0.0
+      },
+      "auditCenter": {
+        "totalAuditedRecords": 980,
+        "verifiedParityCount": 980,
+        "deltaVarianceCount": 0,
+        "classificationIntegrityScore": 100.0,
+        "layerComplianceRating": 100.0,
+        "statusAmbiguityCount": 0
+      },
+      "executiveReports": {
+        "portfolioHealthScore": 99.5,
+        "highRiskItemsCount": 0,
+        "overdueItemsCount": 1,
+        "overallApprovalRate": 100.0,
+        "qaSlaTurnaroundAverageDays": 2.1,
+        "executiveStatusBreakdown": { "approved": 980, "pending": 0, "rejected": 0 }
+      }
+    }
+  }
+}

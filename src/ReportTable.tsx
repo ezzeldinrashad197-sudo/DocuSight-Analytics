@@ -369,8 +369,8 @@ export default function ReportTable({ data, filterFn, title, projectInfo, rawDat
   const barChartData = useMemo(() => {
       return byDocType.slice(0, 8).map(row => ({
           name: row.documentType,
-          Rev00: row.stats.totalDrawingsRev0 ?? row.stats.totalSheetsRev0 ?? 0,
-          FurtherRev: row.stats.totalDrawingsFurtherRev ?? row.stats.totalSheetsFurtherRev ?? 0,
+          Rev00: row.stats.totalSheetsRev0 || 0,
+          FurtherRev: row.stats.totalSheetsFurtherRev || 0,
           Total: row.stats.totalSubmittedSheets || 0
       }));
   }, [byDocType]);
@@ -448,8 +448,8 @@ export default function ReportTable({ data, filterFn, title, projectInfo, rawDat
             {/* Revisions > 0 */}
             <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200 transition-all hover:shadow relative overflow-hidden">
                 <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">{language === 'ar' ? 'مراجعات لاحقة' : 'Revisions >0'}</h4>
-                <p className="text-2xl font-bold text-[#2f75b5]">{globalStats.totalDrawingsFurtherRev ?? globalStats.totalSheetsFurtherRev}</p>
-                <span className="text-[10px] text-slate-400 font-semibold">{(globalStats.totalUniqueDrawings > 0 ? ((globalStats.totalDrawingsFurtherRev ?? globalStats.totalSheetsFurtherRev) / globalStats.totalUniqueDrawings * 100) : 0).toFixed(0)}% {language === 'ar' ? 'إعادة تقديم' : 'rework ratio'}</span>
+                <p className="text-2xl font-bold text-[#2f75b5]">{globalStats.totalSheetsFurtherRev}</p>
+                <span className="text-[10px] text-slate-400 font-semibold">{(globalStats.totalSubmittedSheets > 0 ? (globalStats.totalSheetsFurtherRev / globalStats.totalSubmittedSheets * 100) : 0).toFixed(0)}% {language === 'ar' ? 'إعادة تقديم' : 'rework ratio'}</span>
             </div>
 
             {/* Approval Rate */}
@@ -721,8 +721,8 @@ export default function ReportTable({ data, filterFn, title, projectInfo, rawDat
                       <td className="px-4 py-3 text-xs text-[#203864] font-extrabold text-left">{row.documentType}</td>
                       <td className={tdClass}>{row.stats.totalUniqueDrawings || (row.stats.totalDrawingsRev0 + row.stats.totalDrawingsFurtherRev)}</td>
                       <td className={`${tdClass} bg-slate-100/30 font-bold text-slate-900`}>{row.stats.totalSubmittedSheets}</td>
-                      <td className={tdClass}>{row.stats.totalDrawingsRev0 ?? row.stats.totalSheetsRev0}</td>
-                      <td className={tdClass}>{row.stats.totalDrawingsFurtherRev ?? row.stats.totalSheetsFurtherRev}</td>
+                      <td className={tdClass}>{row.stats.totalSheetsRev0}</td>
+                      <td className={tdClass}>{row.stats.totalSheetsFurtherRev}</td>
                       
                       {/* Conditional Formatting: Approved */}
                       <td className={tdClass}>
@@ -775,8 +775,8 @@ export default function ReportTable({ data, filterFn, title, projectInfo, rawDat
                     <td className="px-4 py-3.5 text-xs font-black text-left text-slate-800">GRAND TOTAL</td>
                     <td className="px-4 py-3.5 text-xs text-center font-bold text-slate-800">{globalStats.totalUniqueDrawings || (globalStats.totalDrawingsRev0 + globalStats.totalDrawingsFurtherRev)}</td>
                     <td className="px-4 py-3.5 text-xs text-center font-black bg-slate-300/60 text-[#203864]">{globalStats.totalSubmittedSheets}</td>
-                    <td className="px-4 py-3.5 text-xs text-center font-bold text-slate-700">{globalStats.totalDrawingsRev0 ?? globalStats.totalSheetsRev0}</td>
-                    <td className="px-4 py-3.5 text-xs text-center font-bold text-slate-700">{globalStats.totalDrawingsFurtherRev ?? globalStats.totalSheetsFurtherRev}</td>
+                    <td className="px-4 py-3.5 text-xs text-center font-bold text-slate-700">{globalStats.totalSheetsRev0}</td>
+                    <td className="px-4 py-3.5 text-xs text-center font-bold text-slate-700">{globalStats.totalSheetsFurtherRev}</td>
                     
                     {/* Total Approved */}
                     <td className="px-4 py-3.5 text-xs text-center">

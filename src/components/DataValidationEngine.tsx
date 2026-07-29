@@ -1,8 +1,10 @@
 import React, { useMemo, useState } from 'react';
 import { SubmittalRow } from '../types';
 import { AlertTriangle, CheckCircle2, XCircle, Download, DatabaseZap, FileText, CheckSquare } from 'lucide-react';
-import { getStatusCodeCategory } from '../utils/calculations';
+import { getStatusCodeCategory, parseDateTimestamp } from '../utils/calculations';
 import { getPerformanceValidationRows } from '../analytics/calculationFoundation';
+import { compareRevisions } from '../analytics/analyticsCore';
+import { getRevisionWeight } from '../utils/enterpriseUpgradeEngine';
 
 const getNormalizedRevision = (rev?: string | number, isRev0?: boolean): string => {
     if (rev === undefined || rev === null) {
@@ -133,11 +135,12 @@ export default function DataValidationEngine({ data }: Props) {
         // 4. Revision Logic (Regression and Missing)
         Object.entries(docHistory).forEach(([ref, rows]) => {
             if (rows.length > 1) {
-                // sort by date
+                // sort by date then revision comparison
                 const sorted = [...rows].sort((a, b) => {
-                    const dA = a.submissionDate ? new Date(a.submissionDate).getTime() : 0;
-                    const dB = b.submissionDate ? new Date(b.submissionDate).getTime() : 0;
-                    return dA - dB;
+                    const dA = a.submissionDate ? parseDateTimestamp(a.submissionDate) : 0;
+                    const dB = b.submissionDate ? parseDateTimestamp(b.submissionDate) : 0;
+                    if (dA !== dB) return dA - dB;
+                    return compareRevisions(a.rev, b.rev);
                 });
                 
                 const revs = sorted.map(r => getNormalizedRevision(r.rev, r.isRev0)).filter(r => r !== 'Unknown');

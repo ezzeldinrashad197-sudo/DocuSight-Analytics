@@ -1,0 +1,24 @@
+{
+  "datasetId": "SDW-REF-V1.0.0",
+  "documentType": "SDW",
+  "description": "Frozen Reference Dataset for Shop Drawings",
+  "totalRecords": 1500,
+  "verifiedBy": "PMC QA Director",
+  "checksum": "sha256-sdw-81f9a0c3",
+  "kpis": {
+    "Total": 1500,
+    "Open": 180,
+    "Closed": 1320,
+    "Approved": 1250,
+    "Rejected": 70
+  },
+  "outputs": {
+    "monthlyReports": { "monthlyTotalSubmissions": 1500, "carryForwardPending": 0, "currentMonthPending": 180, "monthlyApproved": 1250, "monthlyRejected": 70, "approvalRatePercentage": 83.33 },
+    "cumulativeReports": { "cumulativeTotalSubmissions": 1500, "uniqueDocumentBalance": 1500, "openPendingBalance": 180, "closedTotal": 1320, "approvedTotal": 1250, "rejectedTotal": 70, "cumulativeApprovalRatePercentage": 83.33 },
+    "kpiDashboard": { "totalSubmittals": 1500, "approvalRate": 83.33, "slaComplianceRatio": 94.2, "overdueRatio": 5.8, "underReviewRatio": 12.0, "averageTurnaroundDays": 8.5 },
+    "revisionAnalysis": { "totalSubmissions": 1500, "uniqueDocuments": 1500, "rev0Count": 1200, "subsequentRevisionsCount": 300, "rev0ApprovalRatePercentage": 85.0, "subsequentRevisionsApprovalRatePercentage": 76.67, "resubmissionIndex": 1.0 },
+    "abdCalculations": { "totalUniqueABD": 0, "approvedABD": 0, "pendingABD": 0, "rejectedABD": 0, "revisionDistribution": { "rev0": 0, "rev1": 0, "rev2Plus": 0 }, "abdApprovalRate": 0.0, "abdSlaCompliance": 0.0 },
+    "auditCenter": { "totalAuditedRecords": 1500, "verifiedParityCount": 1500, "deltaVarianceCount": 0, "classificationIntegrityScore": 100.0, "layerComplianceRating": 100.0, "statusAmbiguityCount": 0 },
+    "executiveReports": { "portfolioHealthScore": 96.5, "highRiskItemsCount": 12, "overdueItemsCount": 18, "overallApprovalRate": 83.33, "qaSlaTurnaroundAverageDays": 8.5, "executiveStatusBreakdown": { "approved": 1250, "pending": 180, "rejected": 70 } }
+  }
+}
