@@ -183,7 +183,7 @@ async function runE2EIntegrationTest() {
     );
 
     // Verify mathematical invariants on aggregated statistics
-    const totalSheetsInStats = kpiStats.totalSubmittedSheets;
+    const totalSheetsInStats = kpiStats.totalUniqueDrawings;
     const closedSheets = kpiStats.approved + kpiStats.rejectedClosed;
     const openSheets = kpiStats.pending + kpiStats.rejectedOpen;
     const sumCheck = closedSheets + openSheets === totalSheetsInStats;

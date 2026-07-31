@@ -49,8 +49,16 @@ export default function ReportTable({ data, filterFn, title, projectInfo, rawDat
   }, [data, filterFn]);
 
   const rowToLabel = (d: SubmittalRow) => {
-      let dt = (d.documentType || 'DOC').trim();
-      return dt;
+      const mode = typeof window !== 'undefined'
+        ? (localStorage.getItem('docuCtrl_workflowClassificationMode') || 'preserve_sheet_name')
+        : 'preserve_sheet_name';
+
+      if (mode === 'preserve_sheet_name') {
+        const lt = (d.logType || (d as any).sheetName || '').trim().toUpperCase();
+        if (lt) return lt.startsWith('DOC-') ? lt : `DOC-${lt}`;
+      }
+      let dt = (d.logType || d.documentType || 'DOC').trim().toUpperCase();
+      return dt.startsWith('DOC-') ? dt : `DOC-${dt}`;
   };
 
   const byDocType = useMemo(() => {
@@ -721,8 +729,8 @@ export default function ReportTable({ data, filterFn, title, projectInfo, rawDat
                       <td className="px-4 py-3 text-xs text-[#203864] font-extrabold text-left">{row.documentType}</td>
                       <td className={tdClass}>{row.stats.totalUniqueDrawings || (row.stats.totalDrawingsRev0 + row.stats.totalDrawingsFurtherRev)}</td>
                       <td className={`${tdClass} bg-slate-100/30 font-bold text-slate-900`}>{row.stats.totalSubmittedSheets}</td>
-                      <td className={tdClass}>{row.stats.totalSheetsRev0}</td>
-                      <td className={tdClass}>{row.stats.totalSheetsFurtherRev}</td>
+                      <td className={tdClass}>{row.stats.totalDrawingsRev0 !== undefined ? row.stats.totalDrawingsRev0 : row.stats.totalSheetsRev0}</td>
+                      <td className={tdClass}>{row.stats.totalDrawingsFurtherRev !== undefined ? row.stats.totalDrawingsFurtherRev : row.stats.totalSheetsFurtherRev}</td>
                       
                       {/* Conditional Formatting: Approved */}
                       <td className={tdClass}>
@@ -775,8 +783,8 @@ export default function ReportTable({ data, filterFn, title, projectInfo, rawDat
                     <td className="px-4 py-3.5 text-xs font-black text-left text-slate-800">GRAND TOTAL</td>
                     <td className="px-4 py-3.5 text-xs text-center font-bold text-slate-800">{globalStats.totalUniqueDrawings || (globalStats.totalDrawingsRev0 + globalStats.totalDrawingsFurtherRev)}</td>
                     <td className="px-4 py-3.5 text-xs text-center font-black bg-slate-300/60 text-[#203864]">{globalStats.totalSubmittedSheets}</td>
-                    <td className="px-4 py-3.5 text-xs text-center font-bold text-slate-700">{globalStats.totalSheetsRev0}</td>
-                    <td className="px-4 py-3.5 text-xs text-center font-bold text-slate-700">{globalStats.totalSheetsFurtherRev}</td>
+                    <td className="px-4 py-3.5 text-xs text-center font-bold text-slate-700">{globalStats.totalDrawingsRev0 !== undefined ? globalStats.totalDrawingsRev0 : globalStats.totalSheetsRev0}</td>
+                    <td className="px-4 py-3.5 text-xs text-center font-bold text-slate-700">{globalStats.totalDrawingsFurtherRev !== undefined ? globalStats.totalDrawingsFurtherRev : globalStats.totalSheetsFurtherRev}</td>
                     
                     {/* Total Approved */}
                     <td className="px-4 py-3.5 text-xs text-center">

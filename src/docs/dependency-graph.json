@@ -109,6 +109,10 @@
       "layer": 2
     },
     {
+      "id": "src/analytics/governance/goldenRegressionSuite.ts",
+      "layer": 2
+    },
+    {
       "id": "src/analytics/governance/validationFramework.ts",
       "layer": 2
     },
@@ -146,6 +150,14 @@
     },
     {
       "id": "src/components/AdvancedAgingAnalysis.tsx",
+      "layer": 3
+    },
+    {
+      "id": "src/components/CalculationAuditCenter.tsx",
+      "layer": 3
+    },
+    {
+      "id": "src/components/CorporateReportsView.tsx",
       "layer": 3
     },
     {
@@ -428,6 +440,14 @@
     },
     {
       "source": "src/App.tsx",
+      "target": "src/components/CalculationAuditCenter.tsx"
+    },
+    {
+      "source": "src/App.tsx",
+      "target": "src/components/CorporateReportsView.tsx"
+    },
+    {
+      "source": "src/App.tsx",
       "target": "src/utils/calculations.ts"
     },
     {
@@ -520,6 +540,10 @@
     },
     {
       "source": "src/RFIAnalytics.tsx",
+      "target": "src/utils/enterpriseUpgradeEngine.ts"
+    },
+    {
+      "source": "src/RFIAnalytics.tsx",
       "target": "src/analytics/analyticsCore.ts"
     },
     {
@@ -560,6 +584,10 @@
     },
     {
       "source": "src/SettingsCenter.tsx",
+      "target": "src/analytics/governance/goldenRegressionSuite.ts"
+    },
+    {
+      "source": "src/SettingsCenter.tsx",
       "target": "src/firebase.ts"
     },
     {
@@ -589,6 +617,10 @@
     {
       "source": "src/analytics/calculationFoundation.ts",
       "target": "src/analytics/analyticsCore.ts"
+    },
+    {
+      "source": "src/analytics/calculationFoundation.ts",
+      "target": "src/utils/enterpriseUpgradeEngine.ts"
     },
     {
       "source": "src/analytics/dataValidator.ts",
@@ -655,6 +687,26 @@
       "target": "src/analytics/governance/formulaRegistry.ts"
     },
     {
+      "source": "src/analytics/governance/goldenRegressionSuite.ts",
+      "target": "src/types.ts"
+    },
+    {
+      "source": "src/analytics/governance/goldenRegressionSuite.ts",
+      "target": "src/analytics/calculationFoundation.ts"
+    },
+    {
+      "source": "src/analytics/governance/goldenRegressionSuite.ts",
+      "target": "src/analytics/analyticsCore.ts"
+    },
+    {
+      "source": "src/analytics/governance/goldenRegressionSuite.ts",
+      "target": "src/utils/enterpriseUpgradeEngine.ts"
+    },
+    {
+      "source": "src/analytics/governance/goldenRegressionSuite.ts",
+      "target": "src/utils/calculations.ts"
+    },
+    {
       "source": "src/analytics/governance/validationFramework.ts",
       "target": "src/types.ts"
     },
@@ -677,6 +729,10 @@
     {
       "source": "src/analytics/governance/validationFramework.ts",
       "target": "src/utils/calculations.ts"
+    },
+    {
+      "source": "src/analytics/governance/validationFramework.ts",
+      "target": "src/analytics/governance/goldenRegressionSuite.ts"
     },
     {
       "source": "src/analytics/kpiEngine.ts",
@@ -719,6 +775,14 @@
       "target": "src/analytics/models.ts"
     },
     {
+      "source": "src/analytics/revisionEngine.ts",
+      "target": "src/analytics/analyticsCore.ts"
+    },
+    {
+      "source": "src/analytics/revisionEngine.ts",
+      "target": "src/utils/enterpriseUpgradeEngine.ts"
+    },
+    {
       "source": "src/analytics/sor/sorEngine.ts",
       "target": "src/types.ts"
     },
@@ -747,6 +811,30 @@
       "target": "src/utils/calculations.ts"
     },
     {
+      "source": "src/components/CalculationAuditCenter.tsx",
+      "target": "src/types.ts"
+    },
+    {
+      "source": "src/components/CalculationAuditCenter.tsx",
+      "target": "src/utils/calculations.ts"
+    },
+    {
+      "source": "src/components/CalculationAuditCenter.tsx",
+      "target": "src/analytics/analyticsCore.ts"
+    },
+    {
+      "source": "src/components/CalculationAuditCenter.tsx",
+      "target": "src/utils/enterpriseUpgradeEngine.ts"
+    },
+    {
+      "source": "src/components/CorporateReportsView.tsx",
+      "target": "src/types.ts"
+    },
+    {
+      "source": "src/components/CorporateReportsView.tsx",
+      "target": "src/utils/calculations.ts"
+    },
+    {
       "source": "src/components/DataValidationEngine.tsx",
       "target": "src/types.ts"
     },
@@ -757,6 +845,14 @@
     {
       "source": "src/components/DataValidationEngine.tsx",
       "target": "src/analytics/calculationFoundation.ts"
+    },
+    {
+      "source": "src/components/DataValidationEngine.tsx",
+      "target": "src/analytics/analyticsCore.ts"
+    },
+    {
+      "source": "src/components/DataValidationEngine.tsx",
+      "target": "src/utils/enterpriseUpgradeEngine.ts"
     },
     {
       "source": "src/components/EngineeringItemDatasetView.tsx",
@@ -789,6 +885,14 @@
     {
       "source": "src/components/FinalAcceptanceAuditView.tsx",
       "target": "src/utils/calculations.ts"
+    },
+    {
+      "source": "src/components/FinalAcceptanceAuditView.tsx",
+      "target": "src/analytics/analyticsCore.ts"
+    },
+    {
+      "source": "src/components/FinalAcceptanceAuditView.tsx",
+      "target": "src/utils/enterpriseUpgradeEngine.ts"
     },
     {
       "source": "src/components/FinalAcceptanceAuditView.tsx",
@@ -921,6 +1025,14 @@
     {
       "source": "src/utils/calculations.ts",
       "target": "src/analytics/calculationFoundation.ts"
+    },
+    {
+      "source": "src/utils/calculations.ts",
+      "target": "src/analytics/analyticsCore.ts"
+    },
+    {
+      "source": "src/utils/calculations.ts",
+      "target": "src/utils/enterpriseUpgradeEngine.ts"
     },
     {
       "source": "src/utils/calculations.ts",

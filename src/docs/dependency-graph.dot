@@ -22,6 +22,8 @@ digraph DependencyGraph {
     "src/SettingsCenter.tsx" [fillcolor=white];
     "src/components/ActionTracker.tsx" [fillcolor=white];
     "src/components/AdvancedAgingAnalysis.tsx" [fillcolor=white];
+    "src/components/CalculationAuditCenter.tsx" [fillcolor=white];
+    "src/components/CorporateReportsView.tsx" [fillcolor=white];
     "src/components/DataValidationEngine.tsx" [fillcolor=white];
     "src/components/EngineeringItemDatasetView.tsx" [fillcolor=white];
     "src/components/EnterpriseHardeningView.tsx" [fillcolor=white];
@@ -66,6 +68,7 @@ digraph DependencyGraph {
     "src/analytics/governance/canonicalEngineAdapter.ts" [fillcolor=lightgreen];
     "src/analytics/governance/configurationRepository.ts" [fillcolor=lightgreen];
     "src/analytics/governance/formulaRegistry.ts" [fillcolor=lightgreen];
+    "src/analytics/governance/goldenRegressionSuite.ts" [fillcolor=lightgreen];
     "src/analytics/governance/validationFramework.ts" [fillcolor=lightgreen];
     "src/analytics/kpiEngine.ts" [fillcolor=lightgreen];
     "src/analytics/models.ts" [fillcolor=lightgreen];
@@ -127,6 +130,8 @@ digraph DependencyGraph {
   "src/App.tsx" -> "src/components/EnterpriseMonitoringDashboard.tsx";
   "src/App.tsx" -> "src/components/FinalAcceptanceAuditView.tsx";
   "src/App.tsx" -> "src/components/WorkflowMappingCenter.tsx";
+  "src/App.tsx" -> "src/components/CalculationAuditCenter.tsx";
+  "src/App.tsx" -> "src/components/CorporateReportsView.tsx";
   "src/App.tsx" -> "src/utils/calculations.ts";
   "src/CorrespondenceAnalytics.tsx" -> "src/types.ts";
   "src/DelayAnalysis.tsx" -> "src/types.ts";
@@ -150,6 +155,7 @@ digraph DependencyGraph {
   "src/Presentation.tsx" -> "src/components/presentation/PresHelpers.tsx";
   "src/ProjectConfigModal.tsx" -> "src/types.ts";
   "src/RFIAnalytics.tsx" -> "src/types.ts";
+  "src/RFIAnalytics.tsx" -> "src/utils/enterpriseUpgradeEngine.ts";
   "src/RFIAnalytics.tsx" -> "src/analytics/analyticsCore.ts";
   "src/ReportTable.tsx" -> "src/types.ts";
   "src/ReportTable.tsx" -> "src/utils/calculations.ts";
@@ -160,6 +166,7 @@ digraph DependencyGraph {
   "src/SORAnalytics.tsx" -> "src/utils/i18n.tsx";
   "src/SettingsCenter.tsx" -> "src/types.ts";
   "src/SettingsCenter.tsx" -> "src/ProjectConfigModal.tsx";
+  "src/SettingsCenter.tsx" -> "src/analytics/governance/goldenRegressionSuite.ts";
   "src/SettingsCenter.tsx" -> "src/firebase.ts";
   "src/SettingsCenter.tsx" -> "src/utils/i18n.tsx";
   "src/analytics/analyticsCore.ts" -> "src/types.ts";
@@ -168,6 +175,7 @@ digraph DependencyGraph {
   "src/analytics/analyticsService.ts" -> "src/analytics/models.ts";
   "src/analytics/calculationFoundation.ts" -> "src/types.ts";
   "src/analytics/calculationFoundation.ts" -> "src/analytics/analyticsCore.ts";
+  "src/analytics/calculationFoundation.ts" -> "src/utils/enterpriseUpgradeEngine.ts";
   "src/analytics/dataValidator.ts" -> "src/analytics/models.ts";
   "src/analytics/dataValidator.ts" -> "src/utils/calculations.ts";
   "src/analytics/exportEngine.ts" -> "src/types.ts";
@@ -184,12 +192,18 @@ digraph DependencyGraph {
   "src/analytics/governance/canonicalEngineAdapter.ts" -> "src/analytics/governance/auditFramework.ts";
   "src/analytics/governance/canonicalEngineAdapter.ts" -> "src/analytics/governance/businessRuleRegistry.ts";
   "src/analytics/governance/canonicalEngineAdapter.ts" -> "src/analytics/governance/formulaRegistry.ts";
+  "src/analytics/governance/goldenRegressionSuite.ts" -> "src/types.ts";
+  "src/analytics/governance/goldenRegressionSuite.ts" -> "src/analytics/calculationFoundation.ts";
+  "src/analytics/governance/goldenRegressionSuite.ts" -> "src/analytics/analyticsCore.ts";
+  "src/analytics/governance/goldenRegressionSuite.ts" -> "src/utils/enterpriseUpgradeEngine.ts";
+  "src/analytics/governance/goldenRegressionSuite.ts" -> "src/utils/calculations.ts";
   "src/analytics/governance/validationFramework.ts" -> "src/types.ts";
   "src/analytics/governance/validationFramework.ts" -> "src/analytics/governance/auditFramework.ts";
   "src/analytics/governance/validationFramework.ts" -> "src/analytics/governance/businessRuleRegistry.ts";
   "src/analytics/governance/validationFramework.ts" -> "src/analytics/governance/formulaRegistry.ts";
   "src/analytics/governance/validationFramework.ts" -> "src/analytics/calculationFoundation.ts";
   "src/analytics/governance/validationFramework.ts" -> "src/utils/calculations.ts";
+  "src/analytics/governance/validationFramework.ts" -> "src/analytics/governance/goldenRegressionSuite.ts";
   "src/analytics/kpiEngine.ts" -> "src/analytics/models.ts";
   "src/analytics/ncr/ncrEngine.ts" -> "src/types.ts";
   "src/analytics/ncr/ncrEngine.ts" -> "src/utils/calculations.ts";
@@ -200,6 +214,8 @@ digraph DependencyGraph {
   "src/analytics/recordTransformer.ts" -> "src/analytics/statusEngine.ts";
   "src/analytics/recordTransformer.ts" -> "src/analytics/revisionEngine.ts";
   "src/analytics/revisionEngine.ts" -> "src/analytics/models.ts";
+  "src/analytics/revisionEngine.ts" -> "src/analytics/analyticsCore.ts";
+  "src/analytics/revisionEngine.ts" -> "src/utils/enterpriseUpgradeEngine.ts";
   "src/analytics/sor/sorEngine.ts" -> "src/types.ts";
   "src/analytics/sor/sorEngine.ts" -> "src/utils/calculations.ts";
   "src/analytics/statusEngine.ts" -> "src/analytics/models.ts";
@@ -207,9 +223,17 @@ digraph DependencyGraph {
   "src/components/ActionTracker.tsx" -> "src/utils/calculations.ts";
   "src/components/AdvancedAgingAnalysis.tsx" -> "src/types.ts";
   "src/components/AdvancedAgingAnalysis.tsx" -> "src/utils/calculations.ts";
+  "src/components/CalculationAuditCenter.tsx" -> "src/types.ts";
+  "src/components/CalculationAuditCenter.tsx" -> "src/utils/calculations.ts";
+  "src/components/CalculationAuditCenter.tsx" -> "src/analytics/analyticsCore.ts";
+  "src/components/CalculationAuditCenter.tsx" -> "src/utils/enterpriseUpgradeEngine.ts";
+  "src/components/CorporateReportsView.tsx" -> "src/types.ts";
+  "src/components/CorporateReportsView.tsx" -> "src/utils/calculations.ts";
   "src/components/DataValidationEngine.tsx" -> "src/types.ts";
   "src/components/DataValidationEngine.tsx" -> "src/utils/calculations.ts";
   "src/components/DataValidationEngine.tsx" -> "src/analytics/calculationFoundation.ts";
+  "src/components/DataValidationEngine.tsx" -> "src/analytics/analyticsCore.ts";
+  "src/components/DataValidationEngine.tsx" -> "src/utils/enterpriseUpgradeEngine.ts";
   "src/components/EngineeringItemDatasetView.tsx" -> "src/types.ts";
   "src/components/EngineeringItemDatasetView.tsx" -> "src/analytics/calculationFoundation.ts";
   "src/components/EnterpriseHardeningView.tsx" -> "src/types.ts";
@@ -218,6 +242,8 @@ digraph DependencyGraph {
   "src/components/EnterpriseMonitoringDashboard.tsx" -> "src/firebase.ts";
   "src/components/FinalAcceptanceAuditView.tsx" -> "src/types.ts";
   "src/components/FinalAcceptanceAuditView.tsx" -> "src/utils/calculations.ts";
+  "src/components/FinalAcceptanceAuditView.tsx" -> "src/analytics/analyticsCore.ts";
+  "src/components/FinalAcceptanceAuditView.tsx" -> "src/utils/enterpriseUpgradeEngine.ts";
   "src/components/FinalAcceptanceAuditView.tsx" -> "src/analytics/governance/validationFramework.ts";
   "src/components/FinalAcceptanceAuditView.tsx" -> "src/utils/classificationEngine.ts";
   "src/components/FinalAcceptanceAuditView.tsx" -> "src/firebase.ts";
@@ -251,6 +277,8 @@ digraph DependencyGraph {
   "src/main.tsx" -> "src/utils/i18n.tsx";
   "src/utils/calculations.ts" -> "src/types.ts";
   "src/utils/calculations.ts" -> "src/analytics/calculationFoundation.ts";
+  "src/utils/calculations.ts" -> "src/analytics/analyticsCore.ts";
+  "src/utils/calculations.ts" -> "src/utils/enterpriseUpgradeEngine.ts";
   "src/utils/calculations.ts" -> "src/utils/workflowMapping.ts";
   "src/utils/classificationEngine.ts" -> "src/utils/workflowMapping.ts";
   "src/utils/enterpriseEngine.ts" -> "src/types.ts";

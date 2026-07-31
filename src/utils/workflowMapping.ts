@@ -174,30 +174,32 @@ const LOCAL_STORAGE_KEY = 'docusight_custom_aliases';
 // Load all mappings (combining defaults and user-defined mappings from localStorage)
 export function getActiveMappings(): AliasMapping[] {
   try {
-    const saved = localStorage.getItem(LOCAL_STORAGE_KEY);
-    if (saved) {
-      const parsed = JSON.parse(saved);
-      if (Array.isArray(parsed)) {
-        // filter duplicate custom aliases overriding defaults
-        const customAliases = parsed.map((item: any) => ({
-          alias: String(item.alias).trim().toUpperCase(),
-          display: String(item.display || item.alias).trim().toUpperCase(),
-          workflowFamily: item.workflowFamily as WorkflowFamily,
-          isCustom: true,
-        }));
-        
-        const merged: AliasMapping[] = [...customAliases];
-        DEFAULT_ALIASES.forEach(def => {
-          const upperAlias = def.alias.toUpperCase();
-          if (!merged.some(m => m.alias === upperAlias)) {
-            merged.push(def);
-          }
-        });
-        return merged;
+    if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
+      const saved = localStorage.getItem(LOCAL_STORAGE_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) {
+          // filter duplicate custom aliases overriding defaults
+          const customAliases = parsed.map((item: any) => ({
+            alias: String(item.alias).trim().toUpperCase(),
+            display: String(item.display || item.alias).trim().toUpperCase(),
+            workflowFamily: item.workflowFamily as WorkflowFamily,
+            isCustom: true,
+          }));
+          
+          const merged: AliasMapping[] = [...customAliases];
+          DEFAULT_ALIASES.forEach(def => {
+            const upperAlias = def.alias.toUpperCase();
+            if (!merged.some(m => m.alias === upperAlias)) {
+              merged.push(def);
+            }
+          });
+          return merged;
+        }
       }
     }
   } catch (e) {
-    console.error('Error loading custom aliases:', e);
+    // Ignore storage errors in node/headless environment
   }
   return [...DEFAULT_ALIASES];
 }

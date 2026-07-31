@@ -219,7 +219,8 @@ const {
   calculateNCRStats, 
   getUniqueNCRs, 
   getStatusCodeCategory,
-  getDelayDays
+  getDelayDays,
+  resolveRowDiscipline
 } = await import(path.join(__dirname, '../src/utils/calculations.instrumented.js'));
 
 // Tracking overall suite execution
@@ -462,6 +463,53 @@ const failsafeAssertions: MutationFailsafeAssertion[] = [
     test: () => {
       const delay = getDelayDays('2026-07-01', '', '2026-07-15');
       return delay > 0;
+    }
+  },
+  {
+    name: "ER-WF-005 Sheet Name Authority Rule: Preserves worksheet identity without content keyword reclassification",
+    test: () => {
+      // Test case 1: DOC-GEN sheet with internal doc number containing HSE keywords
+      const genRow = { logType: 'DOC-GEN', docNo: 'DOC-HSE-001', discipline: '' };
+      const resolvedGen = resolveRowDiscipline(genRow as any, 'DOC');
+
+      // Test case 2: Separate DOC-HSE sheet with internal doc number containing STR keywords
+      const hseRow = { logType: 'DOC-HSE', docNo: 'DOC-STR-002', discipline: '' };
+      const resolvedHse = resolveRowDiscipline(hseRow as any, 'DOC');
+
+      // Test case 3: Ensure independent entity preservation (no merging, no phantom disciplines)
+      const rows = [genRow, hseRow];
+      const categories = Array.from(new Set(rows.map(r => resolveRowDiscipline(r as any, 'DOC'))));
+
+      const matchesGen = resolvedGen === 'GEN';
+      const matchesHse = resolvedHse === 'HSE';
+      const exactCategories = categories.length === 2 && categories.includes('GEN') && categories.includes('HSE');
+      const noPhantom = !categories.includes('STR') && !categories.includes('Arch') && !categories.includes('Mech');
+
+      return matchesGen && matchesHse && exactCategories && noPhantom;
+    }
+  },
+  {
+    name: "Zero Phantom HSE Workflow Check: Document rows inside GEN sheet with parsed discipline text 'HSE' must map to GEN under ER-WF-005",
+    test: () => {
+      const rowInGenWithHseDiscipline = { logType: 'DOC-GEN', documentType: 'GEN', docNo: 'INN-ARC-DOC-GEN-0107', discipline: 'HSE' };
+      const resolved = resolveRowDiscipline(rowInGenWithHseDiscipline as any, 'DOC');
+      return resolved === 'GEN';
+    }
+  },
+  {
+    name: "Revision Aggregation Invariants: Rev0 <= Unique, FurtherRev <= Unique, Rev0 + FurtherRev + MissingRev === Unique",
+    test: () => {
+      const sampleRows = [
+        { id: '1', docNo: 'DOC-001', rev: '0', status: 'APPROVED' },
+        { id: '2', docNo: 'DOC-001', rev: '1', status: 'APPROVED' },
+        { id: '3', docNo: 'DOC-002', rev: '0', status: 'APPROVED' },
+        { id: '4', docNo: 'DOC-003', rev: 'A', status: 'APPROVED' },
+      ];
+      const stats = calculateStats(sampleRows as any, sampleRows as any);
+      const rev0Valid = stats.totalDrawingsRev0 <= stats.totalUniqueDrawings;
+      const furtherValid = stats.totalDrawingsFurtherRev <= stats.totalUniqueDrawings;
+      const exactSum = (stats.totalDrawingsRev0 + stats.totalDrawingsFurtherRev + stats.totalDrawingsMissingRev) === stats.totalUniqueDrawings;
+      return rev0Valid && furtherValid && exactSum;
     }
   }
 ];

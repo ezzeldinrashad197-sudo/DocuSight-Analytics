@@ -256,8 +256,10 @@ export default function Presentation({
     if (bt === 'LTR') {
       disciplinesInThisType = Array.from(new Set(typeData.map(d => d.stakeholder || 'GENERAL')));
     } else {
+      const activeDiscsInType = Array.from(new Set(typeData.map(d => resolveRowDiscipline(d, bt))));
       const predefinedDisciplines = bt === 'NCR' ? ['STR', 'Arch', 'Mech', 'Elec', 'Infra', 'Landscape', 'HSE'] : ['STR', 'Arch', 'Mech', 'Elec', 'Infra', 'Landscape', 'SURVEY'];
-      disciplinesInThisType = [...predefinedDisciplines];
+      disciplinesInThisType = Array.from(new Set([...predefinedDisciplines, ...activeDiscsInType])).filter(disc => typeData.some(d => resolveRowDiscipline(d, bt) === disc));
+      if (disciplinesInThisType.length === 0) disciplinesInThisType = predefinedDisciplines;
     }
 
     const stats = disciplinesInThisType.map((disc) => {
@@ -270,8 +272,8 @@ export default function Presentation({
       const uniqueItems = s.totalUniqueDrawings !== undefined ? s.totalUniqueDrawings : ((s.totalSheetsRev0 || 0) + (s.totalSheetsFurtherRev || 0));
       return {
         discipline: disc,
-        Rev00: s.totalSheetsRev0 || 0,
-        FurtherRev: s.totalSheetsFurtherRev || 0,
+        Rev00: s.totalDrawingsRev0 !== undefined ? s.totalDrawingsRev0 : (s.totalSheetsRev0 || 0),
+        FurtherRev: s.totalDrawingsFurtherRev !== undefined ? s.totalDrawingsFurtherRev : (s.totalSheetsFurtherRev || 0),
         Approved: s.approved,
         RejectedOpen: s.rejectedOpen,
         RejectedClosed: s.rejectedClosed,

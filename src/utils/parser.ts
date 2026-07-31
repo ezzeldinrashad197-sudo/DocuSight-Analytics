@@ -327,18 +327,13 @@ export const parseExcelFile = (file: File): Promise<SubmittalRow[]> => {
                 extractDiscipline(sheetName) ||
                 extractDiscipline(file.name) ||
                 extractDiscipline(refString) ||
-                (isLetter ? "GENERAL" : (isNcr ? "HSE" : "SURVEY"));
+                (isLetter ? "GENERAL" : (isNcr ? "HSE" : "GEN"));
             }
 
-            // Normalize common general/survey names (except for letters)
-            if (!isLetter) {
-              if (disciplineVal === "GEN" || disciplineVal === "GE" || disciplineVal === "GENERAL") {
-                disciplineVal = isNcr ? "HSE" : "SURVEY";
-              }
-              if (isNcr && (disciplineVal === "SURVEY" || disciplineVal === "SURV" || disciplineVal === "SUR")) {
-                disciplineVal = "HSE";
-              }
-            } else {
+            // Normalize discipline names without forcibly converting GEN to SURVEY/HSE
+            if (isNcr && (disciplineVal === "SURVEY" || disciplineVal === "SURV" || disciplineVal === "SUR")) {
+              disciplineVal = "HSE";
+            } else if (isLetter) {
               if (disciplineVal === "GEN" || disciplineVal === "GE" || disciplineVal === "SURVEY")
                 disciplineVal = "GENERAL";
             }
@@ -365,11 +360,16 @@ export const parseExcelFile = (file: File): Promise<SubmittalRow[]> => {
 
             const finalDisciplineVal = normalizeDiscipline(disciplineVal, activeProjectId);
 
+            const sNameUpper = sheetName.trim().toUpperCase();
+            const finalLogType = (detectedType === 'DOC')
+              ? (sNameUpper.startsWith('DOC-') ? sNameUpper : `DOC-${sNameUpper}`)
+              : (detectedType !== 'UNKNOWN' ? detectedType : sNameUpper);
+
             parsed.push({
               id: `${sheetName}-${idx}`,
-              logType: detectedType !== 'UNKNOWN' ? detectedType : sheetName.trim().toUpperCase(),
+              logType: finalLogType,
               sourceFile: file.name.replace(/\.[^/.]+$/, ""),
-              documentType: "", // Normalized later
+              documentType: sNameUpper,
               trade: "", // Normalized later
               workflowStage: "", // Normalized later
               isLatestRev: false, // Normalized later

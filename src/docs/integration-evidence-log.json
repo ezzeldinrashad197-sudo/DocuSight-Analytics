@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-24T18:28:36.816Z",
+  "generatedAt": "2026-07-30T11:35:56.721Z",
   "overallStatus": "APPROVED",
   "steps": [
     {
@@ -52,8 +52,8 @@
           {
             "docNo": "DOC-ST-001",
             "category": "PENDING",
-            "delayDays": 0,
-            "isOverdue": false
+            "delayDays": 4,
+            "isOverdue": true
           },
           {
             "docNo": "DOC-AR-002",
@@ -64,7 +64,7 @@
           {
             "docNo": "DOC-ME-003",
             "category": "REJECTED_OPEN",
-            "delayDays": 6,
+            "delayDays": 11,
             "isOverdue": true
           },
           {
@@ -85,19 +85,19 @@
           "totalSubmittedSheets": 5,
           "totalSheetsRev0": 4,
           "totalSheetsFurtherRev": 1,
-          "totalDrawingsRev0": 4,
+          "totalDrawingsRev0": 3,
           "totalDrawingsFurtherRev": 1,
           "totalUniqueDrawings": 4,
-          "approved": 2,
+          "approved": 1,
           "rejectedOpen": 1,
           "rejectedClosed": 1,
           "pending": 1,
-          "overdue": 1,
-          "avgResponseTime": 12.333333333333334,
-          "approvalRate": 50,
-          "rejectionOpenRate": 25,
-          "rejectionClosedRate": 25,
-          "delayRate": 20
+          "overdue": 2,
+          "avgResponseTime": 14,
+          "approvalRate": 33.33333333333333,
+          "rejectionOpenRate": 33.33333333333333,
+          "rejectionClosedRate": 33.33333333333333,
+          "delayRate": 40
         }
       }
     },
@@ -106,8 +106,8 @@
       "status": "PASSED",
       "description": "Verified strict mathematical identity equations (Closed + Open = Unique Total Sheets).",
       "metadata": {
-        "totalUnique": 5,
-        "closed": 3,
+        "totalUnique": 4,
+        "closed": 2,
         "open": 2
       }
     },
@@ -118,7 +118,7 @@
       "metadata": {
         "payloadExcerpt": {
           "totalRecords": 5,
-          "approvedCount": 2,
+          "approvedCount": 1,
           "pendingCount": 1,
           "rejectedOpenCount": 1,
           "rejectedClosedCount": 1

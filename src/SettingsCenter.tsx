@@ -19,7 +19,16 @@ export default function SettingsCenter({ projects, activeProjectId, onSaveProjec
     const { language, t } = useLanguage();
     const parse = (text: string) => parseMixedText(text, language);
 
-    const [activeTab, setActiveTab] = useState<'projects' | 'health' | 'about' | 'versions' | 'users'>('projects');
+    const [activeTab, setActiveTab] = useState<'projects' | 'health' | 'about' | 'versions' | 'users' | 'classification'>('projects');
+    const [classificationMode, setClassificationMode] = useState<string>(() => {
+        return localStorage.getItem('docuCtrl_workflowClassificationMode') || 'preserve_sheet_name';
+    });
+
+    const handleClassificationModeChange = (mode: string) => {
+        setClassificationMode(mode);
+        localStorage.setItem('docuCtrl_workflowClassificationMode', mode);
+        window.dispatchEvent(new Event('storage'));
+    };
 
     const [usersList, setUsersList] = useState<any[]>([]);
     const [loadingUsers, setLoadingUsers] = useState(false);
@@ -244,6 +253,13 @@ export default function SettingsCenter({ projects, activeProjectId, onSaveProjec
                             className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium text-sm ${activeTab === 'health' ? 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/20' : 'text-slate-400 hover:text-white hover:bg-slate-800'}`}
                         >
                             <Activity className="w-5 h-5" /> System Health Dashboard
+                        </button>
+
+                        <button 
+                            onClick={() => setActiveTab('classification')}
+                            className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium text-sm ${activeTab === 'classification' ? 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/20' : 'text-slate-400 hover:text-white hover:bg-slate-800'}`}
+                        >
+                            <ShieldCheck className="w-5 h-5" /> Workflow Governance (ER-WF-005)
                         </button>
 
                         <div className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-2 mt-6 px-3">Product Readiness</div>
@@ -613,6 +629,83 @@ export default function SettingsCenter({ projects, activeProjectId, onSaveProjec
                                         <li>Reporting Excellence enhancements (PDF/PPTX)</li>
                                         <li>Data Quality & Validation improvements</li>
                                     </ul>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {activeTab === 'classification' && (
+                        <div className="p-10 h-full overflow-y-auto">
+                            <h3 className="text-2xl font-bold text-white mb-2 border-b border-slate-800 pb-4 flex items-center justify-between">
+                                <span className="flex items-center gap-3">
+                                    <ShieldCheck className="w-7 h-7 text-indigo-400" />
+                                    {parse('Workflow Classification Mode (ER-WF-005) | وضع تصنيف سجلات وتخصصات العمل')}
+                                </span>
+                                <span className="px-3 py-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-xs font-mono font-bold rounded-full">
+                                    RULE ER-WF-005 ACTIVE
+                                </span>
+                            </h3>
+
+                            <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-6 mb-8 mt-6">
+                                <h4 className="text-base font-bold text-slate-200 mb-2">
+                                    {parse('Sheet Name Authority Rule (ER-WF-005)')}
+                                </h4>
+                                <p className="text-sm text-slate-400 leading-relaxed mb-6">
+                                    {parse('When an Excel worksheet represents a workflow register (e.g., DOC-GEN, SDW, MAR), the worksheet name is the authoritative workflow classification. Automatic discipline inference or document-content analysis will NOT split or rename that worksheet into additional workflow categories like DOC-HSE unless explicitly configured.')}
+                                </p>
+
+                                <div className="space-y-4">
+                                    <div 
+                                        onClick={() => handleClassificationModeChange('preserve_sheet_name')}
+                                        className={`p-5 rounded-xl border cursor-pointer transition-all flex items-start gap-4 ${classificationMode === 'preserve_sheet_name' ? 'bg-indigo-500/10 border-indigo-500/50 text-white' : 'bg-slate-950/40 border-slate-800 text-slate-400 hover:border-slate-700'}`}
+                                    >
+                                        <div className={`w-5 h-5 rounded-full border flex items-center justify-center mt-0.5 ${classificationMode === 'preserve_sheet_name' ? 'border-indigo-400 bg-indigo-500' : 'border-slate-600'}`}>
+                                            {classificationMode === 'preserve_sheet_name' && <div className="w-2 h-2 rounded-full bg-white" />}
+                                        </div>
+                                        <div>
+                                            <div className="font-bold text-white text-sm flex items-center gap-2">
+                                                ● {parse('Preserve Sheet Name (Recommended) | الالتزام التام باسم الشيت')}
+                                                <span className="text-xs px-2 py-0.5 bg-indigo-500/20 text-indigo-300 rounded border border-indigo-500/30">Default</span>
+                                            </div>
+                                            <div className="text-xs text-slate-400 mt-1">
+                                                {parse('Preserves worksheet identity exactly as supplied by the user (e.g. DOC-GEN stays DOC-GEN). Prevents auto-splitting worksheets into phantom discipline tabs.')}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div 
+                                        onClick={() => handleClassificationModeChange('auto_detect')}
+                                        className={`p-5 rounded-xl border cursor-pointer transition-all flex items-start gap-4 ${classificationMode === 'auto_detect' ? 'bg-indigo-500/10 border-indigo-500/50 text-white' : 'bg-slate-950/40 border-slate-800 text-slate-400 hover:border-slate-700'}`}
+                                    >
+                                        <div className={`w-5 h-5 rounded-full border flex items-center justify-center mt-0.5 ${classificationMode === 'auto_detect' ? 'border-indigo-400 bg-indigo-500' : 'border-slate-600'}`}>
+                                            {classificationMode === 'auto_detect' && <div className="w-2 h-2 rounded-full bg-white" />}
+                                        </div>
+                                        <div>
+                                            <div className="font-bold text-slate-200 text-sm">
+                                                ○ {parse('Auto Detect by Content | التحديد التلقائي حسب محتوى المستند')}
+                                            </div>
+                                            <div className="text-xs text-slate-400 mt-1">
+                                                {parse('Analyses document numbers and keywords in row content to automatically classify submittals into specialized discipline categories.')}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div 
+                                        onClick={() => handleClassificationModeChange('mixed')}
+                                        className={`p-5 rounded-xl border cursor-pointer transition-all flex items-start gap-4 ${classificationMode === 'mixed' ? 'bg-indigo-500/10 border-indigo-500/50 text-white' : 'bg-slate-950/40 border-slate-800 text-slate-400 hover:border-slate-700'}`}
+                                    >
+                                        <div className={`w-5 h-5 rounded-full border flex items-center justify-center mt-0.5 ${classificationMode === 'mixed' ? 'border-indigo-400 bg-indigo-500' : 'border-slate-600'}`}>
+                                            {classificationMode === 'mixed' && <div className="w-2 h-2 rounded-full bg-white" />}
+                                        </div>
+                                        <div>
+                                            <div className="font-bold text-slate-200 text-sm">
+                                                ○ {parse('Mixed Mode | النمط الهجين')}
+                                            </div>
+                                            <div className="text-xs text-slate-400 mt-1">
+                                                {parse('Uses sheet name for main workflow family, but allows content keyword detection if explicit discipline tags are missing.')}
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>

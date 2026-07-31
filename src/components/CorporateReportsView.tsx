@@ -33,6 +33,7 @@ import * as XLSX from 'xlsx';
 import html2canvas from 'html2canvas';
 import { jsPDF } from 'jspdf';
 import pptxgen from 'pptxgenjs';
+import { generatePptxReport } from '../analytics/exportEngine';
 
 interface CorporateReportsViewProps {
   data: SubmittalRow[];
@@ -145,7 +146,13 @@ export const CorporateReportsView: React.FC<CorporateReportsViewProps> = ({
       return false;
     });
 
-    const discStats = DISCIPLINES.map(disc => {
+    const activeDiscs = Array.from(new Set(typeWorkingData.map(d => resolveRowDiscipline(d, logType))));
+    const targetDisciplines = Array.from(new Set([...DISCIPLINES, ...activeDiscs])).filter(disc => 
+      typeWorkingData.some(d => resolveRowDiscipline(d, logType) === disc)
+    );
+    const discListToUse = targetDisciplines.length > 0 ? targetDisciplines : DISCIPLINES;
+
+    const discStats = discListToUse.map(disc => {
       const dData = typeWorkingData.filter(d => resolveRowDiscipline(d, logType) === disc);
       const s = logType === 'NCR' 
         ? calculateNCRStats(dData, false) 
@@ -156,9 +163,9 @@ export const CorporateReportsView: React.FC<CorporateReportsViewProps> = ({
       return {
         discipline: disc,
         submittals: s.totalSubmittedSheets || 0,
-        rev00: s.totalSheetsRev0 || 0,
-        furtherRev: s.totalSheetsFurtherRev || 0,
-        total: (s.totalSheetsRev0 || 0) + (s.totalSheetsFurtherRev || 0) || s.totalSubmittedSheets || 0,
+        rev00: s.totalDrawingsRev0 !== undefined ? s.totalDrawingsRev0 : (s.totalSheetsRev0 || 0),
+        furtherRev: s.totalDrawingsFurtherRev !== undefined ? s.totalDrawingsFurtherRev : (s.totalSheetsFurtherRev || 0),
+        total: s.totalUniqueDrawings !== undefined ? s.totalUniqueDrawings : ((s.totalSheetsRev0 || 0) + (s.totalSheetsFurtherRev || 0) || s.totalSubmittedSheets || 0),
         approved: s.approved || 0,
         rejected: rejectedCount,
         pending: s.pending || 0,
@@ -255,31 +262,25 @@ export const CorporateReportsView: React.FC<CorporateReportsViewProps> = ({
     XLSX.writeFile(wb, `Corporate_Document_Control_Report_${projectInfo.projectName || 'Alburouj'}.xlsx`);
   };
 
-  // Export to PPTX
+  // Export to PPTX (100% Native Editable PPTX Elements)
   const handleExportPPTX = async () => {
     setIsExporting(true);
-    await new Promise(resolve => setTimeout(resolve, 300));
+    await new Promise(resolve => setTimeout(resolve, 100));
     try {
-      const pptx = new pptxgen();
-      pptx.layout = 'LAYOUT_16x9';
-
-      const slides = deckRef.current?.querySelectorAll('.corporate-slide-card');
-      if (slides && slides.length > 0) {
-        for (let i = 0; i < slides.length; i++) {
-          const slideEl = slides[i] as HTMLElement;
-          const canvas = await html2canvas(slideEl, {
-            scale: 2,
-            useCORS: true,
-            logging: false,
-            backgroundColor: '#ffffff'
-          });
-          const imgData = canvas.toDataURL('image/png');
-          const slide = pptx.addSlide();
-          slide.addImage({ data: imgData, x: 0, y: 0, w: '100%', h: '100%' });
+      await generatePptxReport(
+        data,
+        projectInfo,
+        'presentation',
+        { filterMonthly, filterCumulative },
+        {
+          monthlyStart: startDate,
+          arabicEnabled: true,
+          showLogo: true,
+          showProjectInfo: true,
+          showSignatures: true,
+          showFooterNotes: true
         }
-      }
-
-      await pptx.writeFile({ fileName: `Corporate_Monthly_Report_${projectInfo.projectName || 'Alburouj'}.pptx` });
+      );
     } catch (e) {
       console.error('PPTX Export Error:', e);
     } finally {

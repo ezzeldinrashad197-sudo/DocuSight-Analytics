@@ -1,7 +1,6 @@
 import { SubmittalRow } from '../types';
-import { compareRevisions, getNormalizedStatusCore, isValidRevision } from './analyticsCore';
+import { compareRevisions, getNormalizedStatusCore, isValidRevision, getStatusCodeCategory } from './analyticsCore';
 import { getRevisionWeight } from '../utils/enterpriseUpgradeEngine';
-import { getStatusCodeCategory } from '../utils/calculations';
 
 export interface CanonicalRecord {
   id: string;
@@ -23,8 +22,10 @@ export interface CanonicalRecord {
 
 export interface SubmissionLayerResult {
   totalSubmitted: number;
+  totalUniqueItems: number;
   rev00: number;
   furtherRevisions: number;
+  missingRevision: number;
 }
 
 export interface PerformanceLayerResult {
@@ -369,24 +370,29 @@ export function evaluateSubmissionLayer(canonicalRecords: CanonicalRecord[], ful
 
   let rev00 = 0;
   let furtherRevisions = 0;
+  let missingRevision = 0;
 
   filteredItems.forEach(item => {
     if (item.classification === 'Rev00') {
       rev00++;
-    } else {
+    } else if (item.classification === 'Further Revision') {
       furtherRevisions++;
+    } else if (item.classification === 'Missing Revision') {
+      missingRevision++;
     }
   });
 
   const totalUniqueItems = filteredItems.length;
-  if (rev00 + furtherRevisions !== totalUniqueItems) {
-    throw new Error(`Engineering Item Validation Error: Invariant violated (Rev00: ${rev00} + Further: ${furtherRevisions} !== TotalUnique: ${totalUniqueItems})`);
+  if (rev00 + furtherRevisions + missingRevision !== totalUniqueItems) {
+    throw new Error(`Engineering Item Validation Error: Invariant violated (Rev00: ${rev00} + Further: ${furtherRevisions} + Missing: ${missingRevision} !== TotalUnique: ${totalUniqueItems})`);
   }
 
   return {
     totalSubmitted: canonicalRecords.filter(r => r.includeInSubmission).length,
+    totalUniqueItems,
     rev00,
     furtherRevisions,
+    missingRevision,
   };
 }
 

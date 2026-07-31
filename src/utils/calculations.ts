@@ -1,44 +1,10 @@
 import { SubmittalRow, KPIStats } from "../types";
 import { buildCanonicalDataset, evaluateSubmissionLayer, evaluatePerformanceLayer, getBusinessEntityKey, parseDateTimestamp } from "../analytics/calculationFoundation";
 export { parseDateTimestamp };
-import { compareRevisions } from "../analytics/analyticsCore";
+import { compareRevisions, getStatusCodeCategory } from "../analytics/analyticsCore";
+export { getStatusCodeCategory };
 import { getRevisionWeight } from "./enterpriseUpgradeEngine";
 import { mapDocumentToWorkflow } from "./workflowMapping";
-
-export const getStatusCodeCategory = (code?: string): 'APPROVED' | 'REJECTED_OPEN' | 'REJECTED_CLOSED' | 'PENDING' | 'UNKNOWN' => {
-  if (!code) return 'PENDING'; // Assume pending if no status
-  const upper = code.toUpperCase().trim();
-  if (!upper) return 'PENDING';
-
-  // Normalize by shrinking quotes, colons, dashes, and multiple spaces into a single space
-  const normalized = upper.replace(/["':\-\s]+/g, ' ').trim();
-
-  // Explicit Rejected Closed mappings
-  if (normalized.includes('C CLOSED') || (normalized.includes('REJ') && normalized.includes('CLOS'))) {
-    return 'REJECTED_CLOSED';
-  }
-
-  // Explicit Rejected Open mappings
-  if (normalized === 'C' || normalized === 'CODE C' || normalized.startsWith('C ') || normalized.endsWith(' C') || normalized.includes('C OPEN') || normalized.includes('REJ')) {
-    return 'REJECTED_OPEN';
-  }
-
-  // Approved codes map -> A, B, SUPERSEDED, ACCEPTED, CLOSED, D
-  if (['A', 'B', 'D'].includes(normalized) || 
-      normalized.startsWith('A ') || normalized.startsWith('B ') || normalized.startsWith('D ') || 
-      normalized.includes('CODE A') || normalized.includes('CODE B') || normalized.includes('CODE D') || 
-      normalized.includes('APP') || normalized.includes('ACC') || 
-      normalized.includes('SUPER') || normalized.includes('CLOS')) {
-    return 'APPROVED';
-  }
-
-  // Pending map -> W, WAITING, PEND
-  if (['W'].includes(normalized) || normalized.startsWith('W ') || normalized.includes('CODE W') || normalized.includes('PEN') || normalized.includes('WAIT')) {
-    return 'PENDING';
-  }
-
-  return 'UNKNOWN';
-}
 
 export const normalizeData = (rows: SubmittalRow[]): SubmittalRow[] => {
   // Sort rows originally by docNo and then by rev, or just group them to find the highest rev
@@ -695,8 +661,10 @@ export const calculateStats = (data: SubmittalRow[], fullDataset?: SubmittalRow[
 
   let rev00 = 0;
   let furtherRevisions = 0;
+  let missingRevision = 0;
   let totalSheetsRev0 = 0;
   let totalSheetsFurtherRev = 0;
+  let totalSheetsMissingRev = 0;
   let approved = 0;
   let rejectedOpen = 0;
   let rejectedClosed = 0;
@@ -721,24 +689,29 @@ export const calculateStats = (data: SubmittalRow[], fullDataset?: SubmittalRow[
 
     const latest = sorted[sorted.length - 1];
     const latestRevVal = (latest.rev || (latest as any).revision || (latest as any).revNo || '').trim();
-    const latestRevWeight = getRevisionWeight(latestRevVal);
-    const isFurtherRev = latestRevWeight > 0 || compareRevisions(latestRevVal, '0') > 0;
+    const isRev0 = getRevisionWeight(latestRevVal) === 0 && latestRevVal !== '';
+    const isFurtherRev = latestRevVal !== '' && (getRevisionWeight(latestRevVal) > 0 || compareRevisions(latestRevVal, '0') > 0);
 
-    if (isFurtherRev) {
+    if (isRev0) {
+      rev00++;
+    } else if (isFurtherRev) {
       furtherRevisions++;
     } else {
-      rev00++;
+      missingRevision++;
     }
 
     // Count sheet-level Rev0 vs Further Rev for sheets in this group
     sorted.forEach((r, idx) => {
       const revVal = (r.rev || (r as any).revision || (r as any).revNo || '').trim().toUpperCase();
       const w = getRevisionWeight(revVal);
-      const isRev0Sheet = (idx === 0 && w === 0 && revVal !== 'AS-BUILT' && revVal !== 'IFC') || (r.isRev0 && w === 0);
+      const isRev0Sheet = revVal !== '' && ((idx === 0 && w === 0 && revVal !== 'AS-BUILT' && revVal !== 'IFC') || (r.isRev0 && w === 0));
+      const isFurtherRevSheet = revVal !== '' && (w > 0 || compareRevisions(revVal, '0') > 0);
       if (isRev0Sheet) {
         totalSheetsRev0++;
-      } else {
+      } else if (isFurtherRevSheet) {
         totalSheetsFurtherRev++;
+      } else {
+        totalSheetsMissingRev++;
       }
     });
 
@@ -773,8 +746,10 @@ export const calculateStats = (data: SubmittalRow[], fullDataset?: SubmittalRow[
      totalSubmittedSheets,
      totalSheetsRev0,
      totalSheetsFurtherRev,
+     totalSheetsMissingRev,
      totalDrawingsRev0: rev00,
      totalDrawingsFurtherRev: furtherRevisions,
+     totalDrawingsMissingRev: missingRevision,
      totalUniqueDrawings,
      
      approved,
@@ -797,21 +772,53 @@ export function resolveRowDiscipline(d: SubmittalRow, bt: string): string {
     return d.stakeholder || 'GENERAL';
   }
 
-  // 1. Check documentType or logType suffix e.g. MAR-ARC, SDW-STR, WIR-ELE, MAR-MEC, etc.
-  const docType = (d.documentType || d.logType || '').toUpperCase().trim();
+  const mode = typeof window !== 'undefined'
+    ? (localStorage.getItem('docuCtrl_workflowClassificationMode') || 'preserve_sheet_name')
+    : 'preserve_sheet_name';
+
+  const docType = (d.logType || d.documentType || (d as any).sheetName || bt || '').toUpperCase().trim();
   const docParts = docType.split(/[-_\s]+/);
-  const suffix = docParts.length > 1 ? docParts[docParts.length - 1] : '';
+  const suffix = docParts.length > 1 ? docParts[docParts.length - 1] : docParts[0];
 
-  if (['ARC', 'ARCH', 'ARCHITECTURAL'].includes(suffix)) return 'Arch';
-  if (['STR', 'STRUCT', 'CIVIL', 'CVL'].includes(suffix)) return 'STR';
-  if (['MEC', 'MECH', 'MECHANICAL'].includes(suffix)) return 'Mech';
-  if (['ELE', 'ELEC', 'ELECTRICAL'].includes(suffix)) return 'Elec';
-  if (['INF', 'INFR', 'INFRA', 'UTILITIES'].includes(suffix)) return 'Infra';
-  if (['LND', 'LAND', 'LANDSCAPE'].includes(suffix)) return 'Landscape';
-  if (['SUR', 'SURV', 'SURVEY'].includes(suffix)) return 'SURVEY';
-  if (['HSE', 'SAFETY'].includes(suffix)) return 'HSE';
+  // Under ER-WF-005 Sheet Name Authority Rule (default mode 'preserve_sheet_name'):
+  // Worksheet identity is the SUPREME AUTHORITATIVE SOURCE.
+  if (mode === 'preserve_sheet_name') {
+    if (['ARC', 'ARCH', 'ARCHITECTURAL'].includes(suffix)) return 'Arch';
+    if (['STR', 'STRUCT', 'CIVIL', 'CVL'].includes(suffix)) return 'STR';
+    if (['MEC', 'MECH', 'MECHANICAL'].includes(suffix)) return 'Mech';
+    if (['ELE', 'ELEC', 'ELECTRICAL'].includes(suffix)) return 'Elec';
+    if (['INF', 'INFR', 'INFRA', 'UTILITIES'].includes(suffix)) return 'Infra';
+    if (['LND', 'LAND', 'LANDSCAPE'].includes(suffix)) return 'Landscape';
+    if (['SUR', 'SURV', 'SURVEY'].includes(suffix)) return 'SURVEY';
+    if (['HSE', 'SAFETY'].includes(suffix)) return 'HSE';
+    if (['GEN', 'GENERAL'].includes(suffix)) return 'GEN';
 
-  // 2. Check explicit discipline or trade fields tokenized strictly
+    if (docParts.length > 1 && docParts[0] === 'DOC') {
+      const docSuffix = docParts[1];
+      if (['GEN', 'GENERAL'].includes(docSuffix)) return 'GEN';
+      if (['HSE', 'SAFETY'].includes(docSuffix)) return 'HSE';
+      if (['STR', 'STRUCT'].includes(docSuffix)) return 'STR';
+      if (['ARC', 'ARCH'].includes(docSuffix)) return 'Arch';
+      if (['MEC', 'MECH'].includes(docSuffix)) return 'Mech';
+      if (['ELE', 'ELEC'].includes(docSuffix)) return 'Elec';
+      if (['INFRA', 'INF'].includes(docSuffix)) return 'Infra';
+      if (['LND', 'LAND'].includes(docSuffix)) return 'Landscape';
+      if (['SURVEY', 'SUR'].includes(docSuffix)) return 'SURVEY';
+    }
+
+    // Direct check for worksheet names containing discipline tokens
+    if (docType.includes('ARCH') || docType.includes('ARC')) return 'Arch';
+    if (docType.includes('STRUCT') || docType.includes('STR')) return 'STR';
+    if (docType.includes('MECH') || docType.includes('MEC')) return 'Mech';
+    if (docType.includes('ELEC') || docType.includes('ELE')) return 'Elec';
+    if (docType.includes('INFRA') || docType.includes('INF')) return 'Infra';
+    if (docType.includes('LAND') || docType.includes('LND')) return 'Landscape';
+    if (docType.includes('SURV') || docType.includes('SUR')) return 'SURVEY';
+    if (docType.includes('HSE') || docType.includes('SAFETY')) return 'HSE';
+    if (docType.includes('GEN') || docType.includes('GENERAL')) return 'GEN';
+  }
+
+  // 1. Check explicit discipline or trade fields on row if set manually by user
   const discField = (d.discipline || d.trade || '').toUpperCase().trim();
   if (discField) {
     const discTokens = discField.split(/[^A-Z0-9\u0600-\u06FF]+/);
@@ -824,10 +831,26 @@ export function resolveRowDiscipline(d: SubmittalRow, bt: string): string {
       if (['LANDSCAPE', 'LAND', 'LND', 'موقع'].includes(t)) return 'Landscape';
       if (['SURVEY', 'SURV', 'SUR', 'مساحة'].includes(t)) return 'SURVEY';
       if (['HSE', 'SAFETY', 'سلامة'].includes(t)) return 'HSE';
+      if (['GEN', 'GENERAL', 'GENERAL_DOC'].includes(t)) return 'GEN';
     }
   }
 
-  // 3. Tokenize docNo or sheetNo (WITHOUT matching substrings inside words like PARCEL or SEARCH)
+  // 2. Secondary check for docType / sheetName
+  if (['ARC', 'ARCH', 'ARCHITECTURAL'].includes(suffix)) return 'Arch';
+  if (['STR', 'STRUCT', 'CIVIL', 'CVL'].includes(suffix)) return 'STR';
+  if (['MEC', 'MECH', 'MECHANICAL'].includes(suffix)) return 'Mech';
+  if (['ELE', 'ELEC', 'ELECTRICAL'].includes(suffix)) return 'Elec';
+  if (['INF', 'INFR', 'INFRA', 'UTILITIES'].includes(suffix)) return 'Infra';
+  if (['LND', 'LAND', 'LANDSCAPE'].includes(suffix)) return 'Landscape';
+  if (['SUR', 'SURV', 'SURVEY'].includes(suffix)) return 'SURVEY';
+  if (['HSE', 'SAFETY'].includes(suffix)) return 'HSE';
+  if (['GEN', 'GENERAL'].includes(suffix)) return 'GEN';
+
+  if (mode === 'preserve_sheet_name') {
+    return docParts[0] === 'DOC' || bt === 'DOC' ? 'GEN' : (bt === 'NCR' ? 'HSE' : 'STR');
+  }
+
+  // 3. Tokenize docNo or sheetNo (Only when mode === 'auto_detect' or 'mixed')
   const docNo = (d.docNo || d.sheetNo || d.ncrRef || '').toUpperCase().trim();
   if (docNo) {
     const docTokens = docNo.split(/[^A-Z0-9\u0600-\u06FF]+/);
