@@ -33,7 +33,6 @@ import * as XLSX from 'xlsx';
 import html2canvas from 'html2canvas';
 import { jsPDF } from 'jspdf';
 import pptxgen from 'pptxgenjs';
-import { generatePptxReport } from '../analytics/exportEngine';
 
 interface CorporateReportsViewProps {
   data: SubmittalRow[];
@@ -146,13 +145,7 @@ export const CorporateReportsView: React.FC<CorporateReportsViewProps> = ({
       return false;
     });
 
-    const activeDiscs = Array.from(new Set(typeWorkingData.map(d => resolveRowDiscipline(d, logType))));
-    const targetDisciplines = Array.from(new Set([...DISCIPLINES, ...activeDiscs])).filter(disc => 
-      typeWorkingData.some(d => resolveRowDiscipline(d, logType) === disc)
-    );
-    const discListToUse = targetDisciplines.length > 0 ? targetDisciplines : DISCIPLINES;
-
-    const discStats = discListToUse.map(disc => {
+    const discStats = DISCIPLINES.map(disc => {
       const dData = typeWorkingData.filter(d => resolveRowDiscipline(d, logType) === disc);
       const s = logType === 'NCR' 
         ? calculateNCRStats(dData, false) 
@@ -163,9 +156,9 @@ export const CorporateReportsView: React.FC<CorporateReportsViewProps> = ({
       return {
         discipline: disc,
         submittals: s.totalSubmittedSheets || 0,
-        rev00: s.totalDrawingsRev0 !== undefined ? s.totalDrawingsRev0 : (s.totalSheetsRev0 || 0),
-        furtherRev: s.totalDrawingsFurtherRev !== undefined ? s.totalDrawingsFurtherRev : (s.totalSheetsFurtherRev || 0),
-        total: s.totalUniqueDrawings !== undefined ? s.totalUniqueDrawings : ((s.totalSheetsRev0 || 0) + (s.totalSheetsFurtherRev || 0) || s.totalSubmittedSheets || 0),
+        rev00: s.totalSheetsRev0 || 0,
+        furtherRev: s.totalSheetsFurtherRev || 0,
+        total: (s.totalSheetsRev0 || 0) + (s.totalSheetsFurtherRev || 0) || s.totalSubmittedSheets || 0,
         approved: s.approved || 0,
         rejected: rejectedCount,
         pending: s.pending || 0,
@@ -262,25 +255,31 @@ export const CorporateReportsView: React.FC<CorporateReportsViewProps> = ({
     XLSX.writeFile(wb, `Corporate_Document_Control_Report_${projectInfo.projectName || 'Alburouj'}.xlsx`);
   };
 
-  // Export to PPTX (100% Native Editable PPTX Elements)
+  // Export to PPTX
   const handleExportPPTX = async () => {
     setIsExporting(true);
-    await new Promise(resolve => setTimeout(resolve, 100));
+    await new Promise(resolve => setTimeout(resolve, 300));
     try {
-      await generatePptxReport(
-        data,
-        projectInfo,
-        'presentation',
-        { filterMonthly, filterCumulative },
-        {
-          monthlyStart: startDate,
-          arabicEnabled: true,
-          showLogo: true,
-          showProjectInfo: true,
-          showSignatures: true,
-          showFooterNotes: true
+      const pptx = new pptxgen();
+      pptx.layout = 'LAYOUT_16x9';
+
+      const slides = deckRef.current?.querySelectorAll('.corporate-slide-card');
+      if (slides && slides.length > 0) {
+        for (let i = 0; i < slides.length; i++) {
+          const slideEl = slides[i] as HTMLElement;
+          const canvas = await html2canvas(slideEl, {
+            scale: 2,
+            useCORS: true,
+            logging: false,
+            backgroundColor: '#ffffff'
+          });
+          const imgData = canvas.toDataURL('image/png');
+          const slide = pptx.addSlide();
+          slide.addImage({ data: imgData, x: 0, y: 0, w: '100%', h: '100%' });
         }
-      );
+      }
+
+      await pptx.writeFile({ fileName: `Corporate_Monthly_Report_${projectInfo.projectName || 'Alburouj'}.pptx` });
     } catch (e) {
       console.error('PPTX Export Error:', e);
     } finally {
@@ -1124,54 +1123,17 @@ const SlideACCControlIssue: React.FC<{ projectInfo: ProjectSettings }> = ({ proj
 );
 
 const SlideClosing: React.FC<{ projectInfo: ProjectSettings }> = ({ projectInfo }) => (
-  <div className="relative w-full h-full bg-white flex flex-col justify-between p-10 -m-8 w-[960px] h-[540px]">
+  <div className="relative w-full h-full bg-white flex flex-col justify-between p-12 -m-8 w-[960px] h-[540px]">
     <ConcentricArcs theme="light" position="left" />
-    <div className="flex justify-between items-center relative z-10">
-      <div className="flex items-center gap-2 text-xs font-bold text-slate-500 font-mono">
-        <ShieldCheck className="w-4 h-4 text-[#0d9488]" />
-        ISO 9001:2015 QMS APPROVED REPORT
-      </div>
+    <div className="flex justify-end items-center relative z-10">
       <InnovoLogo />
     </div>
 
     <div className="relative z-10 my-auto">
-      <h2 className="text-4xl font-extrabold text-[#0f172a] tracking-tight">Thank You</h2>
-      <p className="text-xs text-[#0d9488] font-bold mt-1 uppercase tracking-widest">
-        Document Control Department | {projectInfo.projectName || 'Alburouj Project, Parcel 1.17'}
+      <h2 className="text-4xl font-extrabold text-[#0f172a] tracking-tight">Thanks</h2>
+      <p className="text-xs text-[#0d9488] font-bold mt-2 uppercase tracking-widest">
+        Document Control Department | {projectInfo.projectName || 'Alburouj Project'}
       </p>
-
-      {/* Corporate Sign-off & Audit Matrix Block */}
-      <div className="grid grid-cols-3 gap-4 mt-8 pt-4 border-t border-slate-300 text-slate-800">
-        <div className="bg-slate-50 p-3 rounded-lg border border-slate-200">
-          <div className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Prepared By</div>
-          <div className="text-xs font-extrabold text-[#0f172a] mt-1">Ezzeldin Mohamed Rashad</div>
-          <div className="text-[10px] text-slate-500">Project Document Control Lead</div>
-          <div className="mt-3 pt-2 border-t border-slate-200 text-[10px] text-emerald-700 font-bold flex items-center justify-between font-mono">
-            <span>Status: Verified</span>
-            <span>Date: 2026-07-29</span>
-          </div>
-        </div>
-
-        <div className="bg-slate-50 p-3 rounded-lg border border-slate-200">
-          <div className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Checked By</div>
-          <div className="text-xs font-extrabold text-[#0f172a] mt-1">Lead QA/QC Manager</div>
-          <div className="text-[10px] text-slate-500">Quality Assurance Department</div>
-          <div className="mt-3 pt-2 border-t border-slate-200 text-[10px] text-emerald-700 font-bold flex items-center justify-between font-mono">
-            <span>Status: Approved</span>
-            <span>Date: 2026-07-29</span>
-          </div>
-        </div>
-
-        <div className="bg-slate-50 p-3 rounded-lg border border-slate-200">
-          <div className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Approved By</div>
-          <div className="text-xs font-extrabold text-[#0f172a] mt-1">Project Director</div>
-          <div className="text-[10px] text-slate-500">{projectInfo.contractorName || 'INNOVO Build S.A.E'}</div>
-          <div className="mt-3 pt-2 border-t border-slate-200 text-[10px] text-emerald-700 font-bold flex items-center justify-between font-mono">
-            <span>Status: Certified</span>
-            <span>Date: 2026-07-29</span>
-          </div>
-        </div>
-      </div>
     </div>
   </div>
 );

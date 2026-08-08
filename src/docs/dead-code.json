@@ -114,6 +114,14 @@
     },
     {
       "file": "src/analytics/calculationFoundation.ts",
+      "exportName": "getBusinessEntityKey",
+      "type": "Function",
+      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+      "reason": "No incoming imports of 'getBusinessEntityKey' detected in any active source modules.",
+      "referencedBy": []
+    },
+    {
+      "file": "src/analytics/calculationFoundation.ts",
       "exportName": "EngineeringItemClassification",
       "type": "Type/Interface",
       "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
@@ -169,14 +177,6 @@
       "referencedBy": []
     },
     {
-      "file": "src/analytics/governance/businessRuleRegistry.ts",
-      "exportName": "ENGINE_RULE_VERSIONS",
-      "type": "Component",
-      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
-      "reason": "No incoming imports of 'ENGINE_RULE_VERSIONS' detected in any active source modules.",
-      "referencedBy": []
-    },
-    {
       "file": "src/analytics/governance/canonicalEngineAdapter.ts",
       "exportName": "AdaptedCalculationResult",
       "type": "Type/Interface",
@@ -222,30 +222,6 @@
       "type": "Function",
       "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
       "reason": "No incoming imports of 'updateSystemConfiguration' detected in any active source modules.",
-      "referencedBy": []
-    },
-    {
-      "file": "src/analytics/governance/goldenRegressionSuite.ts",
-      "exportName": "InvariantCheckResult",
-      "type": "Type/Interface",
-      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
-      "reason": "No incoming imports of 'InvariantCheckResult' detected in any active source modules.",
-      "referencedBy": []
-    },
-    {
-      "file": "src/analytics/governance/goldenRegressionSuite.ts",
-      "exportName": "GoldenRegisterTestResult",
-      "type": "Type/Interface",
-      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
-      "reason": "No incoming imports of 'GoldenRegisterTestResult' detected in any active source modules.",
-      "referencedBy": []
-    },
-    {
-      "file": "src/analytics/governance/goldenRegressionSuite.ts",
-      "exportName": "GOLDEN_REGISTER_TYPES",
-      "type": "Component",
-      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
-      "reason": "No incoming imports of 'GOLDEN_REGISTER_TYPES' detected in any active source modules.",
       "referencedBy": []
     },
     {

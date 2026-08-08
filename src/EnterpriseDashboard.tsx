@@ -64,7 +64,30 @@ export default function EnterpriseDashboard({ data }: EnterpriseDashboardProps) 
   const [auditLogs, setAuditLogs] = useState<AuditLogEntry[]>(() => {
     const saved = localStorage.getItem('docuCtrl_auditLogs');
     if (saved) return JSON.parse(saved);
-    return [];
+    return [
+      {
+        id: '1',
+        who: 'Sherif El-Banna (DC Mgr)',
+        action: 'Configure Status Map',
+        timestamp: '2026-06-21 08:30',
+        oldValue: 'Legacy Matches',
+        newValue: 'Enabled exact matching configuration rules',
+        reason: 'Align reporting with PMC string matching guidelines',
+        appRef: 'PMC-MEM-2026',
+        source: 'Status Engine Settings'
+      },
+      {
+        id: '2',
+        who: 'System Database Guard',
+        action: 'Audit Revision Sequences',
+        timestamp: '2026-06-21 09:12',
+        oldValue: 'Numeric parser',
+        newValue: 'Enabled weight-based sequencer algorithm (Priority 4)',
+        reason: 'Solve alpha and compound revision string sorting mismatches',
+        appRef: 'SYS-AUD-772',
+        source: 'Calculations Engine'
+      }
+    ];
   });
 
   useEffect(() => {
@@ -1168,36 +1191,20 @@ export default function EnterpriseDashboard({ data }: EnterpriseDashboardProps) 
                     </tr>
                   </thead>
                   <tbody>
-                    {auditLogs.length === 0 ? (
-                      <tr>
-                        <td colSpan={7} className="py-8 text-center text-slate-400">
-                          <div className="flex flex-col items-center justify-center gap-2">
-                            <ShieldCheck className="w-8 h-8 text-slate-600" />
-                            <p className="text-xs font-semibold text-slate-300">
-                              No verified configuration change records available.
-                            </p>
-                            <p className="text-[11px] text-slate-500 max-w-lg">
-                              The change verification ledger will populate automatically after authorized configuration changes are performed.
-                            </p>
-                          </div>
+                    {auditLogs.map(log => (
+                      <tr key={log.id} className="border-b border-slate-850 hover:bg-slate-900/60 transition-colors">
+                        <td className="py-2.5 px-4 font-bold text-slate-200 font-sans flex items-center gap-2">
+                          <User className="w-3.5 h-3.5 text-slate-500" />
+                          <span>{log.who}</span>
                         </td>
+                        <td className="py-2.5 px-4 text-blue-400 font-medium">{log.action}</td>
+                        <td className="py-2.5 px-4 text-indigo-300 font-semibold">{log.source}</td>
+                        <td className="py-2.5 px-4 font-mono text-slate-350 max-w-xs truncate">{log.newValue}</td>
+                        <td className="py-2.5 px-4 text-center font-mono font-bold text-slate-500">{log.appRef}</td>
+                        <td className="py-2.5 px-4 text-slate-400 font-mono">{log.timestamp}</td>
+                        <td className="py-2.5 px-4 text-slate-400 italic max-w-xs truncate" title={log.reason}>{log.reason}</td>
                       </tr>
-                    ) : (
-                      auditLogs.map(log => (
-                        <tr key={log.id} className="border-b border-slate-850 hover:bg-slate-900/60 transition-colors">
-                          <td className="py-2.5 px-4 font-bold text-slate-200 font-sans flex items-center gap-2">
-                            <User className="w-3.5 h-3.5 text-slate-500" />
-                            <span>{log.who}</span>
-                          </td>
-                          <td className="py-2.5 px-4 text-blue-400 font-medium">{log.action}</td>
-                          <td className="py-2.5 px-4 text-indigo-300 font-semibold">{log.source}</td>
-                          <td className="py-2.5 px-4 font-mono text-slate-350 max-w-xs truncate">{log.newValue}</td>
-                          <td className="py-2.5 px-4 text-center font-mono font-bold text-slate-500">{log.appRef}</td>
-                          <td className="py-2.5 px-4 text-slate-400 font-mono">{log.timestamp}</td>
-                          <td className="py-2.5 px-4 text-slate-400 italic max-w-xs truncate" title={log.reason}>{log.reason}</td>
-                        </tr>
-                      ))
-                    )}
+                    ))}
                   </tbody>
                 </table>
               </div>

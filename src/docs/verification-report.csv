@@ -1,0 +1,13 @@
+Test ID,Module,Test Name,Metric,Expected Value,Actual Value,Variance,Status,Evidence
+"BENCH-SUB-01","Submission Layer","Active Submittals Count","totalSubmitted",770,770,0,"PASSED","Submission layer counted 770 active submittals from 780 total rows."
+"BENCH-SUB-02","Submission Layer","Rev.0 Submittals Count","rev00",670,670,0,"PASSED","Submission layer identified 670 Rev.0 submittals."
+"BENCH-SUB-03","Submission Layer","Further Revisions Count","furtherRevisions",50,50,0,"PASSED","Submission layer identified 50 further revisions (Rev.1 SDWs)."
+"BENCH-PERF-01","Performance Layer","Unique Entities Count","totalUniqueItems",720,720,0,"PASSED","Performance layer collapsed 770 active submittals to 720 unique documents."
+"BENCH-PERF-02","Performance Layer","Approved Unique Documents","approved",465,465,0,"PASSED","Performance layer computed 465 approved unique items."
+"BENCH-PERF-03","Performance Layer","Open Rejected Documents","rejectedOpen",15,15,0,"PASSED","Performance layer computed 15 open rejected items."
+"BENCH-PERF-05","Performance Layer","Rejected Closed Documents","rejectedClosed",10,10,0,"PASSED","Performance layer computed 10 rejected closed (Code D) items."
+"BENCH-SDW-01","Shop Drawings","SDW Total Active Sheets","totalSubmittedSheets",210,210,0,"PASSED","SDW Total Active: Expected 210, Computed 210."
+"BENCH-SDW-02","Shop Drawings","SDW Approved Sheets","approved",140,140,0,"PASSED","SDW Approved: Expected 140, Computed 140."
+"BENCH-MAR-01","MAR Module","MAR Total Submittals","totalSubmittedSheets",100,100,0,"PASSED","MAR Total: Expected 100, Computed 100."
+"BENCH-GLOB-01","Global Engine","Overall Approval Rate","approvalRate",94.89795918367348,94.89795918367348,0,"PASSED","Global Approval Rate: Expected 94.89795918367348%, Computed 94.89795918367348%."
+"BENCH-PERF-04","Performance Layer","Zero Superseded Items in Rejected Open","supersededDefectCount",0,0,0,"PASSED","Audit checked 25 rejected items: 0 defect lingering items found."

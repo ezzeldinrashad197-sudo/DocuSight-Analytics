@@ -91,10 +91,8 @@ export interface KPIStats {
   totalSubmittedSheets: number;
   totalDrawingsRev0: number; // Unique Document Numbers in Rev 0
   totalDrawingsFurtherRev: number;
-  totalDrawingsMissingRev?: number;
   totalSheetsRev0: number;
   totalSheetsFurtherRev: number;
-  totalSheetsMissingRev?: number;
   totalUniqueDrawings?: number;
   
   approved: number;

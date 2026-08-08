@@ -7,7 +7,7 @@ import {
   CheckCircle, HelpCircle, Eye, Cpu, Zap, Lock, Sparkles, Code
 } from 'lucide-react';
 import { SubmittalRow, ProjectSettings } from '../types';
-import { calculateStats, calculateNCRStats, calculateSORStats, parseDateTimestamp, resolveRowDiscipline } from '../utils/calculations';
+import { calculateStats, calculateNCRStats, calculateSORStats, parseDateTimestamp } from '../utils/calculations';
 import { compareRevisions, isValidRevision } from '../analytics/analyticsCore';
 import { getRevisionWeight } from '../utils/enterpriseUpgradeEngine';
 
@@ -20,7 +20,7 @@ export const CalculationAuditCenter: React.FC<CalculationAuditCenterProps> = ({
   data,
   projectInfo
 }) => {
-  const [activeTab, setActiveTab] = useState<'revision' | 'workflowAuthority' | 'decisionTree' | 'kpiSource' | 'duplicates' | 'rules'>('revision');
+  const [activeTab, setActiveTab] = useState<'revision' | 'decisionTree' | 'kpiSource' | 'duplicates' | 'rules'>('revision');
 
   // Filters for Revision Audit
   const [revSearchTerm, setRevSearchTerm] = useState('');
@@ -33,32 +33,11 @@ export const CalculationAuditCenter: React.FC<CalculationAuditCenterProps> = ({
   const [selectedKpiMetric, setSelectedKpiMetric] = useState<string>('approved');
   const [selectedKpiWf, setSelectedKpiWf] = useState<string>('ALL');
 
-  // Filter for Workflow Authority Audit
-  const [wfAuditFilterWf, setWfAuditFilterWf] = useState<string>('ALL');
-
-  // Helper to get formatted workflow family from discipline code
-  const getWorkflowFamilyFromDiscipline = (disc: string): string => {
-    const d = disc.trim();
-    if (d === 'GEN' || d === 'GENERAL') return 'DOC-GEN';
-    if (d === 'STR') return 'DOC-STR';
-    if (d === 'Arch') return 'DOC-ARC';
-    if (d === 'Mech') return 'DOC-MEC';
-    if (d === 'Elec') return 'DOC-ELE';
-    if (d === 'Infra') return 'DOC-INFRA';
-    if (d === 'Landscape') return 'DOC-LND';
-    if (d === 'SURVEY') return 'DOC-SUR';
-    if (d === 'HSE') return 'DOC-HSE';
-    return d.startsWith('DOC-') ? d : `DOC-${d.toUpperCase()}`;
-  };
-
   // Build Document-level Revision Resolution Dataset
   const auditDataset = useMemo(() => {
     const map = new Map<string, {
       docNo: string;
       logType: string;
-      worksheetName: string;
-      parsedDiscipline: string;
-      finalWorkflow: string;
       workflowFamily: string;
       discipline: string;
       contractor: string;
@@ -79,21 +58,12 @@ export const CalculationAuditCenter: React.FC<CalculationAuditCenterProps> = ({
     data.forEach(row => {
       const key = (row.docNo || row.ncrRef || row.sorRef || (row as any).drawingNo || '').trim().toUpperCase();
       if (!key) return;
-
-      const wsName = (row.logType || row.documentType || 'LOG').trim();
-      const parsedDisc = (row.discipline || row.trade || 'N/A').trim();
-      const resolvedCode = resolveRowDiscipline(row, 'DOC');
-      const finalWf = getWorkflowFamilyFromDiscipline(resolvedCode);
-
       if (!map.has(key)) {
         map.set(key, {
           docNo: key,
-          logType: wsName,
-          worksheetName: wsName,
-          parsedDiscipline: parsedDisc,
-          finalWorkflow: finalWf,
-          workflowFamily: finalWf,
-          discipline: resolvedCode,
+          logType: row.logType || row.documentType || 'LOG',
+          workflowFamily: row.workflowFamily || 'GENERAL',
+          discipline: row.discipline || row.trade || 'General',
           contractor: row.contractor || 'N/A',
           history: [],
           revHistoryChain: '',
@@ -103,7 +73,7 @@ export const CalculationAuditCenter: React.FC<CalculationAuditCenterProps> = ({
           latestRevNum: 0,
           isRev0: true,
           classification: 'Rev0',
-          ruleApplied: 'ER-REV-001 & ER-WF-005',
+          ruleApplied: 'ER-REV-001',
           reason: '',
           approvalCode: (row as any).code || row.status || 'Pending',
           currentStatus: row.status || 'Under Review'
@@ -153,50 +123,33 @@ export const CalculationAuditCenter: React.FC<CalculationAuditCenterProps> = ({
 
         if (item.history.length === 1) {
           if (isRev0) {
-            item.ruleApplied = 'ER-REV-001 & ER-WF-005 (Initial Release + Sheet Authority)';
-            item.reason = `Single transmittal row recorded. Latest resolved revision is "${revRaw}". Classified as Rev0.${ignoredNote} Sheet Authority ER-WF-005 locked workflow to "${item.finalWorkflow}".`;
+            item.ruleApplied = 'ER-REV-001 (Initial Release)';
+            item.reason = `Single transmittal row recorded. Latest resolved revision is "${revRaw}". Classified as Rev0.${ignoredNote}`;
           } else {
-            item.ruleApplied = 'ER-REV-002 & ER-WF-005 (Single-Entry Further Rev + Sheet Authority)';
-            item.reason = `Single transmittal row recorded with revision "${revRaw}". Classified as Further Rev.${ignoredNote} Sheet Authority ER-WF-005 locked workflow to "${item.finalWorkflow}".`;
+            item.ruleApplied = 'ER-REV-002 (Single-Entry Revision >0)';
+            item.reason = `Single transmittal row recorded with pre-incremented revision "${revRaw}". Classified as Further Rev.${ignoredNote}`;
           }
         } else {
-          item.ruleApplied = 'ER-REV-003 & ER-WF-005 (Multi-Transmittal Timeline Resolution + Sheet Authority)';
-          item.reason = `Multi-transmittal history resolved across ${item.history.length} cycles. Highest valid revision "${revRaw}" selected as current state.${ignoredNote} Workflow locked to "${item.finalWorkflow}".`;
+          if (isRev0) {
+            item.ruleApplied = 'ER-REV-003 (Multi-Transmittal Rev0 Maintenance)';
+            item.reason = `Document has ${item.history.length} transmittal cycles. Latest resolved revision remains "${revRaw}". Classified as Rev0.${ignoredNote}`;
+          } else {
+            item.ruleApplied = 'ER-REV-004 (Multi-Transmittal Revision Increment)';
+            item.reason = `Document re-submitted across ${item.history.length} transmittal cycles. Latest resolved revision is "${revRaw}". Classified as Further Rev.${ignoredNote}`;
+          }
         }
       } else {
-        item.latestRevStr = '0';
-        item.latestRevNum = 0;
-        item.isRev0 = true;
-        item.classification = 'Rev0';
-        item.ruleApplied = 'ER-REV-001 & ER-WF-005';
-        item.reason = `No valid revision string detected in transmittal chain; default initial release Rev0 applied. Final workflow: "${item.finalWorkflow}".`;
+        item.latestRevStr = '(blank)';
+        item.latestRevNum = -1;
+        item.isRev0 = false;
+        item.classification = 'Missing Revision';
+        item.ruleApplied = 'ER-REV-000 (No Valid Revision)';
+        item.reason = `Document has ${item.history.length} row(s) but all revision values are blank/invalid. Excluded from Rev0/Further Rev classification.`;
       }
 
       return item;
     });
   }, [data]);
-
-  const worksheetAuthorityMetrics = useMemo(() => {
-    const wsSet = new Set<string>();
-    const wfSet = new Set<string>();
-
-    data.forEach(row => {
-      const ws = (row.logType || row.documentType || 'LOG').trim();
-      if (ws) wsSet.add(ws);
-    });
-
-    auditDataset.forEach(row => {
-      if (row.finalWorkflow) wfSet.add(row.finalWorkflow);
-    });
-
-    return {
-      totalWorksheetsDetected: wsSet.size,
-      totalWorkflowEntitiesGenerated: wfSet.size,
-      detectedWorksheetList: Array.from(wsSet),
-      generatedWorkflowList: Array.from(wfSet),
-      isParityVerified: wsSet.size === wfSet.size
-    };
-  }, [data, auditDataset]);
 
   // Unique Disciplines and Workflows for Filters
   const uniqueWorkflows = useMemo(() => Array.from(new Set(auditDataset.map(d => d.logType))), [auditDataset]);
@@ -334,14 +287,6 @@ export const CalculationAuditCenter: React.FC<CalculationAuditCenterProps> = ({
         >
           <History className="w-4 h-4 text-emerald-500" />
           Revision & Timeline Audit (تدقيق المراجعات والجدول الزمني)
-        </button>
-
-        <button 
-          onClick={() => setActiveTab('workflowAuthority')}
-          className={`px-5 py-3 font-bold text-xs rounded-xl transition-all flex items-center gap-2 shrink-0 ${activeTab === 'workflowAuthority' ? 'bg-slate-900 text-emerald-400 shadow-sm' : 'bg-white text-slate-600 hover:bg-slate-100'}`}
-        >
-          <ShieldCheck className="w-4 h-4 text-emerald-500" />
-          Worksheet & Workflow Audit (تدقيق مطابقة اسم الشيت والـ Workflow)
         </button>
 
         <button 
@@ -635,202 +580,6 @@ export const CalculationAuditCenter: React.FC<CalculationAuditCenterProps> = ({
                 })()}
               </div>
             )}
-          </div>
-        </div>
-      )}
-
-      {/* TAB: WORKSHEET & WORKFLOW AUTHORITY AUDIT (ER-WF-005) */}
-      {activeTab === 'workflowAuthority' && (
-        <div className="space-y-6">
-          <div className="bg-gradient-to-r from-emerald-950 via-slate-900 to-slate-950 p-6 rounded-3xl border border-emerald-800 shadow-xl text-white space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="p-2.5 bg-emerald-500/20 border border-emerald-500/40 rounded-2xl text-emerald-400">
-                  <ShieldCheck className="w-6 h-6" />
-                </div>
-                <div>
-                  <span className="text-[10px] font-mono text-emerald-400 font-bold uppercase tracking-widest block">
-                    ER-WF-005 Sheet Name Authority Protocol
-                  </span>
-                  <h3 className="text-xl font-black text-white">
-                    Worksheet Identity & Final Workflow Alignment Audit
-                  </h3>
-                </div>
-              </div>
-              <div className="px-4 py-2 bg-emerald-500/20 border border-emerald-500/30 rounded-2xl text-right">
-                <span className="text-[10px] text-emerald-300 font-mono block uppercase">Rule Compliance</span>
-                <span className="text-lg font-black font-mono text-emerald-400">100% VERIFIED ✅</span>
-              </div>
-            </div>
-
-            <p className="text-xs text-slate-300 leading-relaxed max-w-4xl">
-              Strictly enforces the <strong>Sheet Name Authority Rule (ER-WF-005)</strong>. Worksheet identity is treated as the supreme authoritative source. The system guarantees that document numbers containing discipline keywords (e.g. <code>INN-ARC-DOC-GEN-0107</code> inside <code>DOC-GEN</code> worksheet) are preserved strictly under their origin worksheet family without phantom reclassification.
-            </p>
-
-            {/* COUNTER CARDS: TOTAL WORKSHEETS DETECTED VS TOTAL WORKFLOW ENTITIES GENERATED */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
-              <div className="bg-slate-900/90 border border-emerald-500/40 p-4 rounded-2xl flex items-center justify-between">
-                <div>
-                  <span className="text-[10px] text-emerald-400 font-mono font-bold uppercase block">Total Worksheets Detected</span>
-                  <span className="text-2xl font-black font-mono text-white">{worksheetAuthorityMetrics.totalWorksheetsDetected}</span>
-                  <span className="text-[10px] text-slate-400 block mt-0.5">Sheets in uploaded file</span>
-                </div>
-                <div className="p-3 bg-emerald-500/20 text-emerald-400 rounded-xl">
-                  <FolderTree className="w-5 h-5" />
-                </div>
-              </div>
-
-              <div className="bg-slate-900/90 border border-indigo-500/40 p-4 rounded-2xl flex items-center justify-between">
-                <div>
-                  <span className="text-[10px] text-indigo-400 font-mono font-bold uppercase block">Total Workflow Entities</span>
-                  <span className="text-2xl font-black font-mono text-white">{worksheetAuthorityMetrics.totalWorkflowEntitiesGenerated}</span>
-                  <span className="text-[10px] text-slate-400 block mt-0.5">Active Log Types generated</span>
-                </div>
-                <div className="p-3 bg-indigo-500/20 text-indigo-400 rounded-xl">
-                  <Zap className="w-5 h-5" />
-                </div>
-              </div>
-
-              <div className={`border p-4 rounded-2xl flex items-center justify-between ${
-                worksheetAuthorityMetrics.isParityVerified 
-                  ? 'bg-emerald-950/80 border-emerald-500/50 text-emerald-300' 
-                  : 'bg-amber-950/80 border-amber-500/50 text-amber-300'
-              }`}>
-                <div>
-                  <span className="text-[10px] font-mono font-bold uppercase block">Worksheet ➔ Workflow Parity</span>
-                  <span className="text-xl font-black font-mono">
-                    {worksheetAuthorityMetrics.isParityVerified ? '100% MATCH ✅' : 'ATTENTION REQUIRED'}
-                  </span>
-                  <span className="text-[10px] opacity-80 block mt-0.5">
-                    {worksheetAuthorityMetrics.totalWorksheetsDetected} Worksheets = {worksheetAuthorityMetrics.totalWorkflowEntitiesGenerated} Workflows
-                  </span>
-                </div>
-                <div className="p-3 bg-white/10 rounded-xl">
-                  <CheckCircle2 className="w-5 h-5" />
-                </div>
-              </div>
-            </div>
-
-            {/* THREE FIXED COLUMNS AUDIT TABLE */}
-            <div className="bg-white text-slate-900 rounded-2xl overflow-hidden border border-slate-200 shadow-sm mt-4">
-              <div className="p-4 bg-slate-100/90 border-b border-slate-200 flex flex-wrap items-center justify-between gap-3">
-                <div className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                  <h4 className="text-xs font-black text-slate-900 uppercase tracking-wider">
-                    Complete Workflow Trace Audit: Worksheet ➔ Sheet Index ➔ Parsed Discipline ➔ Final Workflow Line-Item Audit
-                  </h4>
-                </div>
-
-                {/* WORKFLOW FILTER SELECTOR */}
-                <div className="flex items-center gap-2">
-                  <span className="text-xs font-bold text-slate-600">Filter Final Workflow:</span>
-                  <select 
-                    value={wfAuditFilterWf}
-                    onChange={(e) => setWfAuditFilterWf(e.target.value)}
-                    className="px-3 py-1.5 text-xs font-bold rounded-xl border border-slate-300 bg-white text-slate-900 shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                  >
-                    <option value="ALL">ALL WORKFLOWS ({auditDataset.length} rows)</option>
-                    {worksheetAuthorityMetrics.generatedWorkflowList.map(wf => (
-                      <option key={wf} value={wf}>
-                        {wf} ({auditDataset.filter(r => r.finalWorkflow === wf).length} rows)
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              <div className="overflow-x-auto">
-                <table className="w-full text-left border-collapse text-xs">
-                  <thead>
-                    <tr className="bg-slate-200/70 text-slate-800 font-bold uppercase tracking-wider text-[10px] border-b border-slate-300">
-                      <th className="p-3">Document Number</th>
-                      <th className="p-3 bg-emerald-50 text-emerald-950 font-black border-r border-emerald-200">
-                        Worksheet Name
-                      </th>
-                      <th className="p-3 bg-slate-100 text-slate-900 font-bold border-r border-slate-200 text-center">
-                        Sheet Index
-                      </th>
-                      <th className="p-3 bg-slate-50 text-slate-900 font-bold border-r border-slate-200">
-                        Parsed Discipline
-                      </th>
-                      <th className="p-3 bg-indigo-50 text-indigo-950 font-black border-r border-indigo-200">
-                        Final Workflow
-                      </th>
-                      <th className="p-3 bg-purple-50 text-purple-950 font-bold border-r border-purple-200">
-                        Workflow Source
-                      </th>
-                      <th className="p-3 text-center">Authority Rule Status</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100 font-mono">
-                    {auditDataset
-                      .filter(row => wfAuditFilterWf === 'ALL' || row.finalWorkflow === wfAuditFilterWf)
-                      .slice(0, 150)
-                      .map((row, rIdx) => {
-                      const mode = typeof window !== 'undefined'
-                        ? (localStorage.getItem('docuCtrl_workflowClassificationMode') || 'preserve_sheet_name')
-                        : 'preserve_sheet_name';
-
-                      const wfSource = mode === 'preserve_sheet_name'
-                        ? 'Worksheet Name (ER-WF-005)'
-                        : (row.parsedDiscipline && row.parsedDiscipline !== 'N/A' ? 'Parsed Discipline' : 'Document Number');
-
-                      const sheetIdxStr = `Sheet #${worksheetAuthorityMetrics.detectedWorksheetList.indexOf(row.worksheetName) + 1}`;
-
-                      return (
-                        <tr key={rIdx} className="hover:bg-slate-50 transition-colors">
-                          <td className="p-3 font-bold text-slate-900">{row.docNo}</td>
-                          
-                          {/* COLUMN 1: WORKSHEET NAME */}
-                          <td className="p-3 bg-emerald-50/50 font-bold text-emerald-900 border-r border-emerald-100">
-                            <span className="px-2 py-1 rounded bg-emerald-100/80 text-emerald-950 text-[11px]">
-                              {row.worksheetName}
-                            </span>
-                          </td>
-
-                          {/* COLUMN 2: ORIGINAL SHEET INDEX */}
-                          <td className="p-3 bg-slate-100/50 text-slate-800 border-r border-slate-200 text-center">
-                            <span className="px-2 py-0.5 rounded bg-slate-200 text-slate-900 text-[10px] font-bold">
-                              {sheetIdxStr}
-                            </span>
-                          </td>
-
-                          {/* COLUMN 3: PARSED DISCIPLINE */}
-                          <td className="p-3 bg-slate-50/50 text-slate-700 border-r border-slate-100">
-                            <span className="px-2 py-1 rounded bg-slate-200/60 text-slate-800 text-[11px]">
-                              {row.parsedDiscipline || row.discipline}
-                            </span>
-                          </td>
-
-                          {/* COLUMN 4: FINAL WORKFLOW */}
-                          <td className="p-3 bg-indigo-50/50 font-black text-indigo-950 border-r border-indigo-100">
-                            <span className="px-2.5 py-1 rounded bg-indigo-100 text-indigo-950 text-[11px] font-bold">
-                              {row.finalWorkflow}
-                            </span>
-                          </td>
-
-                          {/* COLUMN 5: WORKFLOW SOURCE */}
-                          <td className="p-3 bg-purple-50/50 font-bold text-purple-900 border-r border-purple-100 font-sans">
-                            <span className="px-2 py-0.5 rounded bg-purple-100 text-purple-950 text-[10px] font-bold inline-flex items-center gap-1">
-                              <CheckCircle2 className="w-3 h-3 text-purple-700" />
-                              {wfSource}
-                            </span>
-                          </td>
-
-                          {/* STATUS BADGE */}
-                          <td className="p-3 text-center font-sans">
-                            <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300 inline-flex items-center gap-1">
-                              <Check className="w-3 h-3 text-emerald-600 stroke-[3]" />
-                              ER-WF-005 Authority Locked ✅
-                            </span>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            </div>
           </div>
         </div>
       )}

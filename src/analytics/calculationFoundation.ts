@@ -1,6 +1,7 @@
 import { SubmittalRow } from '../types';
-import { compareRevisions, getNormalizedStatusCore, isValidRevision, getStatusCodeCategory } from './analyticsCore';
+import { compareRevisions, getNormalizedStatusCore, isValidRevision } from './analyticsCore';
 import { getRevisionWeight } from '../utils/enterpriseUpgradeEngine';
+import { getStatusCodeCategory } from '../utils/calculations';
 
 export interface CanonicalRecord {
   id: string;
@@ -22,10 +23,8 @@ export interface CanonicalRecord {
 
 export interface SubmissionLayerResult {
   totalSubmitted: number;
-  totalUniqueItems: number;
   rev00: number;
   furtherRevisions: number;
-  missingRevision: number;
 }
 
 export interface PerformanceLayerResult {
@@ -244,22 +243,23 @@ export function buildCanonicalDataset(rows: SubmittalRow[], fullCumulativeRows?:
 }
 
 function getResolvedStatusCategory(row: SubmittalRow): 'APPROVED' | 'REJECTED_OPEN' | 'REJECTED_CLOSED' | 'PENDING' {
-  const rawStatus = row.status || row.recordStatus || (row as any).ncrStatus || (row as any).sorStatus || '';
-  const cat = getStatusCodeCategory(rawStatus);
+  const cat = getStatusCodeCategory(row);
   if (cat === 'APPROVED') return 'APPROVED';
   if (cat === 'REJECTED_OPEN') return 'REJECTED_OPEN';
   if (cat === 'REJECTED_CLOSED') return 'REJECTED_CLOSED';
 
+  const rawStatus = row.status || row.recordStatus || (row as any).ncrStatus || (row as any).sorStatus || '';
   const statusStr = rawStatus.toUpperCase().trim();
   const workflow = (row.workflowStage || '').toUpperCase().trim();
   
-  if (['APPROVED', 'ACCEPTED', 'CODE A', 'CODE B', 'A', 'B', 'CLOSED'].includes(statusStr) || workflow.includes('APPROV') || workflow.includes('CLOSED')) {
-    if (statusStr.includes('CLOSED') || workflow.includes('CLOSED') || row.recordStatus?.toUpperCase() === 'CLOSED') {
-      return 'APPROVED';
-    }
+  if (statusStr === 'D' || statusStr === 'CODE D' || statusStr.includes('CODE D') || statusStr.includes('DISAPPROVED')) {
+    return 'REJECTED_CLOSED';
+  }
+
+  if (['APPROVED', 'ACCEPTED', 'CODE A', 'CODE B', 'A', 'B'].includes(statusStr) || workflow.includes('APPROV')) {
     return 'APPROVED';
   }
-  if (['REJECTED', 'CODE C', 'CODE D', 'C', 'D', 'REJECT'].includes(statusStr) || workflow.includes('REJECT')) {
+  if (['REJECTED', 'CODE C', 'C', 'REJECT'].includes(statusStr) || workflow.includes('REJECT')) {
     if (statusStr.includes('CLOSE') || row.recordStatus?.toUpperCase() === 'CLOSED') {
       return 'REJECTED_CLOSED';
     }
@@ -370,29 +370,24 @@ export function evaluateSubmissionLayer(canonicalRecords: CanonicalRecord[], ful
 
   let rev00 = 0;
   let furtherRevisions = 0;
-  let missingRevision = 0;
 
   filteredItems.forEach(item => {
     if (item.classification === 'Rev00') {
       rev00++;
-    } else if (item.classification === 'Further Revision') {
+    } else {
       furtherRevisions++;
-    } else if (item.classification === 'Missing Revision') {
-      missingRevision++;
     }
   });
 
   const totalUniqueItems = filteredItems.length;
-  if (rev00 + furtherRevisions + missingRevision !== totalUniqueItems) {
-    throw new Error(`Engineering Item Validation Error: Invariant violated (Rev00: ${rev00} + Further: ${furtherRevisions} + Missing: ${missingRevision} !== TotalUnique: ${totalUniqueItems})`);
+  if (rev00 + furtherRevisions !== totalUniqueItems) {
+    throw new Error(`Engineering Item Validation Error: Invariant violated (Rev00: ${rev00} + Further: ${furtherRevisions} !== TotalUnique: ${totalUniqueItems})`);
   }
 
   return {
     totalSubmitted: canonicalRecords.filter(r => r.includeInSubmission).length,
-    totalUniqueItems,
     rev00,
     furtherRevisions,
-    missingRevision,
   };
 }
 

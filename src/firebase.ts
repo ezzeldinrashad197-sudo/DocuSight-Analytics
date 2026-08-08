@@ -13,10 +13,20 @@ import firebaseConfig from '../firebase-applet-config.json';
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const googleAuthProvider = new GoogleAuthProvider();
+const getEnvVar = (key: string) => {
+  if (typeof process !== 'undefined' && process.env && process.env[key]) {
+    return process.env[key];
+  }
+  if (typeof import.meta !== 'undefined' && (import.meta as any).env && (import.meta as any).env[key]) {
+    return (import.meta as any).env[key];
+  }
+  return undefined;
+};
+
 const databaseId = 
   (firebaseConfig as any).firestoreDatabaseId || 
-  (import.meta as any).env.VITE_FIRESTORE_DATABASE_ID || 
-  ((import.meta as any).env.DEV ? 'ai-studio-b1fedb55-c17f-4221-b883-f1ee17f1362f' : '(default)');
+  getEnvVar('VITE_FIRESTORE_DATABASE_ID') || 
+  'ai-studio-b1fedb55-c17f-4221-b883-f1ee17f1362f';
 export const db = initializeFirestore(app, { 
   experimentalForceLongPolling: true,
   localCache: persistentLocalCache({
@@ -185,24 +195,20 @@ export const resolveUserPermissions = async (
     // Core resolution logic
     let finalRoles: string[] = [];
     
-    if (cleanedEmail === 'ezzeldinrashad197@gmail.com') {
-        finalRoles = ['all'];
+    // Merge all available roles from all profiles
+    const allRolesSet = new Set([...uidRoles, ...emailRoles]);
+    const allRoles = Array.from(allRolesSet).filter(r => r && r !== '');
+    
+    // Match user requirements: if a higher privilege role exists, filter out 'viewer' from active session
+    if (allRoles.length > 1) {
+        finalRoles = allRoles.filter(r => r !== 'viewer');
     } else {
-        // Merge all available roles from all profiles
-        const allRolesSet = new Set([...uidRoles, ...emailRoles]);
-        const allRoles = Array.from(allRolesSet).filter(r => r && r !== '');
-        
-        // Match user requirements: if a higher privilege role exists, filter out 'viewer' from active session
-        if (allRoles.length > 1) {
-            finalRoles = allRoles.filter(r => r !== 'viewer');
-        } else {
-            finalRoles = allRoles;
-        }
-        
-        // If no roles specified at all, default to viewer (new user)
-        if (finalRoles.length === 0) {
-            finalRoles = ['viewer'];
-        }
+        finalRoles = allRoles;
+    }
+    
+    // If no roles specified at all, default to viewer (new user)
+    if (finalRoles.length === 0) {
+        finalRoles = ['viewer'];
     }
     
     const resolvedRole = finalRoles.join(',');

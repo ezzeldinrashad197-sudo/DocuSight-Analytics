@@ -24,16 +24,15 @@ service cloud.firestore {
     match /users/{userId} {
       allow read: if isSignedIn();
       
-      // Creating is allowed for users completing registrations or managers pre-registering
-      allow create: if isSignedIn() 
-                    && isValidId(userId);
+      // Creating is allowed only for current user completing registration
+      allow create: if isCurrentUser(userId) && isValidId(userId);
                     
-      // Updates are restricted to current user (themselves) or managers (role modification)
-      allow update: if isSignedIn() 
-                    && isValidId(userId);
+      // Updates are restricted to current user (themselves) and role cannot be self-escalated
+      allow update: if isCurrentUser(userId) 
+                    && isValidId(userId)
+                    && (!request.resource.data.keys().hasAll(['role']) || request.resource.data.role == resource.data.role);
                     
-      allow delete: if isSignedIn() 
-                    && isValidId(userId);
+      allow delete: if false; // Users cannot delete user records directly
     }
 
     // --- COLLECTION: project_stats ---
@@ -46,7 +45,9 @@ service cloud.firestore {
     // --- COLLECTION: audit_logs ---
     match /audit_logs/{logId} {
       allow read: if isSignedIn();
-      allow create: if isSignedIn() && isValidId(logId);
+      allow create: if isSignedIn() 
+                    && isValidId(logId) 
+                    && request.resource.data.userId == request.auth.uid;
       allow update, delete: if false; // Strict audit trail immutability
     }
 

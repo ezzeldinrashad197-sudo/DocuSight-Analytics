@@ -153,9 +153,10 @@ async function startServer() {
                       
       const isAllowedOrigin = allowedOrigins.includes(origin);
       
-      // Sandbox and specific DeepMind/AI Studio preview runtime bounds (allows all .run.app instances for published versions)
-      const isAISandbox = /\.run\.app$/.test(host);
-      const isGoogleSandbox = /\.google\.com$/.test(host);
+      // Sandbox and specific AI Studio preview runtime bounds
+      const isAISandbox = /^ais-(dev|pre)-[a-z0-9-]+-[a-z0-9-]+\.europe-west2\.run\.app$/.test(host) ||
+                          host.endsWith('.run.app') && host.startsWith('ais-');
+      const isGoogleSandbox = host.endsWith('.google.com') || host.endsWith('.ai.studio');
 
       let isAllowed = false;
       if (isDev) {
@@ -572,7 +573,7 @@ Keep the report concise, professional, and use Markdown headings and bullet poin
           });
 
           const result = await Promise.race([apiPromise, timeoutPromise]);
-          insightsResult = result.text;
+          insightsResult = result.text || "";
           activeError = null;
           break; // Succeeded! Break loop
         } catch (apiErr: any) {

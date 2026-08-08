@@ -6,41 +6,6 @@ export { isValidRevision };
 
 export type NormalizedStatus = 'OPEN' | 'CLOSED' | 'REJECTED' | 'OVERDUE' | 'UNKNOWN';
 
-export const getStatusCodeCategory = (code?: string): 'APPROVED' | 'REJECTED_OPEN' | 'REJECTED_CLOSED' | 'PENDING' | 'UNKNOWN' => {
-  if (!code) return 'PENDING'; // Assume pending if no status
-  const upper = code.toUpperCase().trim();
-  if (!upper) return 'PENDING';
-
-  // Normalize by shrinking quotes, colons, dashes, and multiple spaces into a single space
-  const normalized = upper.replace(/["':\-\s]+/g, ' ').trim();
-
-  // Explicit Rejected Closed mappings
-  if (normalized.includes('C CLOSED') || (normalized.includes('REJ') && normalized.includes('CLOS'))) {
-    return 'REJECTED_CLOSED';
-  }
-
-  // Explicit Rejected Open mappings
-  if (normalized === 'C' || normalized === 'CODE C' || normalized.startsWith('C ') || normalized.endsWith(' C') || normalized.includes('C OPEN') || normalized.includes('REJ')) {
-    return 'REJECTED_OPEN';
-  }
-
-  // Approved codes map -> A, B, SUPERSEDED, ACCEPTED, CLOSED, D
-  if (['A', 'B', 'D'].includes(normalized) || 
-      normalized.startsWith('A ') || normalized.startsWith('B ') || normalized.startsWith('D ') || 
-      normalized.includes('CODE A') || normalized.includes('CODE B') || normalized.includes('CODE D') || 
-      normalized.includes('APP') || normalized.includes('ACC') || 
-      normalized.includes('SUPER') || normalized.includes('CLOS')) {
-    return 'APPROVED';
-  }
-
-  // Pending map -> W, WAITING, PEND
-  if (['W'].includes(normalized) || normalized.startsWith('W ') || normalized.includes('CODE W') || normalized.includes('PEN') || normalized.includes('WAIT')) {
-    return 'PENDING';
-  }
-
-  return 'UNKNOWN';
-};
-
 /**
  * Normalized Status Evaluation (Status Matrix Engine)
  */

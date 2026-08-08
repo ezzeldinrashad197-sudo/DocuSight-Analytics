@@ -867,8 +867,8 @@ export const generatePptxReport = async (
                 
                 return {
                     discipline: disc,
-                    Rev00: s.totalDrawingsRev0 !== undefined ? s.totalDrawingsRev0 : (s.totalSheetsRev0 || 0),
-                    FurtherRev: s.totalDrawingsFurtherRev !== undefined ? s.totalDrawingsFurtherRev : (s.totalSheetsFurtherRev || 0),
+                    Rev00: s.totalSheetsRev0 || 0,
+                    FurtherRev: s.totalSheetsFurtherRev || 0,
                     Approved: s.approved,
                     RejectedOpen: s.rejectedOpen,
                     RejectedClosed: s.rejectedClosed,

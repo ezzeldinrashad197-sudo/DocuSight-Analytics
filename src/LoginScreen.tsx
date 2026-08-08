@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Shield, Lock, User, TerminalSquare, AlertCircle, ExternalLink, Globe } from 'lucide-react';
+import { Shield, AlertCircle, ExternalLink, Globe } from 'lucide-react';
 import Logo from './Logo';
-import { auth, googleAuthProvider, db, resolveUserPermissions } from './firebase';
-import { signInWithRedirect, getRedirectResult, onAuthStateChanged } from 'firebase/auth';
-import { doc, getDoc, setDoc, collection, getDocs, query, limit } from 'firebase/firestore';
+import { auth, googleAuthProvider, resolveUserPermissions } from './firebase';
+import { signInWithPopup, onAuthStateChanged } from 'firebase/auth';
 import { useLanguage } from './utils/i18n';
 
 interface LoginScreenProps {
@@ -13,43 +12,9 @@ interface LoginScreenProps {
 export default function LoginScreen({ onLogin }: LoginScreenProps) {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
-  const [showBypassForm, setShowBypassForm] = useState(false);
-  const [bypassEmail, setBypassEmail] = useState('');
-  const [bypassPasscode, setBypassPasscode] = useState('');
 
   useEffect(() => {
     let isMounted = true;
-    
-    // --- Instantaneous Fast-Boot Check for Bypass Session ---
-    const bypassEmail = sessionStorage.getItem('bypass_email_session');
-    const bypassUid = sessionStorage.getItem('bypass_uid_session');
-    const cachedRole = localStorage.getItem('docuCtrl_activeRole');
-    const cachedEmail = localStorage.getItem('docuCtrl_activeEmail');
-    
-    if (bypassEmail && bypassUid && cachedRole && cachedEmail && cachedEmail === bypassEmail) {
-      console.info("[Fast Boot Engine] Found active bypass session. Restoring instantly:", cachedRole);
-      onLogin(cachedRole as any);
-      return;
-    }
-
-    const checkRedirect = async () => {
-      try {
-        const result = await getRedirectResult(auth);
-        // if result exists, it means we just came back from a redirect.
-        // the onAuthStateChanged will handle the user object.
-      } catch (err: any) {
-        console.warn('REDIRECT ERROR:', err);
-        if (isMounted) {
-            if (err.code === 'auth/unauthorized-domain') {
-              setError('This domain is not authorized. Please add the current URL to your Firebase Console -> Authentication -> Settings -> Authorized domains.');
-            } else {
-              setError(err.message || 'Authentication failed during redirect.');
-            }
-            setLoading(false);
-        }
-      }
-    };
-    checkRedirect();
 
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
@@ -91,14 +56,6 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
     try {
       let userEmail = typeof user.email === 'string' ? user.email.trim().toLowerCase() : '';
       
-      // If signed in anonymously (from bypass login), retrieve the persistent email from session storage
-      if (user.isAnonymous || !userEmail) {
-         const storedEmail = sessionStorage.getItem('bypass_email_session');
-         if (storedEmail) {
-            userEmail = storedEmail.trim().toLowerCase();
-         }
-      }
-      
       const resolved = await resolveUserPermissions(user.uid, userEmail, user.displayName);
       assignedRole = resolved as any;
       
@@ -110,18 +67,8 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
     } catch (firestoreError: any) {
       console.warn('Firestore user fetch or write failed:', firestoreError);
       let userEmail = typeof user.email === 'string' ? user.email.trim().toLowerCase() : '';
-      if (!userEmail) {
-         const storedEmail = sessionStorage.getItem('bypass_email_session');
-         if (storedEmail) {
-            userEmail = storedEmail.trim().toLowerCase();
-         }
-      }
-      if (userEmail === 'ezzeldinrashad197@gmail.com') {
-         assignedRole = 'all';
-      } else {
-         console.warn('Defaulting to viewer role due to exception resolving permissions.');
-         assignedRole = 'viewer';
-      }
+      console.warn('Defaulting to viewer role due to exception resolving permissions.');
+      assignedRole = 'viewer';
       if (userEmail) {
         localStorage.setItem('docuCtrl_activeRole', assignedRole);
         localStorage.setItem('docuCtrl_activeEmail', userEmail);
@@ -137,50 +84,14 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
     setError(null);
 
     try {
-      await signInWithRedirect(auth, googleAuthProvider);
+      await signInWithPopup(auth, googleAuthProvider);
     } catch (err: any) {
-      console.warn('AUTH ERROR:', err);
+      console.warn('POPUP AUTH ERROR:', err);
       if (err.code === 'auth/unauthorized-domain') {
         setError('This domain is not authorized. Please add the current URL to your Firebase Console -> Authentication -> Settings -> Authorized domains.');
       } else {
-        console.warn('Unhandled auth error:', err);
-        setError(err.message || 'Authentication failed. Please try again.');
+        setError(err.message || 'Authentication failed. If you are inside an iframe or popups are blocked, please open the application in a new tab.');
       }
-      setLoading(false);
-    }
-  };
-
-  const handleBypassLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!bypassEmail.trim()) {
-      setError('Please enter a valid email address.');
-      return;
-    }
-    if (bypassPasscode.trim() !== '123456') {
-      setError('Invalid emergency passcode. Please use "123456" to authorize.');
-      return;
-    }
-
-    setLoading(true);
-    setError(null);
-
-    const email = bypassEmail.trim().toLowerCase();
-    const calculatedUid = 'bypass_' + email.replace(/[^a-zA-Z0-9]/g, '_');
-    
-    sessionStorage.setItem('bypass_email_session', email);
-    sessionStorage.setItem('bypass_uid_session', calculatedUid);
-
-    const userResult = {
-      uid: calculatedUid,
-      email: email,
-      displayName: email.split('@')[0],
-    };
-
-    try {
-      await processLoginResult(userResult);
-    } catch (err: any) {
-      console.error('Bypass login activation failed:', err);
-      setError(err.message || 'Bypass login activation failed.');
       setLoading(false);
     }
   };
@@ -255,61 +166,18 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
                     {loading ? t('authenticating') : t('sign_in_with_sso')}
                 </button>
 
-                {!showBypassForm ? (
+                {typeof window !== 'undefined' && window.self !== window.top && (
                   <div className="text-center pt-2">
-                    <button
-                      type="button"
-                      onClick={() => setShowBypassForm(true)}
-                      className="text-xs text-indigo-400 hover:text-indigo-300 underline transition-colors font-medium text-center inline-block"
+                    <a
+                      href={window.location.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-xs text-indigo-400 hover:text-indigo-300 underline transition-colors inline-flex items-center gap-1 font-medium"
                     >
-                      {t('bypass_prompt')}
-                    </button>
+                      <ExternalLink className="w-3.5 h-3.5" />
+                      {t('open_new_tab_login')}
+                    </a>
                   </div>
-                ) : (
-                  <form onSubmit={handleBypassLogin} className="p-4 bg-slate-800/80 rounded-xl border border-slate-700/60 space-y-3">
-                    <div className="flex justify-between items-center pb-1 border-b border-slate-700/50">
-                      <h3 className="text-xs font-bold text-slate-200">{t('developer_bypass_title')}</h3>
-                      <button 
-                        type="button" 
-                        onClick={() => setShowBypassForm(false)}
-                        className="text-xs text-slate-400 hover:text-white"
-                      >
-                        {t('cancel')}
-                      </button>
-                    </div>
-                    
-                    <div>
-                      <label className="block text-xs font-medium text-slate-400 mb-1">{t('email_address')}</label>
-                      <input 
-                        type="email"
-                        required
-                        value={bypassEmail}
-                        onChange={(e) => setBypassEmail(e.target.value)}
-                        placeholder="e.g. user@domain.com"
-                        className="w-full text-sm bg-slate-950 border border-slate-700 rounded p-2 text-white placeholder-slate-600 focus:outline-none focus:border-[#D4AF37]"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-medium text-slate-400 mb-1">{t('emergency_passcode')}</label>
-                      <input 
-                        type="password"
-                        required
-                        value={bypassPasscode}
-                        onChange={(e) => setBypassPasscode(e.target.value)}
-                        placeholder="123456"
-                        className="w-full text-sm bg-slate-950 border border-slate-700 rounded p-2 text-white placeholder-slate-600 focus:outline-none focus:border-[#D4AF37]"
-                      />
-                      <span className="text-[10px] text-slate-500 block mt-1">{t('passcode_hint')}</span>
-                    </div>
-                    
-                    <button 
-                      type="submit"
-                      disabled={loading}
-                      className="w-full bg-[#3B82F6] hover:bg-[#2563EB] text-white text-sm font-semibold py-2 px-4 rounded transition-colors disabled:opacity-50"
-                    >
-                      {t('confirm_and_login')}
-                    </button>
-                  </form>
                 )}
             </div>
             

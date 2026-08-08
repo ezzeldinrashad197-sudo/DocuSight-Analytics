@@ -31,9 +31,11 @@ export default function CorrespondenceAnalytics(props: { data: SubmittalRow[], m
         const dC = cumMap.get(sh);
         const dM = mMap.get(sh);
 
-        dC.total++;
-        if (row.direction === 'IN') dC.lettersIn++;
-        else dC.lettersOut++;
+        if (dC) {
+          dC.total++;
+          if (row.direction === 'IN') dC.lettersIn++;
+          else dC.lettersOut++;
+        }
 
         const dSent = row.submissionDate ? new Date(row.submissionDate) : null;
         let isSentInMonth = false;
@@ -41,7 +43,7 @@ export default function CorrespondenceAnalytics(props: { data: SubmittalRow[], m
             isSentInMonth = `${dSent.getFullYear()}-${dSent.getMonth()}` === tMonthStr;
         }
 
-        if (isSentInMonth) {
+        if (isSentInMonth && dM) {
             dM.total++;
             if (row.direction === 'IN') dM.lettersIn++;
             else dM.lettersOut++;

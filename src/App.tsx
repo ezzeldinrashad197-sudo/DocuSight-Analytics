@@ -1,32 +1,25 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { FileSpreadsheet, FileUp, LayoutDashboard, CalendarDays, Clock, Database, CheckCircle2, AlertCircle, Printer, Presentation as PresentationIcon, Filter, Settings, Bot, ChevronLeft, ChevronRight, BarChart, Loader2, FileText, CheckSquare, ShieldAlert, ShieldCheck, Network, Hexagon, LogOut, Globe, Cpu, Building2 } from 'lucide-react';
 import { SubmittalRow, ProjectSettings } from './types';
+import MasterRegister from './components/MasterRegister';
 import ReportTable from './ReportTable';
-
-const MasterRegister = React.lazy(() => import('./components/MasterRegister'));
-const DelayAnalysis = React.lazy(() => import('./DelayAnalysis'));
-const Presentation = React.lazy(() => import('./Presentation'));
-const EnterpriseDashboard = React.lazy(() => import('./EnterpriseDashboard'));
-const PortfolioCenter = React.lazy(() => import('./PortfolioCenter'));
-const SettingsCenter = React.lazy(() => import('./SettingsCenter'));
-const AIInsights = React.lazy(() => import('./AIInsights'));
-const NCRAnalytics = React.lazy(() => import('./NCRAnalytics'));
-const SORAnalytics = React.lazy(() => import('./SORAnalytics'));
-const CorrespondenceAnalytics = React.lazy(() => import('./CorrespondenceAnalytics'));
-const RFIAnalytics = React.lazy(() => import('./RFIAnalytics'));
-const DataValidationEngine = React.lazy(() => import('./components/DataValidationEngine'));
-const AdvancedAgingAnalysis = React.lazy(() => import('./components/AdvancedAgingAnalysis'));
-const SLAMonitoring = React.lazy(() => import('./components/SLAMonitoring'));
-const ActionTracker = React.lazy(() => import('./components/ActionTracker'));
-const TrendAndForecastEngine = React.lazy(() => import('./components/TrendAndForecastEngine'));
-const HistoricalDataWarehouse = React.lazy(() => import('./components/HistoricalDataWarehouse'));
-const EngineeringItemDatasetView = React.lazy(() => import('./components/EngineeringItemDatasetView'));
-const EnterpriseMonitoringDashboard = React.lazy(() => import('./components/EnterpriseMonitoringDashboard'));
-const FinalAcceptanceAuditView = React.lazy(() => import('./components/FinalAcceptanceAuditView'));
-const WorkflowMappingCenter = React.lazy(() => import('./components/WorkflowMappingCenter'));
-const CalculationAuditCenter = React.lazy(() => import('./components/CalculationAuditCenter').then(m => ({ default: m.CalculationAuditCenter })));
-const CorporateReportsView = React.lazy(() => import('./components/CorporateReportsView').then(m => ({ default: m.CorporateReportsView })));
-
+import DelayAnalysis from './DelayAnalysis';
+import Presentation from './Presentation';
+import EnterpriseDashboard from './EnterpriseDashboard';
+import PortfolioCenter from './PortfolioCenter';
+import SettingsCenter from './SettingsCenter';
+import AIInsights from './AIInsights';
+import NCRAnalytics from './NCRAnalytics';
+import SORAnalytics from './SORAnalytics';
+import CorrespondenceAnalytics from './CorrespondenceAnalytics';
+import RFIAnalytics from './RFIAnalytics';
+import DataValidationEngine from './components/DataValidationEngine';
+import AdvancedAgingAnalysis from './components/AdvancedAgingAnalysis';
+import SLAMonitoring from './components/SLAMonitoring';
+import ActionTracker from './components/ActionTracker';
+import TrendAndForecastEngine from './components/TrendAndForecastEngine';
+import HistoricalDataWarehouse from './components/HistoricalDataWarehouse';
+import EngineeringItemDatasetView from './components/EngineeringItemDatasetView';
 import { format, startOfMonth, endOfMonth } from 'date-fns';
 import Logo from './Logo';
 import SmartExportModal from './components/SmartExportModal';
@@ -38,6 +31,11 @@ import { useLanguage } from './utils/i18n';
 
 import LoginScreen from './LoginScreen';
 import { syncProjectStats } from './firebase';
+import EnterpriseMonitoringDashboard from './components/EnterpriseMonitoringDashboard';
+import FinalAcceptanceAuditView from './components/FinalAcceptanceAuditView';
+import WorkflowMappingCenter from './components/WorkflowMappingCenter';
+import { CalculationAuditCenter } from './components/CalculationAuditCenter';
+import { CorporateReportsView } from './components/CorporateReportsView';
 import { normalizeData } from './utils/calculations';
 
 export default function App() {
@@ -76,13 +74,6 @@ export default function App() {
         if (currentUser) {
           currentUserUid = currentUser.uid;
           currentUserEmail = (currentUser.email || '').trim().toLowerCase();
-        } else {
-          const bypassEmail = sessionStorage.getItem('bypass_email_session');
-          const bypassUid = sessionStorage.getItem('bypass_uid_session');
-          if (bypassEmail && bypassUid) {
-            currentUserUid = bypassUid;
-            currentUserEmail = bypassEmail.trim().toLowerCase();
-          }
         }
         
         if (!currentUserUid) return;
@@ -127,8 +118,6 @@ export default function App() {
             console.warn("[Security Alert] Account is disabled or access level is revoked. Session destroyed instantly.");
             
             const performLocalLogout = () => {
-              sessionStorage.removeItem('bypass_email_session');
-              sessionStorage.removeItem('bypass_uid_session');
               localStorage.removeItem('docuCtrl_activeRole');
               localStorage.removeItem('docuCtrl_activeEmail');
               setIsAuthenticated(false);
@@ -516,8 +505,6 @@ export default function App() {
                 onClick={async () => {
                     const { auth } = await import('./firebase');
                     const performManualLogout = () => {
-                        sessionStorage.removeItem('bypass_email_session');
-                        sessionStorage.removeItem('bypass_uid_session');
                         localStorage.removeItem('docuCtrl_activeRole');
                         localStorage.removeItem('docuCtrl_activeEmail');
                         setIsAuthenticated(false);
@@ -710,37 +697,30 @@ export default function App() {
                 </div>
                 ) : (
                 <div className="transition-all">
-                  <React.Suspense fallback={
-                    <div className="h-[50vh] flex flex-col items-center justify-center text-[#94a3b8] gap-3">
-                      <Loader2 className="w-8 h-8 animate-spin text-[#0d9488]" />
-                      <span className="text-sm font-semibold">Loading Module...</span>
-                    </div>
-                  }>
-                    {activeTab === 'portfolio' && <PortfolioCenter projects={projects} />}
-                    {activeTab === 'monitoring' && <EnterpriseMonitoringDashboard />}
-                    {activeTab === 'mapping' && <WorkflowMappingCenter data={data} onDataRefreshNeeded={() => setData(prev => normalizeData(prev))} />}
-                    {activeTab === 'enterprise_dashboard' && data.length > 0 && <EnterpriseDashboard data={data.filter(matchesFilters)} />}
-                    {activeTab === 'master_register' && data.length > 0 && <MasterRegister data={data.filter(matchesFilters)} projectInfo={activeProject} />}
-                    {activeTab === 'validation' && <DataValidationEngine data={data.filter(matchesFilters)} />}
-                    {activeTab === 'engineering_dataset' && <EngineeringItemDatasetView data={data.filter(matchesFilters)} />}
-                    {activeTab === 'aging' && <AdvancedAgingAnalysis data={data.filter(filterCumulative)} projectInfo={activeProject} />}
-                    {activeTab === 'sla' && <SLAMonitoring data={data.filter(matchesFilters)} projectInfo={activeProject} />}
-                    {activeTab === 'actions' && <ActionTracker data={data.filter(matchesFilters)} projectInfo={activeProject} />}
-                    {activeTab === 'trend_forecast' && <TrendAndForecastEngine data={data.filter(matchesFilters)} projectInfo={activeProject} />}
-                    {activeTab === 'warehouse' && <HistoricalDataWarehouse data={data.filter(matchesFilters)} projects={projects} />}
-                    {activeTab === 'final_audit' && <FinalAcceptanceAuditView data={data.filter(matchesFilters)} filterMonthly={filterMonthly} filterCumulative={filterCumulative} projectInfo={activeProject} />}
-                    {activeTab === 'calc_audit' && <CalculationAuditCenter data={data.filter(matchesFilters)} projectInfo={activeProject} />}
-                    {activeTab === 'monthly' && <ReportTable data={data.filter(d => !isExcludedFromGeneralStats(d))} filterFn={filterMonthly} title="Monthly KPI Analytics" projectInfo={activeProject} rawDataset={data} />}
-                    {activeTab === 'cumulative' && <ReportTable data={data.filter(d => !isExcludedFromGeneralStats(d))} filterFn={filterCumulative} title="Cumulative Performance Analytics" projectInfo={activeProject} rawDataset={data} />}
-                    {activeTab === 'delay' && <DelayAnalysis data={data.filter(filterCumulative)} projectInfo={activeProject} />}
-                    {activeTab === 'rfi' && <RFIAnalytics data={data.filter(matchesFilters)} projectInfo={activeProject} monthlyStart={startDate} monthlyEnd={endDate} />}
-                    {activeTab === 'presentation' && <Presentation data={data.filter(matchesFilters)} filterMonthly={filterMonthly} filterCumulative={filterCumulative} projectInfo={activeProject} startDate={startDate} />}
-                    {activeTab === 'corporate_reports' && <CorporateReportsView data={data.filter(matchesFilters)} filterMonthly={filterMonthly} filterCumulative={filterCumulative} projectInfo={activeProject} startDate={startDate} endDate={endDate} />}
-                    {activeTab === 'insights' && <AIInsights data={data.filter(matchesFilters)} projectInfo={activeProject} />}
-                    {activeTab === 'ncr' && <NCRAnalytics data={data.filter(matchesFilters)} projectInfo={activeProject} monthlyStart={startDate} monthlyEnd={endDate} />}
-                    {activeTab === 'sor' && <SORAnalytics data={data.filter(matchesFilters)} projectInfo={activeProject} monthlyStart={startDate} monthlyEnd={endDate} />}
-                    {activeTab === 'ltr' && <CorrespondenceAnalytics data={data.filter(matchesFilters)} projectInfo={activeProject} monthlyStart={startDate} monthlyEnd={endDate} />}
-                  </React.Suspense>
+                  {activeTab === 'portfolio' && <PortfolioCenter projects={projects} />}
+                  {activeTab === 'monitoring' && <EnterpriseMonitoringDashboard />}
+                  {activeTab === 'mapping' && <WorkflowMappingCenter data={data} onDataRefreshNeeded={() => setData(prev => normalizeData(prev))} />}
+                  {activeTab === 'enterprise_dashboard' && data.length > 0 && <EnterpriseDashboard data={data.filter(matchesFilters)} />}
+                  {activeTab === 'master_register' && data.length > 0 && <MasterRegister data={data.filter(matchesFilters)} projectInfo={activeProject} />}
+                  {activeTab === 'validation' && <DataValidationEngine data={data.filter(matchesFilters)} />}
+                  {activeTab === 'engineering_dataset' && <EngineeringItemDatasetView data={data.filter(matchesFilters)} />}
+                  {activeTab === 'aging' && <AdvancedAgingAnalysis data={data.filter(filterCumulative)} projectInfo={activeProject} />}
+                  {activeTab === 'sla' && <SLAMonitoring data={data.filter(matchesFilters)} projectInfo={activeProject} />}
+                  {activeTab === 'actions' && <ActionTracker data={data.filter(matchesFilters)} projectInfo={activeProject} />}
+                  {activeTab === 'trend_forecast' && <TrendAndForecastEngine data={data.filter(matchesFilters)} projectInfo={activeProject} />}
+                  {activeTab === 'warehouse' && <HistoricalDataWarehouse data={data.filter(matchesFilters)} projects={projects} />}
+                  {activeTab === 'final_audit' && <FinalAcceptanceAuditView data={data.filter(matchesFilters)} filterMonthly={filterMonthly} filterCumulative={filterCumulative} projectInfo={activeProject} />}
+                  {activeTab === 'calc_audit' && <CalculationAuditCenter data={data.filter(matchesFilters)} projectInfo={activeProject} />}
+                  {activeTab === 'monthly' && <ReportTable data={data.filter(d => !isExcludedFromGeneralStats(d))} filterFn={filterMonthly} title="Monthly KPI Analytics" projectInfo={activeProject} rawDataset={data} />}
+                  {activeTab === 'cumulative' && <ReportTable data={data.filter(d => !isExcludedFromGeneralStats(d))} filterFn={filterCumulative} title="Cumulative Performance Analytics" projectInfo={activeProject} rawDataset={data} />}
+                  {activeTab === 'delay' && <DelayAnalysis data={data.filter(filterCumulative)} projectInfo={activeProject} />}
+                  {activeTab === 'rfi' && <RFIAnalytics data={data.filter(matchesFilters)} projectInfo={activeProject} monthlyStart={startDate} monthlyEnd={endDate} />}
+                  {activeTab === 'presentation' && <Presentation data={data.filter(matchesFilters)} filterMonthly={filterMonthly} filterCumulative={filterCumulative} projectInfo={activeProject} startDate={startDate} />}
+                  {activeTab === 'corporate_reports' && <CorporateReportsView data={data.filter(matchesFilters)} filterMonthly={filterMonthly} filterCumulative={filterCumulative} projectInfo={activeProject} startDate={startDate} endDate={endDate} />}
+                  {activeTab === 'insights' && <AIInsights data={data.filter(matchesFilters)} projectInfo={activeProject} />}
+                  {activeTab === 'ncr' && <NCRAnalytics data={data.filter(matchesFilters)} projectInfo={activeProject} monthlyStart={startDate} monthlyEnd={endDate} />}
+                  {activeTab === 'sor' && <SORAnalytics data={data.filter(matchesFilters)} projectInfo={activeProject} monthlyStart={startDate} monthlyEnd={endDate} />}
+                  {activeTab === 'ltr' && <CorrespondenceAnalytics data={data.filter(matchesFilters)} projectInfo={activeProject} monthlyStart={startDate} monthlyEnd={endDate} />}
                 </div>
                 )}
 

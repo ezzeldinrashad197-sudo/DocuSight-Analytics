@@ -1,10 +1,62 @@
 import { SubmittalRow, KPIStats } from "../types";
 import { buildCanonicalDataset, evaluateSubmissionLayer, evaluatePerformanceLayer, getBusinessEntityKey, parseDateTimestamp } from "../analytics/calculationFoundation";
 export { parseDateTimestamp };
-import { compareRevisions, getStatusCodeCategory } from "../analytics/analyticsCore";
-export { getStatusCodeCategory };
+import { compareRevisions } from "../analytics/analyticsCore";
 import { getRevisionWeight } from "./enterpriseUpgradeEngine";
 import { mapDocumentToWorkflow } from "./workflowMapping";
+
+export const getStatusCodeCategory = (codeOrRow?: string | SubmittalRow): 'APPROVED' | 'REJECTED_OPEN' | 'REJECTED_CLOSED' | 'PENDING' | 'UNKNOWN' => {
+  if (!codeOrRow) return 'PENDING'; // Assume pending if no status
+  
+  let code = '';
+  let recordStatus = '';
+  let workflowStage = '';
+  let action = '';
+
+  if (typeof codeOrRow === 'object') {
+    code = (codeOrRow.status || (codeOrRow as any).ncrStatus || (codeOrRow as any).sorStatus || '').toUpperCase().trim();
+    recordStatus = (codeOrRow.recordStatus || '').toUpperCase().trim();
+    workflowStage = (codeOrRow.workflowStage || '').toUpperCase().trim();
+    action = (codeOrRow.action || (codeOrRow as any).ncrAction || (codeOrRow as any).sorAction || '').toUpperCase().trim();
+  } else {
+    code = codeOrRow.toUpperCase().trim();
+  }
+
+  if (!code && !recordStatus && !workflowStage && !action) return 'PENDING';
+
+  const normalized = code.replace(/["':\-\s]+/g, ' ').trim();
+  const combined = `${code} ${recordStatus} ${workflowStage} ${action}`.replace(/["':\-\s]+/g, ' ').trim();
+
+  // 1. Explicit Code D / Rejected Closed check (Code D is ALWAYS Rejected Closed: Disapproved / Do Not Resubmit)
+  if (normalized === 'D' || normalized === 'CODE D' || normalized.startsWith('D ') || normalized.endsWith(' D') || normalized.includes('CODE D') || combined.includes('C CLOSED') || combined.includes('REJ CLOS') || combined.includes('REJECTED CLOSED')) {
+    return 'REJECTED_CLOSED';
+  }
+
+  // 2. Explicit Code C / Rejected Open check (Code C is Rejected Open unless explicitly marked CLOSED)
+  const isCodeC = normalized === 'C' || normalized === 'CODE C' || normalized.startsWith('C ') || normalized.endsWith(' C') || normalized.includes('CODE C') || normalized.includes('REJ') || normalized.includes('REJECT');
+  const isClosed = recordStatus === 'CLOSED' || recordStatus === 'CLOSE' || workflowStage === 'CLOSED' || action === 'CLOSED';
+
+  if (isCodeC) {
+    if (isClosed) return 'REJECTED_CLOSED';
+    return 'REJECTED_OPEN';
+  }
+
+  // 3. Approved codes map -> Code A, Code B, Approved, Accepted (Code D is NOT included here)
+  if (['A', 'B'].includes(normalized) || 
+      normalized.startsWith('A ') || normalized.startsWith('B ') || 
+      normalized.includes('CODE A') || normalized.includes('CODE B') || 
+      normalized.includes('APP') || normalized.includes('ACC') || 
+      normalized.includes('SUPER')) {
+    return 'APPROVED';
+  }
+
+  // 4. Pending map -> W, WAITING, PEND
+  if (['W'].includes(normalized) || normalized.startsWith('W ') || normalized.includes('CODE W') || normalized.includes('PEN') || normalized.includes('WAIT')) {
+    return 'PENDING';
+  }
+
+  return 'UNKNOWN';
+}
 
 export const normalizeData = (rows: SubmittalRow[]): SubmittalRow[] => {
   // Sort rows originally by docNo and then by rev, or just group them to find the highest rev
@@ -48,45 +100,77 @@ export const normalizeData = (rows: SubmittalRow[]): SubmittalRow[] => {
       // Keep 'LTR' as internal representation for LETTER for backward compatibility with correspondence views
       let docType = mapped.workflowFamily === 'LETTER' ? 'LTR' : mapped.workflowFamily;
 
-      const upperDiscipline = (r.discipline || '').toUpperCase();
-      
-      const isLtr = docType === 'LTR';
-      let trade = 'General';
-      let tradeShort = 'GEN';
-      
-      const setTrade = (disc: string) => {
-          const w = disc.split(/[-_ \/(),]/);
-          if (docType === 'NCR' && (disc.includes('SURVEY') || disc.includes('SURV') || w.includes('SUR') || disc.includes('مساحة') || disc.includes('مساحه') || disc.includes('GENERAL') || disc.includes('GEN') || disc === '' || disc === 'NCR-HSE' || disc === 'HSE' || disc.includes('HSE') || disc.includes('SAFETY'))) {
-              trade = 'HSE'; tradeShort = 'HSE'; return true;
+      const resolveTradeFromRow = (r: SubmittalRow, docTypeFamily: string) => {
+          const logType = (r.logType || r.documentType || '').toUpperCase().trim();
+          const explicitDisc = (r.discipline || '').toUpperCase().trim();
+          const tradeField = (r.trade || r.tradeSystem || '').toUpperCase().trim();
+
+          // 1. Primary check: logType / documentType tab name
+          if (logType.includes('STR') || logType.includes('CIVIL')) {
+              return { trade: 'Structural', tradeShort: 'STR' };
           }
-          if (disc.includes('HSE') || disc.includes('SAFETY') || disc.includes('HEALTH') || disc.includes('ENVIRONMENT') || disc.includes('سلامة') || disc.includes('سلامه') || disc.includes('بيئة') || w.includes('HSE')) { trade = 'HSE'; tradeShort = 'HSE'; return true; }
-          if (disc.includes('INFRA') || disc.includes('INFR') || w.includes('INF') || disc.includes('UTILITIES')) { trade = 'Infrastructure'; tradeShort = 'INFRA'; return true; }
-          if (disc.includes('LAND') || w.includes('LND') || w.includes('LAN')) { trade = 'Landscape'; tradeShort = 'LND'; return true; }
-          if (disc.includes('ARCH') || w.includes('ARC')) { trade = 'Architectural'; tradeShort = 'ARC'; return true; }
-          if (disc.includes('STR') || disc.includes('CIVIL') || w.includes('CVL')) { trade = 'Structural'; tradeShort = 'STR'; return true; }
-          if (disc.includes('MECH') || w.includes('MEC')) { trade = 'Mechanical'; tradeShort = 'MEC'; return true; }
-          if (disc.includes('ELEC') || w.includes('ELE')) { trade = 'Electrical'; tradeShort = 'ELE'; return true; }
-          if (isLtr) {
-              if (disc.includes('GENERAL') || disc.includes('GEN')) { trade = 'General'; tradeShort = 'GEN'; return true; }
-          } else {
-              if (disc.includes('SURVEY') || disc.includes('SURV') || w.includes('SUR') || disc.includes('مساحة') || disc.includes('مساحه')) { trade = 'SURVEY'; tradeShort = 'SUR'; return true; }
-              if (disc.includes('GENERAL') || disc.includes('GEN')) { trade = 'General'; tradeShort = 'GEN'; return true; }
+          if (logType.includes('ARC') || logType.includes('ARCH')) {
+              return { trade: 'Architectural', tradeShort: 'ARC' };
           }
-          return false;
+          if (logType.includes('MEC') || logType.includes('MECH')) {
+              return { trade: 'Mechanical', tradeShort: 'MEC' };
+          }
+          if (logType.includes('LND') || logType.includes('LAND')) {
+              return { trade: 'Landscape', tradeShort: 'LND' };
+          }
+          if (logType.includes('INFRA') || logType.includes('INFR') || logType.includes('INF')) {
+              return { trade: 'Infrastructure', tradeShort: 'INFRA' };
+          }
+          if (logType.includes('ELE') || logType.includes('ELEC')) {
+              return { trade: 'Electrical', tradeShort: 'ELE' };
+          }
+          if (logType.includes('GEN') || logType.includes('SURV') || logType.includes('SUR') || logType.includes('HSE')) {
+              return { trade: 'General', tradeShort: 'GEN' };
+          }
+
+          // 2. Secondary check: explicit discipline field
+          if (explicitDisc && explicitDisc !== 'GEN' && explicitDisc !== 'GENERAL') {
+              if (explicitDisc.includes('STR') || explicitDisc.includes('CIVIL') || explicitDisc.includes('CVL') || explicitDisc.includes('إنشائي')) {
+                  return { trade: 'Structural', tradeShort: 'STR' };
+              }
+              if (explicitDisc.includes('ARCH') || explicitDisc.includes('ARC') || explicitDisc.includes('معماري')) {
+                  return { trade: 'Architectural', tradeShort: 'ARC' };
+              }
+              if (explicitDisc.includes('MECH') || explicitDisc.includes('MEC') || explicitDisc.includes('ميكانيك')) {
+                  return { trade: 'Mechanical', tradeShort: 'MEC' };
+              }
+              if (explicitDisc.includes('ELEC') || explicitDisc.includes('ELE') || explicitDisc.includes('كهرباء')) {
+                  return { trade: 'Electrical', tradeShort: 'ELE' };
+              }
+              if (explicitDisc.includes('INFRA') || explicitDisc.includes('INFR') || explicitDisc.includes('INF') || explicitDisc.includes('UTILITIES')) {
+                  return { trade: 'Infrastructure', tradeShort: 'INFRA' };
+              }
+              if (explicitDisc.includes('LAND') || explicitDisc.includes('LND')) {
+                  return { trade: 'Landscape', tradeShort: 'LND' };
+              }
+          }
+
+          // 3. Secondary check: tradeField
+          if (tradeField && tradeField !== 'GEN' && tradeField !== 'GENERAL') {
+              if (tradeField.includes('STR') || tradeField.includes('CIVIL')) return { trade: 'Structural', tradeShort: 'STR' };
+              if (tradeField.includes('ARCH') || tradeField.includes('ARC')) return { trade: 'Architectural', tradeShort: 'ARC' };
+              if (tradeField.includes('MECH') || tradeField.includes('MEC')) return { trade: 'Mechanical', tradeShort: 'MEC' };
+              if (tradeField.includes('ELEC') || tradeField.includes('ELE')) return { trade: 'Electrical', tradeShort: 'ELE' };
+              if (tradeField.includes('INFRA') || tradeField.includes('INFR')) return { trade: 'Infrastructure', tradeShort: 'INFRA' };
+              if (tradeField.includes('LAND') || tradeField.includes('LND')) return { trade: 'Landscape', tradeShort: 'LND' };
+          }
+
+          return { trade: 'General', tradeShort: 'GEN' };
       };
 
-      // 1. Prioritize explicit parsed discipline without polluting it with file names mapping
-      if (!setTrade(upperDiscipline)) {
-          // 2. If it's general/unknown, look at the logType (Sheet Name), but DO NOT use sourceFile
-          setTrade(upperLogType);
-      }
+      const { trade, tradeShort } = resolveTradeFromRow(r, docType);
 
       docType = `${docType}-${tradeShort}`;
-      let finalDiscipline = r.discipline || trade;
+      let finalDiscipline = (r.discipline && r.discipline !== 'GEN' && r.discipline !== 'GENERAL') ? r.discipline : trade;
 
       // DO NOT override GEN to HSE. The user explicitly requested to respect the parsed content.
 
-      const statusCategory = getStatusCodeCategory(r.status || 'W');
+      const statusCategory = getStatusCodeCategory(r);
       let workflowStage = 'Pending';
       if (statusCategory === 'APPROVED') workflowStage = 'Approved';
       else if (statusCategory === 'REJECTED_OPEN') workflowStage = 'Rejected';
@@ -661,10 +745,8 @@ export const calculateStats = (data: SubmittalRow[], fullDataset?: SubmittalRow[
 
   let rev00 = 0;
   let furtherRevisions = 0;
-  let missingRevision = 0;
   let totalSheetsRev0 = 0;
   let totalSheetsFurtherRev = 0;
-  let totalSheetsMissingRev = 0;
   let approved = 0;
   let rejectedOpen = 0;
   let rejectedClosed = 0;
@@ -689,34 +771,29 @@ export const calculateStats = (data: SubmittalRow[], fullDataset?: SubmittalRow[
 
     const latest = sorted[sorted.length - 1];
     const latestRevVal = (latest.rev || (latest as any).revision || (latest as any).revNo || '').trim();
-    const isRev0 = getRevisionWeight(latestRevVal) === 0 && latestRevVal !== '';
-    const isFurtherRev = latestRevVal !== '' && (getRevisionWeight(latestRevVal) > 0 || compareRevisions(latestRevVal, '0') > 0);
+    const latestRevWeight = getRevisionWeight(latestRevVal);
+    const isFurtherRev = latestRevWeight > 0 || compareRevisions(latestRevVal, '0') > 0;
 
-    if (isRev0) {
-      rev00++;
-    } else if (isFurtherRev) {
+    if (isFurtherRev) {
       furtherRevisions++;
     } else {
-      missingRevision++;
+      rev00++;
     }
 
     // Count sheet-level Rev0 vs Further Rev for sheets in this group
     sorted.forEach((r, idx) => {
       const revVal = (r.rev || (r as any).revision || (r as any).revNo || '').trim().toUpperCase();
       const w = getRevisionWeight(revVal);
-      const isRev0Sheet = revVal !== '' && ((idx === 0 && w === 0 && revVal !== 'AS-BUILT' && revVal !== 'IFC') || (r.isRev0 && w === 0));
-      const isFurtherRevSheet = revVal !== '' && (w > 0 || compareRevisions(revVal, '0') > 0);
+      const isRev0Sheet = (idx === 0 && w === 0 && revVal !== 'AS-BUILT' && revVal !== 'IFC') || (r.isRev0 && w === 0);
       if (isRev0Sheet) {
         totalSheetsRev0++;
-      } else if (isFurtherRevSheet) {
-        totalSheetsFurtherRev++;
       } else {
-        totalSheetsMissingRev++;
+        totalSheetsFurtherRev++;
       }
     });
 
     // Quality Status per canonical latest revision of Business Entity
-    const statusCategory = getStatusCodeCategory(latest.status || (latest as any).recordStatus || 'W');
+    const statusCategory = getStatusCodeCategory(latest);
     if (statusCategory === 'APPROVED') approved++;
     else if (statusCategory === 'REJECTED_OPEN') rejectedOpen++;
     else if (statusCategory === 'REJECTED_CLOSED') rejectedClosed++;
@@ -746,10 +823,8 @@ export const calculateStats = (data: SubmittalRow[], fullDataset?: SubmittalRow[
      totalSubmittedSheets,
      totalSheetsRev0,
      totalSheetsFurtherRev,
-     totalSheetsMissingRev,
      totalDrawingsRev0: rev00,
      totalDrawingsFurtherRev: furtherRevisions,
-     totalDrawingsMissingRev: missingRevision,
      totalUniqueDrawings,
      
      approved,
@@ -772,53 +847,21 @@ export function resolveRowDiscipline(d: SubmittalRow, bt: string): string {
     return d.stakeholder || 'GENERAL';
   }
 
-  const mode = typeof window !== 'undefined'
-    ? (localStorage.getItem('docuCtrl_workflowClassificationMode') || 'preserve_sheet_name')
-    : 'preserve_sheet_name';
-
-  const docType = (d.logType || d.documentType || (d as any).sheetName || bt || '').toUpperCase().trim();
+  // 1. Check documentType or logType suffix e.g. MAR-ARC, SDW-STR, WIR-ELE, MAR-MEC, etc.
+  const docType = (d.documentType || d.logType || '').toUpperCase().trim();
   const docParts = docType.split(/[-_\s]+/);
-  const suffix = docParts.length > 1 ? docParts[docParts.length - 1] : docParts[0];
+  const suffix = docParts.length > 1 ? docParts[docParts.length - 1] : '';
 
-  // Under ER-WF-005 Sheet Name Authority Rule (default mode 'preserve_sheet_name'):
-  // Worksheet identity is the SUPREME AUTHORITATIVE SOURCE.
-  if (mode === 'preserve_sheet_name') {
-    if (['ARC', 'ARCH', 'ARCHITECTURAL'].includes(suffix)) return 'Arch';
-    if (['STR', 'STRUCT', 'CIVIL', 'CVL'].includes(suffix)) return 'STR';
-    if (['MEC', 'MECH', 'MECHANICAL'].includes(suffix)) return 'Mech';
-    if (['ELE', 'ELEC', 'ELECTRICAL'].includes(suffix)) return 'Elec';
-    if (['INF', 'INFR', 'INFRA', 'UTILITIES'].includes(suffix)) return 'Infra';
-    if (['LND', 'LAND', 'LANDSCAPE'].includes(suffix)) return 'Landscape';
-    if (['SUR', 'SURV', 'SURVEY'].includes(suffix)) return 'SURVEY';
-    if (['HSE', 'SAFETY'].includes(suffix)) return 'HSE';
-    if (['GEN', 'GENERAL'].includes(suffix)) return 'GEN';
+  if (['ARC', 'ARCH', 'ARCHITECTURAL'].includes(suffix)) return 'Arch';
+  if (['STR', 'STRUCT', 'CIVIL', 'CVL'].includes(suffix)) return 'STR';
+  if (['MEC', 'MECH', 'MECHANICAL'].includes(suffix)) return 'Mech';
+  if (['ELE', 'ELEC', 'ELECTRICAL'].includes(suffix)) return 'Elec';
+  if (['INF', 'INFR', 'INFRA', 'UTILITIES'].includes(suffix)) return 'Infra';
+  if (['LND', 'LAND', 'LANDSCAPE'].includes(suffix)) return 'Landscape';
+  if (['SUR', 'SURV', 'SURVEY'].includes(suffix)) return 'SURVEY';
+  if (['HSE', 'SAFETY'].includes(suffix)) return 'HSE';
 
-    if (docParts.length > 1 && docParts[0] === 'DOC') {
-      const docSuffix = docParts[1];
-      if (['GEN', 'GENERAL'].includes(docSuffix)) return 'GEN';
-      if (['HSE', 'SAFETY'].includes(docSuffix)) return 'HSE';
-      if (['STR', 'STRUCT'].includes(docSuffix)) return 'STR';
-      if (['ARC', 'ARCH'].includes(docSuffix)) return 'Arch';
-      if (['MEC', 'MECH'].includes(docSuffix)) return 'Mech';
-      if (['ELE', 'ELEC'].includes(docSuffix)) return 'Elec';
-      if (['INFRA', 'INF'].includes(docSuffix)) return 'Infra';
-      if (['LND', 'LAND'].includes(docSuffix)) return 'Landscape';
-      if (['SURVEY', 'SUR'].includes(docSuffix)) return 'SURVEY';
-    }
-
-    // Direct check for worksheet names containing discipline tokens
-    if (docType.includes('ARCH') || docType.includes('ARC')) return 'Arch';
-    if (docType.includes('STRUCT') || docType.includes('STR')) return 'STR';
-    if (docType.includes('MECH') || docType.includes('MEC')) return 'Mech';
-    if (docType.includes('ELEC') || docType.includes('ELE')) return 'Elec';
-    if (docType.includes('INFRA') || docType.includes('INF')) return 'Infra';
-    if (docType.includes('LAND') || docType.includes('LND')) return 'Landscape';
-    if (docType.includes('SURV') || docType.includes('SUR')) return 'SURVEY';
-    if (docType.includes('HSE') || docType.includes('SAFETY')) return 'HSE';
-    if (docType.includes('GEN') || docType.includes('GENERAL')) return 'GEN';
-  }
-
-  // 1. Check explicit discipline or trade fields on row if set manually by user
+  // 2. Check explicit discipline or trade fields tokenized strictly
   const discField = (d.discipline || d.trade || '').toUpperCase().trim();
   if (discField) {
     const discTokens = discField.split(/[^A-Z0-9\u0600-\u06FF]+/);
@@ -831,26 +874,10 @@ export function resolveRowDiscipline(d: SubmittalRow, bt: string): string {
       if (['LANDSCAPE', 'LAND', 'LND', 'موقع'].includes(t)) return 'Landscape';
       if (['SURVEY', 'SURV', 'SUR', 'مساحة'].includes(t)) return 'SURVEY';
       if (['HSE', 'SAFETY', 'سلامة'].includes(t)) return 'HSE';
-      if (['GEN', 'GENERAL', 'GENERAL_DOC'].includes(t)) return 'GEN';
     }
   }
 
-  // 2. Secondary check for docType / sheetName
-  if (['ARC', 'ARCH', 'ARCHITECTURAL'].includes(suffix)) return 'Arch';
-  if (['STR', 'STRUCT', 'CIVIL', 'CVL'].includes(suffix)) return 'STR';
-  if (['MEC', 'MECH', 'MECHANICAL'].includes(suffix)) return 'Mech';
-  if (['ELE', 'ELEC', 'ELECTRICAL'].includes(suffix)) return 'Elec';
-  if (['INF', 'INFR', 'INFRA', 'UTILITIES'].includes(suffix)) return 'Infra';
-  if (['LND', 'LAND', 'LANDSCAPE'].includes(suffix)) return 'Landscape';
-  if (['SUR', 'SURV', 'SURVEY'].includes(suffix)) return 'SURVEY';
-  if (['HSE', 'SAFETY'].includes(suffix)) return 'HSE';
-  if (['GEN', 'GENERAL'].includes(suffix)) return 'GEN';
-
-  if (mode === 'preserve_sheet_name') {
-    return docParts[0] === 'DOC' || bt === 'DOC' ? 'GEN' : (bt === 'NCR' ? 'HSE' : 'STR');
-  }
-
-  // 3. Tokenize docNo or sheetNo (Only when mode === 'auto_detect' or 'mixed')
+  // 3. Tokenize docNo or sheetNo (WITHOUT matching substrings inside words like PARCEL or SEARCH)
   const docNo = (d.docNo || d.sheetNo || d.ncrRef || '').toUpperCase().trim();
   if (docNo) {
     const docTokens = docNo.split(/[^A-Z0-9\u0600-\u06FF]+/);
