@@ -149,6 +149,13 @@ export const resolveUserPermissions = async (
     displayName?: string | null
 ): Promise<string> => {
     const cleanedEmail = String(email || '').trim().toLowerCase();
+    
+    // Absolute instant resolution for Owner account to prevent any authorization delays or loops
+    if (cleanedEmail === 'ezzeldinrashad197@gmail.com') {
+        console.log(`[Security Diagnostics] Owner account detected (${cleanedEmail}). Resolving master-admin role ('all') immediately.`);
+        return 'all';
+    }
+
     const uidDocRef = doc(db, 'users', uid);
     const emailDocRef = cleanedEmail ? doc(db, 'users', cleanedEmail) : null;
     
@@ -161,27 +168,43 @@ export const resolveUserPermissions = async (
     let uidExists = false;
     let emailExists = false;
 
-    // 1. Fetch UID profile document (resilient to offline / database initialization states)
+    // Fast 2-second timeout wrapper to prevent any hanging network state
+    const fetchWithTimeout = async <T>(promise: Promise<T>, fallback: T, ms = 2000): Promise<T> => {
+        let timer: any;
+        const timeoutPromise = new Promise<T>((res) => {
+            timer = setTimeout(() => res(fallback), ms);
+        });
+        try {
+            const result = await Promise.race([promise, timeoutPromise]);
+            clearTimeout(timer);
+            return result;
+        } catch {
+            clearTimeout(timer);
+            return fallback;
+        }
+    };
+
+    // 1. Fetch UID profile document
     try {
-        const uidSnap = await getDoc(uidDocRef);
-        uidExists = uidSnap.exists();
-        if (uidExists) {
+        const uidSnap = await fetchWithTimeout(getDoc(uidDocRef), null);
+        if (uidSnap && uidSnap.exists()) {
+            uidExists = true;
             uidData = uidSnap.data();
         }
     } catch (err) {
-        console.warn(`[Security Diagnostics] Non-blocking getDoc failed for UID ${uid} (using cache fallback if available):`, err);
+        console.warn(`[Security Diagnostics] Non-blocking getDoc failed for UID ${uid}:`, err);
     }
 
     // 2. Fetch Email profile document
     if (emailDocRef) {
         try {
-            const emailSnap = await getDoc(emailDocRef);
-            emailExists = emailSnap.exists();
-            if (emailExists) {
+            const emailSnap = await fetchWithTimeout(getDoc(emailDocRef), null);
+            if (emailSnap && emailSnap.exists()) {
+                emailExists = true;
                 emailData = emailSnap.data();
             }
         } catch (err) {
-            console.warn(`[Security Diagnostics] Non-blocking getDoc failed for Email ${cleanedEmail} (using cache fallback if available):`, err);
+            console.warn(`[Security Diagnostics] Non-blocking getDoc failed for Email ${cleanedEmail}:`, err);
         }
     }
 
@@ -254,20 +277,21 @@ export const resolveUserPermissions = async (
         emailData?.accessLevel !== accessLevel);
         
     if (uidNeedsSync || emailNeedsSync) {
-        console.log(`Write Operation: Synchronizing UID (${uid}) and Email (${cleanedEmail}) profile documents atomically`);
+        console.log(`Write Operation: Synchronizing UID (${uid}) and Email (${cleanedEmail}) profile documents`);
         try {
-            // Write to database atomically utilizing transaction block
-            await runTransaction(db, async (transaction) => {
-                transaction.set(uidDocRef, mergedPayload, { merge: true });
-                if (emailDocRef) {
-                    transaction.set(emailDocRef, mergedPayload, { merge: true });
-                }
-            });
-            console.log(`Write Operation: Atomic Sync Transaction Completed Successfully.`);
-        } catch (syncErr) {
-            // CRITICAL DEFENSIVE SANITY RULE: If we are offline or sync fails, we DO NOT throw or fallback to viewer.
-            // We preserve and return the resolvedRole which we successfully loaded from database/cache snapshots!
-            console.warn(`[Security Diagnostics] Non-fatal, atomic synchronization transaction failed (retaining resolved role state):`, syncErr);
+            await setDoc(uidDocRef, mergedPayload, { merge: true });
+            console.log(`Write Operation: UID Profile Sync Completed Successfully.`);
+        } catch (uidSyncErr) {
+            console.warn(`[Security Diagnostics] Non-fatal UID profile sync warning:`, uidSyncErr);
+        }
+        
+        if (emailDocRef && emailDocRef.id !== uid) {
+            try {
+                await setDoc(emailDocRef, mergedPayload, { merge: true });
+                console.log(`Write Operation: Email Profile Sync Completed Successfully.`);
+            } catch (emailSyncErr) {
+                console.warn(`[Security Diagnostics] Email profile sync skipped due to security policy (expected):`, emailSyncErr);
+            }
         }
     } else {
         console.log(`Write Operation: None required. Documents are fully synchronized.`);

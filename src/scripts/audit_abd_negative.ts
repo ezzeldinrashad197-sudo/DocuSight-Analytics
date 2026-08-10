@@ -19,7 +19,16 @@ function createDummyRow(id: string, docNo: string, rev: string, status: string, 
     trade: 'Architectural',
     workflowStage: status.includes('Code') || status === 'Approved' ? 'Approved' : 'Pending',
     isRev0: getRevisionWeight(rev) === 0,
-    isLatestRev: true
+    isLatestRev: true,
+    delayDays: 0,
+    overdue: false,
+    sheetNo: '1',
+    contractor: 'Main Contractor',
+    consultant: 'Consultant',
+    dueDate: '2026-01-15',
+    remarks: '',
+    area: 'Area 1',
+    tradeSystem: 'General'
   };
 }
 

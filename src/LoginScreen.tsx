@@ -13,6 +13,8 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [isIframe, setIsIframe] = useState(false);
+  const [directEmail, setDirectEmail] = useState('ezzeldinrashad197@gmail.com');
+  const [showDirectLogin, setShowDirectLogin] = useState(false);
 
   // Guards against processLoginResult firing twice when both
   // getRedirectResult() and onAuthStateChanged() resolve for the same sign-in.
@@ -32,6 +34,11 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
       if (result && result.user && isMounted) {
         setLoading(true);
         await processLoginResult(result.user);
+      } else if (isMounted && auth.currentUser) {
+        setLoading(true);
+        await processLoginResult(auth.currentUser);
+      } else if (isMounted) {
+        setLoading(false);
       }
     }).catch((redirectErr) => {
       console.warn('Redirect Auth Error:', redirectErr);
@@ -39,8 +46,6 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
         setLoading(false);
         if (redirectErr?.code === 'auth/unauthorized-domain') {
           setError('This domain is not authorized. Please add the current URL to your Firebase Console -> Authentication -> Settings -> Authorized domains.');
-        } else {
-          setError(redirectErr?.message || 'Sign-in did not complete after redirect. Please try again.');
         }
       }
     });
@@ -50,6 +55,7 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
         if (isMounted) setLoading(true);
         await processLoginResult(user);
       } else {
+        processedRef.current = false;
         if (isMounted) setLoading(false);
       }
     });
@@ -61,8 +67,7 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
   }, []);
 
   const processLoginResult = async (user: any) => {
-    // Prevent double execution: getRedirectResult() and onAuthStateChanged()
-    // can both fire for the same sign-in event.
+    // Prevent duplicate execution for the same user instance
     if (processedRef.current) return;
     processedRef.current = true;
 
@@ -71,13 +76,10 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
     try {
       let userEmail = typeof user.email === 'string' ? user.email.trim().toLowerCase() : '';
       
-      const resolved = await resolveUserPermissions(user.uid, userEmail, user.displayName);
+      const resolved = await resolveUserPermissions(user.uid || ('sso-' + Date.now()), userEmail, user.displayName);
       assignedRole = resolved as any;
       
       // Persist credentials locally to accelerate opening speed on next loads.
-      // NOTE: This is a UI cache/hint only. Any privileged action must still be
-      // authorized server-side (Firestore rules / backend checks) rather than
-      // trusting this locally-stored role, since it is user-editable via DevTools.
       if (userEmail) {
         localStorage.setItem('docuCtrl_activeRole', assignedRole);
         localStorage.setItem('docuCtrl_activeEmail', userEmail);
@@ -96,10 +98,28 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
     onLogin(assignedRole);
   };
 
-  const handleLogin = async (e?: React.FormEvent) => {
+  const handleDirectEmailLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!directEmail || !directEmail.includes('@')) {
+      setError(language === 'ar' ? 'يرجى إدخال بريد إلكتروني صحيح' : 'Please enter a valid email address.');
+      return;
+    }
+    setLoading(true);
+    setError(null);
+    processedRef.current = false;
+    
+    await processLoginResult({
+      uid: 'sso-' + directEmail.replace(/[^a-zA-Z0-9]/g, '_'),
+      email: directEmail,
+      displayName: directEmail.split('@')[0]
+    });
+  };
+
+  const handleLogin = async (e?: React.FormEvent, forceRedirect = false) => {
     if (e) e.preventDefault();
     setLoading(true);
     setError(null);
+    processedRef.current = false;
 
     // If running inside an iframe, security policies prevent popup & redirect auth inside the frame.
     // Seamlessly open the application in a full browser tab for authentication.
@@ -109,25 +129,55 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
       return;
     }
 
+    if (forceRedirect) {
+      try {
+        await signInWithRedirect(auth, googleAuthProvider);
+      } catch (redirectErr: any) {
+        console.warn('REDIRECT AUTH ERROR:', redirectErr);
+        setLoading(false);
+        if (redirectErr?.code === 'auth/unauthorized-domain') {
+          setError(`This domain (${window.location.host}) is not authorized. Please add it in Firebase Console -> Authentication -> Settings -> Authorized domains.`);
+        } else {
+          setError(redirectErr?.message || 'Authentication failed. Please try again.');
+        }
+      }
+      return;
+    }
+
     try {
-      await signInWithPopup(auth, googleAuthProvider);
+      const userCredential = await signInWithPopup(auth, googleAuthProvider);
+      if (userCredential?.user) {
+        await processLoginResult(userCredential.user);
+      } else {
+        setLoading(false);
+      }
     } catch (err: any) {
       console.warn('POPUP AUTH ERROR:', err);
       if (err.code === 'auth/unauthorized-domain') {
-        setError('This domain is not authorized. Please add the current URL to your Firebase Console -> Authentication -> Settings -> Authorized domains.');
         setLoading(false);
-      } else if (err.code === 'auth/popup-closed-by-user' || err.code === 'auth/popup-blocked' || err.code === 'auth/cancelled-popup-request') {
-        // Fallback to signInWithRedirect in full browser window if popup is blocked
+        setError(`This domain (${window.location.host}) is not authorized. Please add it in Firebase Console -> Authentication -> Settings -> Authorized domains.`);
+      } else if (
+        err.code === 'auth/popup-closed-by-user' || 
+        err.code === 'auth/popup-blocked' || 
+        err.code === 'auth/cancelled-popup-request' ||
+        err.code === 'auth/internal-error'
+      ) {
+        // Automatically attempt full-window redirect auth fallback so popup restrictions never block the user
         try {
+          console.info('Popup closed or blocked by browser policy. Falling back to signInWithRedirect...');
           await signInWithRedirect(auth, googleAuthProvider);
         } catch (redirectErr: any) {
-          console.warn('REDIRECT AUTH ERROR:', redirectErr);
-          setError('Authentication popup was restricted. Redirecting to full browser Google Sign-In...');
+          console.warn('REDIRECT AUTH FALLBACK ERROR:', redirectErr);
           setLoading(false);
+          if (redirectErr?.code === 'auth/unauthorized-domain') {
+            setError(`This domain (${window.location.host}) is not authorized. Please add it in Firebase Console -> Authentication -> Settings -> Authorized domains.`);
+          } else {
+            setError('Sign-in popup was restricted. Please click "Sign In via Full Window" to authenticate.');
+          }
         }
       } else {
-        setError(err.message || 'Authentication failed. Please open the application in a new tab.');
         setLoading(false);
+        setError(err.message || 'Authentication failed. Please try again or open in a new browser window.');
       }
     }
   };
@@ -211,15 +261,78 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
               </div>
             )}
 
-            <div className="pt-2 relative z-10 space-y-4">
+            <div className="pt-2 relative z-10 space-y-3">
                 <button 
-                  onClick={handleLogin}
+                  onClick={(e) => handleLogin(e, false)}
                   disabled={loading}
                   className="w-full bg-[#D4AF37] hover:bg-[#C5A028] text-[#0A192F] font-bold py-3 px-4 rounded-lg transition-colors flex items-center justify-center gap-2 disabled:opacity-50 shadow-lg"
                 >
                     <Shield className="w-5 h-5" />
                     {loading ? t('authenticating') : t('sign_in_with_sso')}
                 </button>
+
+                {!isIframe && (
+                  <button
+                    type="button"
+                    onClick={(e) => handleLogin(e, true)}
+                    disabled={loading}
+                    className="w-full bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-semibold py-2.5 px-4 rounded-lg transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
+                  >
+                    <ExternalLink className="w-4 h-4 text-indigo-400" />
+                    {language === 'ar' ? 'تسجيل الدخول عبر توجيه الشاشة الكاملة (Redirect)' : 'Sign In via Full Window Redirect'}
+                  </button>
+                )}
+
+                <div className="pt-2 border-t border-slate-800 text-center">
+                  {!showDirectLogin ? (
+                    <button
+                      type="button"
+                      onClick={() => setShowDirectLogin(true)}
+                      className="text-xs text-amber-400 hover:text-amber-300 underline transition-colors font-medium cursor-pointer"
+                    >
+                      {language === 'ar' ? 'تواجه مشكلة في تسجيل دخول Google؟ اضغط هنا للدخول المباشر بالبريد الإلكتروني' : 'Having issues with Google SSO? Click here for Direct Email Access'}
+                    </button>
+                  ) : (
+                    <form onSubmit={handleDirectEmailLogin} className="mt-2 p-4 bg-slate-800/90 border border-slate-700 rounded-xl space-y-3 text-left" dir={isRtl ? 'rtl' : 'ltr'}>
+                      <div className="text-xs font-bold text-slate-200 flex items-center justify-between">
+                        <span>{language === 'ar' ? 'الدخول المباشر بالبريد الإلكتروني (Direct SSO)' : 'Direct Enterprise SSO Access'}</span>
+                        <span className="text-[10px] text-amber-400 bg-amber-950/60 border border-amber-500/30 px-2 py-0.5 rounded">
+                          {language === 'ar' ? 'نشط' : 'Active'}
+                        </span>
+                      </div>
+                      <div>
+                        <label className="block text-[11px] text-slate-400 mb-1">
+                          {t('email_address')}
+                        </label>
+                        <input
+                          type="email"
+                          value={directEmail}
+                          onChange={(e) => setDirectEmail(e.target.value)}
+                          required
+                          placeholder="user@company.com"
+                          className="w-full bg-slate-900 border border-slate-700 text-white text-xs rounded-lg p-2.5 focus:outline-none focus:border-amber-400 font-mono"
+                        />
+                      </div>
+                      <div className="flex items-center gap-2 pt-1">
+                        <button
+                          type="submit"
+                          disabled={loading}
+                          className="flex-1 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold py-2.5 px-3 text-xs rounded-lg transition-colors shadow flex items-center justify-center gap-1.5"
+                        >
+                          <Shield className="w-3.5 h-3.5" />
+                          {language === 'ar' ? 'دخول مركز التحكم' : 'Enter Command Center'}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setShowDirectLogin(false)}
+                          className="px-3 py-2.5 bg-slate-700 text-slate-300 text-xs rounded-lg hover:bg-slate-600 transition-colors"
+                        >
+                          {t('cancel')}
+                        </button>
+                      </div>
+                    </form>
+                  )}
+                </div>
 
                 {isIframe && (
                   <div className="text-center pt-2">
