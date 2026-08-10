@@ -27,9 +27,10 @@ export type NormalizedStatus = 'OPEN' | 'CLOSED' | 'REJECTED' | 'OVERDUE' | 'UNK
 export const getNormalizedStatus = (
   row: SubmittalRow,
   projectId: string,
-  projectSettings?: ProjectSettings | null
+  projectSettings?: ProjectSettings | null,
+  contextAsOfDate?: string
 ): NormalizedStatus => {
-  const isOverdue = checkIfOverdueDynamically(row, projectSettings);
+  const isOverdue = checkIfOverdueDynamically(row, projectSettings, contextAsOfDate);
   
   const rawStatus = (row.status || '').trim().toUpperCase();
   if (!rawStatus) {
@@ -63,7 +64,8 @@ export const getNormalizedStatus = (
 
 export const checkIfOverdueDynamically = (
   row: SubmittalRow,
-  projectSettings?: ProjectSettings | null
+  projectSettings?: ProjectSettings | null,
+  contextAsOfDate?: string
 ): boolean => {
   const hasResponse = !!row.responseDate;
   if (hasResponse) {
@@ -73,8 +75,10 @@ export const checkIfOverdueDynamically = (
     return false;
   }
   
-  // Hardcoded active reporting today's date for consistent calculations
-  const todayStr = '2026-06-21';
+  // Dynamic as-of reporting date from CalculationContext, defaulting to current date
+  const todayStr = contextAsOfDate && /^\d{4}-\d{2}-\d{2}$/.test(contextAsOfDate) 
+    ? contextAsOfDate 
+    : new Date().toISOString().substring(0, 10);
   
   let finalDueDate = row.dueDate;
   if (!finalDueDate && row.submissionDate && projectSettings?.slaDays) {

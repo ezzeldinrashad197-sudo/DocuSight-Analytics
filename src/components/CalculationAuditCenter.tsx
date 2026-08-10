@@ -10,6 +10,7 @@ import { SubmittalRow, ProjectSettings } from '../types';
 import { calculateStats, calculateNCRStats, calculateSORStats, parseDateTimestamp } from '../utils/calculations';
 import { compareRevisions, isValidRevision } from '../analytics/analyticsCore';
 import { getRevisionWeight } from '../utils/enterpriseUpgradeEngine';
+import { AuditIntegrityCenter } from './AuditIntegrityCenter';
 
 interface CalculationAuditCenterProps {
   data: SubmittalRow[];
@@ -20,7 +21,7 @@ export const CalculationAuditCenter: React.FC<CalculationAuditCenterProps> = ({
   data,
   projectInfo
 }) => {
-  const [activeTab, setActiveTab] = useState<'revision' | 'decisionTree' | 'kpiSource' | 'duplicates' | 'rules'>('revision');
+  const [activeTab, setActiveTab] = useState<'governance' | 'revision' | 'decisionTree' | 'kpiSource' | 'duplicates' | 'rules'>('governance');
 
   // Filters for Revision Audit
   const [revSearchTerm, setRevSearchTerm] = useState('');
@@ -282,6 +283,14 @@ export const CalculationAuditCenter: React.FC<CalculationAuditCenterProps> = ({
       {/* TOP LEVEL MODULE TABS */}
       <div className="flex items-center gap-2 border-b border-slate-200 overflow-x-auto pb-1">
         <button 
+          onClick={() => setActiveTab('governance')}
+          className={`px-5 py-3 font-bold text-xs rounded-xl transition-all flex items-center gap-2 shrink-0 ${activeTab === 'governance' ? 'bg-slate-900 text-emerald-400 shadow-sm border border-emerald-500/30' : 'bg-white text-slate-600 hover:bg-slate-100'}`}
+        >
+          <ShieldCheck className="w-4 h-4 text-emerald-500" />
+          Audit & Integrity Center (مركز الحوكمة والنزاهة والشهادات)
+        </button>
+
+        <button 
           onClick={() => setActiveTab('revision')}
           className={`px-5 py-3 font-bold text-xs rounded-xl transition-all flex items-center gap-2 shrink-0 ${activeTab === 'revision' ? 'bg-slate-900 text-emerald-400 shadow-sm' : 'bg-white text-slate-600 hover:bg-slate-100'}`}
         >
@@ -321,6 +330,11 @@ export const CalculationAuditCenter: React.FC<CalculationAuditCenterProps> = ({
           System Rules Trace (سجل القواعد البرمجية)
         </button>
       </div>
+
+      {/* TAB 0: AUDIT & INTEGRITY CENTER */}
+      {activeTab === 'governance' && (
+        <AuditIntegrityCenter projectInfo={projectInfo} />
+      )}
 
       {/* TAB 1: REVISION & TIMELINE AUDIT */}
       {activeTab === 'revision' && (

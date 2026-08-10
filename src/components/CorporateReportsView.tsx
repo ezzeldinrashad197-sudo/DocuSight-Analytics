@@ -145,7 +145,28 @@ export const CorporateReportsView: React.FC<CorporateReportsViewProps> = ({
       return false;
     });
 
-    const discStats = DISCIPLINES.map(disc => {
+    const parsedDisciplines = typeWorkingData.map(d => resolveRowDiscipline(d, logType));
+    const activeDisciplinesSet = new Set(parsedDisciplines);
+    
+    const baseDisciplines = ['STR', 'Arch', 'Mech', 'Elec', 'Infra', 'Landscape'];
+    const extraDisciplines = Array.from(activeDisciplinesSet).filter(
+      d => d && !baseDisciplines.includes(d)
+    );
+    
+    let disciplinesToUse: string[] = [];
+    baseDisciplines.forEach(b => {
+      disciplinesToUse.push(b);
+      if (b === 'STR' && activeDisciplinesSet.has('STR/SUR')) {
+        disciplinesToUse.push('STR/SUR');
+      }
+    });
+    extraDisciplines.forEach(e => {
+      if (!disciplinesToUse.includes(e)) {
+        disciplinesToUse.push(e);
+      }
+    });
+
+    const discStats = disciplinesToUse.map(disc => {
       const dData = typeWorkingData.filter(d => resolveRowDiscipline(d, logType) === disc);
       const s = logType === 'NCR' 
         ? calculateNCRStats(dData, false) 

@@ -833,6 +833,7 @@ export const generatePptxReport = async (
                     } else {
                         disc = (d.discipline || d.trade || 'GENERAL').toUpperCase().trim();
                     }
+                    if (disc.includes('STR/SUR') || disc.includes('STR-SUR')) return 'STR/SUR';
                     if (disc === 'ARC' || disc === 'ARCH' || disc.includes('ARCHITECT')) return 'ARCH';
                     if (disc === 'MEC' || disc === 'MECH' || disc.includes('MECHANIC')) return 'MECH';
                     if (disc === 'ELE' || disc === 'ELEC' || disc.includes('ELECTRIC')) return 'ELEC';
@@ -840,7 +841,7 @@ export const generatePptxReport = async (
                     if (disc === 'LND' || disc === 'LAND' || disc.includes('LANDSCAP')) return 'LAND';
                     if (disc === 'STR' || disc.includes('STRUCT')) return 'STR';
                     if (disc === 'HSE' || disc === 'HSE' || disc.includes('HSE') || disc.includes('SAFETY')) return 'HSE';
-                    return bt === 'NCR' ? 'HSE' : 'GENERAL';
+                    return bt === 'NCR' ? 'HSE' : 'UNCLASSIFIED';
                 });
                 disciplinesInThisType = Array.from(new Set([...predefinedDisciplines, ...parsedDisciplines]));
             }

@@ -1,0 +1,215 @@
+{
+  "schemaVersion": "1.0.0-L99-IMMUTABLE",
+  "timestamp": "2026-08-08T09:53:51.967Z",
+  "totalMasterFindings": 28,
+  "canonicalIdentityTuple": [
+    "masterId",
+    "originalDomain",
+    "originalTitle",
+    "originalRootCause"
+  ],
+  "masterIdentityFingerprint": "3f49ce1a1f0a06802e3bdfdd8cb8cf4ef60fa447660ffefed273f5a8ec6e1f0e",
+  "canonical4FieldDigest": "72ef55f54d4e39b70caa3bfa119f33051dda820d3d6f65739aa86649a7462250",
+  "metadataFingerprint": "d7d5423163b87c6a3785392a19ebedb92ce9b5e0efc639c923d13ac3ae2fdd0f",
+  "zeroSemanticDriftAssertion": true,
+  "zeroIdReassignmentAssertion": true,
+  "zeroFindingMergeAssertion": true,
+  "findings": [
+    {
+      "masterId": "L99-SEC-001",
+      "originalDomain": "Security",
+      "originalTitle": "Unauthenticated API Endpoint Access",
+      "originalRootCause": "Public access permitted on metrics API without attaching authentication middleware.",
+      "identityHash": "5edb3354955f3a1363b246202402ad10766f65914f7a9f0467b0198fdab373cd"
+    },
+    {
+      "masterId": "L99-SEC-002",
+      "originalDomain": "Security",
+      "originalTitle": "Unrestricted User Role Claim Mutation",
+      "originalRootCause": "Firestore update rule permitted user payload to update role field directly.",
+      "identityHash": "b5e6d73c26916867791b04df3ca5e958ca935e5df96bfcb07fc7e000cb70eb42"
+    },
+    {
+      "masterId": "L99-SEC-003",
+      "originalDomain": "Security",
+      "originalTitle": "Insecure CORS Configuration",
+      "originalRootCause": "CORS configuration used origin: * with credentials: true enabled.",
+      "identityHash": "de86e3896f7ec25e2e046089ada85f607e977f62f2943d20b2a6edf7e1d614d5"
+    },
+    {
+      "masterId": "L99-SEC-004",
+      "originalDomain": "Security",
+      "originalTitle": "Broad Audit Log Authorization Scope",
+      "originalRootCause": "Audit log query endpoint lacked correlationId and project scope filtering bounds.",
+      "identityHash": "e024e98345ee4cb599ef4ea0a4bb29bd756d3d3ce7efebac2b4a99347df3c644"
+    },
+    {
+      "masterId": "L99-SEC-005",
+      "originalDomain": "Security",
+      "originalTitle": "Server-Side Gemini API Key Exposure Risk",
+      "originalRootCause": "Client components attempted direct Gemini API initialization using browser environment variables.",
+      "identityHash": "6ebb6d40a4f513203f045f0145ca64f9953a2459f45e198a15eea91a8f687259"
+    },
+    {
+      "masterId": "L99-SEC-006",
+      "originalDomain": "Security",
+      "originalTitle": "Missing Sensitive Header Stripping on Proxy",
+      "originalRootCause": "Express proxy middleware forwarded incoming request headers unchanged.",
+      "identityHash": "6c8774a0c6ba8c773616c7ebdf7566b4f5840728bf8fbd99a8997fc848dcb317"
+    },
+    {
+      "masterId": "L99-SEC-007",
+      "originalDomain": "Security",
+      "originalTitle": "Session Token Insecurity & Replay Risk",
+      "originalRootCause": "Auth state relied on plain token comparison without time-bound cryptographic nonces.",
+      "identityHash": "a4bfaffdb588036482edd02b62d4159a3ac28385c611bdc44dfaae5ac2c406a5"
+    },
+    {
+      "masterId": "L99-SEC-008",
+      "originalDomain": "Security",
+      "originalTitle": "Missing API Rate Limiting on Heavy Routes",
+      "originalRootCause": "Heavy calculation endpoint /api/insights lacked request rate limiting controls.",
+      "identityHash": "65cf5677102326e80a0f5dee9a908860fffce5baa541f0c3da6bb783e1ad9a3c"
+    },
+    {
+      "masterId": "L99-SEC-009",
+      "originalDomain": "Security",
+      "originalTitle": "Unbounded Request Payload Memory Risk",
+      "originalRootCause": "Express body parser installed without explicit size payload limit boundaries.",
+      "identityHash": "d45aa627e9a7eabb19b18d354dc2366c2f4bbedfb66d3ee8597cc4d74138bc22"
+    },
+    {
+      "masterId": "L99-SEC-010",
+      "originalDomain": "Security",
+      "originalTitle": "AI Insights Payload Memory Exhaustion",
+      "originalRootCause": "Raw telemetry arrays included directly in AI prompt string template without bounds checking.",
+      "identityHash": "03fa149fbee421a9955c4a18d94e564aeab729901a2c96650bec72debdc1a7b9"
+    },
+    {
+      "masterId": "L99-SEC-011",
+      "originalDomain": "Security",
+      "originalTitle": "AI Insights Cache Cross-Tenant Leakage Risk",
+      "originalRootCause": "Cache key generated without explicit project scope prefix and authentication context binding.",
+      "identityHash": "22cd526ea376617eb3abc107851d19b73805f9a0f2774ece07dfe333af6f7282"
+    },
+    {
+      "masterId": "L99-SEC-012",
+      "originalDomain": "Security",
+      "originalTitle": "In-Memory Cache Unbounded Growth",
+      "originalRootCause": "NodeCache initialized without maxKeys boundary limit or automatic TTL eviction.",
+      "identityHash": "552587bc9fdf0350b46c1a66fd08dd73702b764d4428afb1a7ddb07383a52e48"
+    },
+    {
+      "masterId": "L99-SEC-013",
+      "originalDomain": "Security",
+      "originalTitle": "Circuit Breaker Lacking AI Fallback Isolation",
+      "originalRootCause": "AI model requests lacked execution timeout promises and sequential fallback handling.",
+      "identityHash": "f37cdb17b9a3410cf4e11963ffb28ceaa7a01836f375769d6e848f80f015858a"
+    },
+    {
+      "masterId": "L99-SEC-014",
+      "originalDomain": "Security",
+      "originalTitle": "Client Privilege Escalation via LocalStorage Override",
+      "originalRootCause": "Application read user authorization role directly from unverified client localStorage item.",
+      "identityHash": "d1a62a758144b2ad1f33a2d1ccd794bdf32e2567740d6b6c685c46c4a62e5919"
+    },
+    {
+      "masterId": "L99-REG-001",
+      "originalDomain": "Regression",
+      "originalTitle": "Golden Dataset SHA-256 Checksum Non-Determinism",
+      "originalRootCause": "SHA-256 calculation relied on unstable JSON stringification without canonical key sorting.",
+      "identityHash": "91f425e400e272e1f862271dbf793f247627fbb9e274ef83b379738451a85d60"
+    },
+    {
+      "masterId": "L99-REG-002",
+      "originalDomain": "Regression",
+      "originalTitle": "Unchecked Golden Dataset Record Mutation",
+      "originalRootCause": "Regression engine loaded dataset file without checking SHA-256 checksum prior to running tests.",
+      "identityHash": "24a6840492cc6fda393e27d6cb881280ff0e587c2b84b97b98314f08f2914b0f"
+    },
+    {
+      "masterId": "L99-REG-003",
+      "originalDomain": "Regression",
+      "originalTitle": "Synthetic Confidence Artifacts in Regression Suite",
+      "originalRootCause": "Test runner lacked deliberate defect injection harness to verify suite failure sensitivity.",
+      "identityHash": "5d990dafcb544a199364a52f1c252939f1d3c073bb08e5b1e4467b91726f0fac"
+    },
+    {
+      "masterId": "L99-CALC-001",
+      "originalDomain": "Calculation",
+      "originalTitle": "Non-Deterministic Reference Date in Dynamic Calculations",
+      "originalRootCause": "calculateOverdueDays invoked new Date() directly inside calculation loop.",
+      "identityHash": "220f37fd859afcb1a67e453d1aff6dad321a7406d12ebc939c2d17f969b9f753"
+    },
+    {
+      "masterId": "L99-CALC-002",
+      "originalDomain": "Calculation",
+      "originalTitle": "Misclassified Superseded Submittal Revisions",
+      "originalRootCause": "Document status query failed to exclude records marked isSuperseded: true.",
+      "identityHash": "9b99fe20aaf76df3bacc5660f1ac2dcf1498de9cdad1366f34f9b65e3d618c67"
+    },
+    {
+      "masterId": "L99-CALC-003",
+      "originalDomain": "Calculation",
+      "originalTitle": "Substring Document Code False Positive Matching",
+      "originalRootCause": "Status mapping logic used code.includes(\"APP\"), matching NOT_APPROVED as approved.",
+      "identityHash": "b0a7c3a4dd1b94cc70c57cb6712ee02b52e013f6de65c780447c0bf227f88303"
+    },
+    {
+      "masterId": "L99-CALC-004",
+      "originalDomain": "Calculation",
+      "originalTitle": "Quality Score Integer Rounding Metric Distortion",
+      "originalRootCause": "Approval rate formula applied Math.floor() to intermediate percentage calculation.",
+      "identityHash": "108ffcebd5d20170440172ca3f5fc9ca9132f882a125f6915d98873e009c57ce"
+    },
+    {
+      "masterId": "L99-DATA-001",
+      "originalDomain": "Data",
+      "originalTitle": "Uncorrelated Telemetry Log Tracing",
+      "originalRootCause": "Logger functions omitted correlation ID context from log entry objects.",
+      "identityHash": "b244471a94a2db81ba5c0af1e5265d3267bc0cb2b1b865999b7788b82aaf641e"
+    },
+    {
+      "masterId": "L99-DATA-002",
+      "originalDomain": "Data",
+      "originalTitle": "Non-Authoritative KPI Statistics Source",
+      "originalRootCause": "Multiple UI screens implemented independent ad-hoc metric calculation logic.",
+      "identityHash": "af866490d78953dff898deaf9b35c09eb258de5a08e28f12be78d0ac1e3d3ee5"
+    },
+    {
+      "masterId": "L99-ML-001",
+      "originalDomain": "ML",
+      "originalTitle": "Hallucinated Metrics in Gemini AI Reporting Prompt",
+      "originalRootCause": "Prompt text lacked explicit instructions forbidding metric estimation for missing telemetry fields.",
+      "identityHash": "8eb5f494451406e82961ace1f3866a1f706154aa0b87ebbfd343f7db3c082923"
+    },
+    {
+      "masterId": "L99-ARCH-001",
+      "originalDomain": "Architecture",
+      "originalTitle": "Circular Import Dependency in Analytics Modules",
+      "originalRootCause": "Circular reference cycle between useSubmittalData hook and analytics utility helpers.",
+      "identityHash": "1456ba9003680ed8589a5a8f57da7d9b041329f944369cdf637004df15c2aeb5"
+    },
+    {
+      "masterId": "L99-ARCH-002",
+      "originalDomain": "Architecture",
+      "originalTitle": "Business Logic Fragmentation Across UI Components",
+      "originalRootCause": "Filtering logic duplicated across individual UI component source files.",
+      "identityHash": "5b06c21e2213348d914e1189cdc9b1e37cf197958bb8530a8aebcd7b6ed9e1b9"
+    },
+    {
+      "masterId": "L99-BLD-001",
+      "originalDomain": "Build",
+      "originalTitle": "Alleged Type Error in External Declaration (False Positive)",
+      "originalRootCause": "Audit false report; type interface was fully declared and valid in source baseline.",
+      "identityHash": "3575aa1c5d1fd713e6e3a28824713706e6dfe65bbfd1e8ccf3599f4ccc1b7019"
+    },
+    {
+      "masterId": "L99-BLD-002",
+      "originalDomain": "Build",
+      "originalTitle": "ES Module CJS Transpilation Output Failure",
+      "originalRootCause": "Build script failed to bundle server.ts into standalone CommonJS CJS artifact.",
+      "identityHash": "d096c4204c3047fd49cb0526d077d6e640039e2858c19fefc2b7426a29464192"
+    }
+  ]
+}

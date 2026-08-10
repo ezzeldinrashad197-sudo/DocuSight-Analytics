@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { FileSpreadsheet, FileUp, LayoutDashboard, CalendarDays, Clock, Database, CheckCircle2, AlertCircle, Printer, Presentation as PresentationIcon, Filter, Settings, Bot, ChevronLeft, ChevronRight, BarChart, Loader2, FileText, CheckSquare, ShieldAlert, ShieldCheck, Network, Hexagon, LogOut, Globe, Cpu, Building2 } from 'lucide-react';
+import { FileSpreadsheet, FileUp, LayoutDashboard, CalendarDays, Clock, Database, CheckCircle2, AlertCircle, Printer, Presentation as PresentationIcon, Filter, Settings, Bot, ChevronLeft, ChevronRight, BarChart, Loader2, FileText, CheckSquare, ShieldAlert, ShieldCheck, Network, Hexagon, LogOut, Globe, Cpu, Building2, Layers } from 'lucide-react';
 import { SubmittalRow, ProjectSettings } from './types';
 import MasterRegister from './components/MasterRegister';
 import ReportTable from './ReportTable';
@@ -36,12 +36,13 @@ import FinalAcceptanceAuditView from './components/FinalAcceptanceAuditView';
 import WorkflowMappingCenter from './components/WorkflowMappingCenter';
 import { CalculationAuditCenter } from './components/CalculationAuditCenter';
 import { CorporateReportsView } from './components/CorporateReportsView';
+import { UniversalRegisterEngine } from './components/UniversalRegisterEngine';
 import { normalizeData } from './utils/calculations';
 
 export default function App() {
   const { t, language, setLanguage, isRtl } = useLanguage();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [activeTab, setActiveTab] = useState<'enterprise_dashboard' | 'portfolio' | 'master_register' | 'validation' | 'aging' | 'sla' | 'actions' | 'monthly' | 'cumulative' | 'delay' | 'rfi' | 'presentation' | 'corporate_reports' | 'insights' | 'ncr' | 'sor' | 'ltr' | 'trend_forecast' | 'warehouse' | 'monitoring' | 'engineering_dataset' | 'final_audit' | 'mapping' | 'calc_audit'>('portfolio');
+  const [activeTab, setActiveTab] = useState<'enterprise_dashboard' | 'portfolio' | 'master_register' | 'validation' | 'aging' | 'sla' | 'actions' | 'monthly' | 'cumulative' | 'delay' | 'rfi' | 'presentation' | 'corporate_reports' | 'insights' | 'ncr' | 'sor' | 'ltr' | 'trend_forecast' | 'warehouse' | 'monitoring' | 'engineering_dataset' | 'final_audit' | 'mapping' | 'calc_audit' | 'universal_engine'>('portfolio');
   const [activeRole, setActiveRole] = useState<string>('all');
 
   const activeRoleRef = useRef(activeRole);
@@ -95,15 +96,14 @@ export default function App() {
           const currentRoleVal = activeRoleRef.current;
           const currentTabVal = activeTabRef.current;
           
-          // --- Failure / Missing Document Fallback Guard ---
-          // Rule: في حالة فشل جلب الصلاحيات يتم الاحتفاظ بآخر صلاحية صحيحة بدلاً من Viewer.
+          // --- Fail-Closed Authorization Guard ---
           if (!docSnap.exists()) {
             const isFromCache = docSnap.metadata.fromCache;
             if (!isFromCache) {
-              console.warn("[Security Alert] Current user UID document confirmed missing on Firestore server. Retaining last valid correct permission to prevent fallback to Viewer.");
-              // Do not transition to 'viewer'. Maintain currentRoleVal.
+              console.warn("[Security Policy] User authorization document missing on Firestore server. Failing closed to viewer role.");
+              setActiveRole('viewer');
             } else {
-              console.info("[Security Info] UID document is transiently missing in local cache. Retaining existing resolved role state.");
+              console.info("[Security Info] UID document transiently loading from cache.");
             }
             return;
           }
@@ -407,6 +407,7 @@ export default function App() {
         
         <TabButton id="master_register" label="Master Register" icon={LayoutDashboard} />
         <TabButton id="mapping" label="Workflow Mapping SSOT" icon={Network} />
+        <TabButton id="universal_engine" label="Universal Register Engine" icon={Layers} />
             
             {hasPermission(['executive', 'pd', 'pm']) && (
                 <TabButton id="presentation" label="Executive Monthly Report" icon={PresentationIcon} />
@@ -446,10 +447,10 @@ export default function App() {
                 <TabButton id="engineering_dataset" label="Engineering Item Dataset" icon={ShieldCheck} />
             )}
 
-            {hasPermission(['executive', 'pd', 'dc']) && (
+            {hasPermission(['executive', 'pd', 'dc', 'em', 'qaqc', 'pm']) && (
                 <>
                   <TabButton id="final_audit" label="Final Production Audit" icon={ShieldCheck} />
-                  <TabButton id="calc_audit" label="Calculation Audit Center" icon={Cpu} />
+                  <TabButton id="calc_audit" label="Audit & Integrity Center" icon={ShieldCheck} />
                 </>
             )}
             
@@ -689,7 +690,7 @@ export default function App() {
                 </div>
                 )}
 
-                {data.length === 0 && activeTab !== 'portfolio' && activeTab !== 'monitoring' && activeTab !== 'mapping' ? (
+                {data.length === 0 && activeTab !== 'portfolio' && activeTab !== 'monitoring' && activeTab !== 'mapping' && activeTab !== 'universal_engine' ? (
                 <div className="h-[50vh] flex flex-col items-center justify-center text-[#94a3b8] border-2 border-dashed border-[#e2e8f0] rounded-2xl mx-10 mt-10">
                     <FileSpreadsheet className="w-20 h-20 text-slate-300 mb-4" />
                     <h2 className="text-xl font-bold text-[#475569] mb-2">No Data Available</h2>
@@ -697,6 +698,7 @@ export default function App() {
                 </div>
                 ) : (
                 <div className="transition-all">
+                  {activeTab === 'universal_engine' && <UniversalRegisterEngine data={data.filter(matchesFilters)} />}
                   {activeTab === 'portfolio' && <PortfolioCenter projects={projects} />}
                   {activeTab === 'monitoring' && <EnterpriseMonitoringDashboard />}
                   {activeTab === 'mapping' && <WorkflowMappingCenter data={data} onDataRefreshNeeded={() => setData(prev => normalizeData(prev))} />}

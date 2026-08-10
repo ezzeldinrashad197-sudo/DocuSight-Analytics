@@ -847,6 +847,12 @@ export function resolveRowDiscipline(d: SubmittalRow, bt: string): string {
     return d.stakeholder || 'GENERAL';
   }
 
+  // 0. Check explicit discipline or trade fields for composite values like STR/SUR
+  const discField = (d.discipline || d.trade || '').toUpperCase().trim();
+  if (discField.includes('STR/SUR') || discField.includes('STR-SUR') || discField.includes('STR_SUR')) {
+    return 'STR/SUR';
+  }
+
   // 1. Check documentType or logType suffix e.g. MAR-ARC, SDW-STR, WIR-ELE, MAR-MEC, etc.
   const docType = (d.documentType || d.logType || '').toUpperCase().trim();
   const docParts = docType.split(/[-_\s]+/);
@@ -862,7 +868,6 @@ export function resolveRowDiscipline(d: SubmittalRow, bt: string): string {
   if (['HSE', 'SAFETY'].includes(suffix)) return 'HSE';
 
   // 2. Check explicit discipline or trade fields tokenized strictly
-  const discField = (d.discipline || d.trade || '').toUpperCase().trim();
   if (discField) {
     const discTokens = discField.split(/[^A-Z0-9\u0600-\u06FF]+/);
     for (const t of discTokens) {
@@ -894,6 +899,6 @@ export function resolveRowDiscipline(d: SubmittalRow, bt: string): string {
   }
 
   // Fallback
-  return bt === 'NCR' ? 'HSE' : 'STR';
+  return bt === 'NCR' ? 'HSE' : (d.discipline === 'UNCLASSIFIED' || d.discipline === 'GENERAL' ? 'UNCLASSIFIED' : 'UNCLASSIFIED');
 }
 

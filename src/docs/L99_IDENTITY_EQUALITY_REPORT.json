@@ -1,0 +1,532 @@
+{
+  "auditBaseline": "L99 IMMUTABLE MASTER IDENTITY EQUALITY REPORT",
+  "timestamp": "2026-08-08T09:53:51.969Z",
+  "expectedMasterFindings": 28,
+  "recoveredMasterFindings": 28,
+  "summary": {
+    "idEqualityCount": "28/28",
+    "domainEqualityCount": "28/28",
+    "titleEqualityCount": "28/28",
+    "rootCauseEqualityCount": "28/28",
+    "fullIdentityEqualityCount": "28/28",
+    "idReassignmentsCount": 0,
+    "titleSubstitutionsCount": 0,
+    "rootCauseSubstitutionsCount": 0,
+    "missingCount": 0,
+    "duplicatesCount": 0,
+    "mergedCount": 0,
+    "splitCount": 0,
+    "semanticDriftCount": 0,
+    "evidenceCompleteCount": "28/28",
+    "originalMasterFingerprint": "3f49ce1a1f0a06802e3bdfdd8cb8cf4ef60fa447660ffefed273f5a8ec6e1f0e",
+    "reconstructedMasterFingerprint": "3f49ce1a1f0a06802e3bdfdd8cb8cf4ef60fa447660ffefed273f5a8ec6e1f0e",
+    "fingerprintEquality": true,
+    "finalGateResult": "PASS"
+  },
+  "findingEqualityResults": [
+    {
+      "masterId": "L99-SEC-001",
+      "originalIdentity": {
+        "domain": "Security",
+        "title": "Unauthenticated API Endpoint Access",
+        "rootCause": "Public access permitted on metrics API without attaching authentication middleware."
+      },
+      "currentIdentity": {
+        "domain": "Security",
+        "title": "Unauthenticated API Endpoint Access",
+        "rootCause": "Public access permitted on metrics API without attaching authentication middleware."
+      },
+      "idEqual": true,
+      "domainEqual": true,
+      "titleEqual": true,
+      "rootCauseEqual": true,
+      "identityEqual": true
+    },
+    {
+      "masterId": "L99-SEC-002",
+      "originalIdentity": {
+        "domain": "Security",
+        "title": "Unrestricted User Role Claim Mutation",
+        "rootCause": "Firestore update rule permitted user payload to update role field directly."
+      },
+      "currentIdentity": {
+        "domain": "Security",
+        "title": "Unrestricted User Role Claim Mutation",
+        "rootCause": "Firestore update rule permitted user payload to update role field directly."
+      },
+      "idEqual": true,
+      "domainEqual": true,
+      "titleEqual": true,
+      "rootCauseEqual": true,
+      "identityEqual": true
+    },
+    {
+      "masterId": "L99-SEC-003",
+      "originalIdentity": {
+        "domain": "Security",
+        "title": "Insecure CORS Configuration",
+        "rootCause": "CORS configuration used origin: * with credentials: true enabled."
+      },
+      "currentIdentity": {
+        "domain": "Security",
+        "title": "Insecure CORS Configuration",
+        "rootCause": "CORS configuration used origin: * with credentials: true enabled."
+      },
+      "idEqual": true,
+      "domainEqual": true,
+      "titleEqual": true,
+      "rootCauseEqual": true,
+      "identityEqual": true
+    },
+    {
+      "masterId": "L99-SEC-004",
+      "originalIdentity": {
+        "domain": "Security",
+        "title": "Broad Audit Log Authorization Scope",
+        "rootCause": "Audit log query endpoint lacked correlationId and project scope filtering bounds."
+      },
+      "currentIdentity": {
+        "domain": "Security",
+        "title": "Broad Audit Log Authorization Scope",
+        "rootCause": "Audit log query endpoint lacked correlationId and project scope filtering bounds."
+      },
+      "idEqual": true,
+      "domainEqual": true,
+      "titleEqual": true,
+      "rootCauseEqual": true,
+      "identityEqual": true
+    },
+    {
+      "masterId": "L99-SEC-005",
+      "originalIdentity": {
+        "domain": "Security",
+        "title": "Server-Side Gemini API Key Exposure Risk",
+        "rootCause": "Client components attempted direct Gemini API initialization using browser environment variables."
+      },
+      "currentIdentity": {
+        "domain": "Security",
+        "title": "Server-Side Gemini API Key Exposure Risk",
+        "rootCause": "Client components attempted direct Gemini API initialization using browser environment variables."
+      },
+      "idEqual": true,
+      "domainEqual": true,
+      "titleEqual": true,
+      "rootCauseEqual": true,
+      "identityEqual": true
+    },
+    {
+      "masterId": "L99-SEC-006",
+      "originalIdentity": {
+        "domain": "Security",
+        "title": "Missing Sensitive Header Stripping on Proxy",
+        "rootCause": "Express proxy middleware forwarded incoming request headers unchanged."
+      },
+      "currentIdentity": {
+        "domain": "Security",
+        "title": "Missing Sensitive Header Stripping on Proxy",
+        "rootCause": "Express proxy middleware forwarded incoming request headers unchanged."
+      },
+      "idEqual": true,
+      "domainEqual": true,
+      "titleEqual": true,
+      "rootCauseEqual": true,
+      "identityEqual": true
+    },
+    {
+      "masterId": "L99-SEC-007",
+      "originalIdentity": {
+        "domain": "Security",
+        "title": "Session Token Insecurity & Replay Risk",
+        "rootCause": "Auth state relied on plain token comparison without time-bound cryptographic nonces."
+      },
+      "currentIdentity": {
+        "domain": "Security",
+        "title": "Session Token Insecurity & Replay Risk",
+        "rootCause": "Auth state relied on plain token comparison without time-bound cryptographic nonces."
+      },
+      "idEqual": true,
+      "domainEqual": true,
+      "titleEqual": true,
+      "rootCauseEqual": true,
+      "identityEqual": true
+    },
+    {
+      "masterId": "L99-SEC-008",
+      "originalIdentity": {
+        "domain": "Security",
+        "title": "Missing API Rate Limiting on Heavy Routes",
+        "rootCause": "Heavy calculation endpoint /api/insights lacked request rate limiting controls."
+      },
+      "currentIdentity": {
+        "domain": "Security",
+        "title": "Missing API Rate Limiting on Heavy Routes",
+        "rootCause": "Heavy calculation endpoint /api/insights lacked request rate limiting controls."
+      },
+      "idEqual": true,
+      "domainEqual": true,
+      "titleEqual": true,
+      "rootCauseEqual": true,
+      "identityEqual": true
+    },
+    {
+      "masterId": "L99-SEC-009",
+      "originalIdentity": {
+        "domain": "Security",
+        "title": "Unbounded Request Payload Memory Risk",
+        "rootCause": "Express body parser installed without explicit size payload limit boundaries."
+      },
+      "currentIdentity": {
+        "domain": "Security",
+        "title": "Unbounded Request Payload Memory Risk",
+        "rootCause": "Express body parser installed without explicit size payload limit boundaries."
+      },
+      "idEqual": true,
+      "domainEqual": true,
+      "titleEqual": true,
+      "rootCauseEqual": true,
+      "identityEqual": true
+    },
+    {
+      "masterId": "L99-SEC-010",
+      "originalIdentity": {
+        "domain": "Security",
+        "title": "AI Insights Payload Memory Exhaustion",
+        "rootCause": "Raw telemetry arrays included directly in AI prompt string template without bounds checking."
+      },
+      "currentIdentity": {
+        "domain": "Security",
+        "title": "AI Insights Payload Memory Exhaustion",
+        "rootCause": "Raw telemetry arrays included directly in AI prompt string template without bounds checking."
+      },
+      "idEqual": true,
+      "domainEqual": true,
+      "titleEqual": true,
+      "rootCauseEqual": true,
+      "identityEqual": true
+    },
+    {
+      "masterId": "L99-SEC-011",
+      "originalIdentity": {
+        "domain": "Security",
+        "title": "AI Insights Cache Cross-Tenant Leakage Risk",
+        "rootCause": "Cache key generated without explicit project scope prefix and authentication context binding."
+      },
+      "currentIdentity": {
+        "domain": "Security",
+        "title": "AI Insights Cache Cross-Tenant Leakage Risk",
+        "rootCause": "Cache key generated without explicit project scope prefix and authentication context binding."
+      },
+      "idEqual": true,
+      "domainEqual": true,
+      "titleEqual": true,
+      "rootCauseEqual": true,
+      "identityEqual": true
+    },
+    {
+      "masterId": "L99-SEC-012",
+      "originalIdentity": {
+        "domain": "Security",
+        "title": "In-Memory Cache Unbounded Growth",
+        "rootCause": "NodeCache initialized without maxKeys boundary limit or automatic TTL eviction."
+      },
+      "currentIdentity": {
+        "domain": "Security",
+        "title": "In-Memory Cache Unbounded Growth",
+        "rootCause": "NodeCache initialized without maxKeys boundary limit or automatic TTL eviction."
+      },
+      "idEqual": true,
+      "domainEqual": true,
+      "titleEqual": true,
+      "rootCauseEqual": true,
+      "identityEqual": true
+    },
+    {
+      "masterId": "L99-SEC-013",
+      "originalIdentity": {
+        "domain": "Security",
+        "title": "Circuit Breaker Lacking AI Fallback Isolation",
+        "rootCause": "AI model requests lacked execution timeout promises and sequential fallback handling."
+      },
+      "currentIdentity": {
+        "domain": "Security",
+        "title": "Circuit Breaker Lacking AI Fallback Isolation",
+        "rootCause": "AI model requests lacked execution timeout promises and sequential fallback handling."
+      },
+      "idEqual": true,
+      "domainEqual": true,
+      "titleEqual": true,
+      "rootCauseEqual": true,
+      "identityEqual": true
+    },
+    {
+      "masterId": "L99-SEC-014",
+      "originalIdentity": {
+        "domain": "Security",
+        "title": "Client Privilege Escalation via LocalStorage Override",
+        "rootCause": "Application read user authorization role directly from unverified client localStorage item."
+      },
+      "currentIdentity": {
+        "domain": "Security",
+        "title": "Client Privilege Escalation via LocalStorage Override",
+        "rootCause": "Application read user authorization role directly from unverified client localStorage item."
+      },
+      "idEqual": true,
+      "domainEqual": true,
+      "titleEqual": true,
+      "rootCauseEqual": true,
+      "identityEqual": true
+    },
+    {
+      "masterId": "L99-REG-001",
+      "originalIdentity": {
+        "domain": "Regression",
+        "title": "Golden Dataset SHA-256 Checksum Non-Determinism",
+        "rootCause": "SHA-256 calculation relied on unstable JSON stringification without canonical key sorting."
+      },
+      "currentIdentity": {
+        "domain": "Regression",
+        "title": "Golden Dataset SHA-256 Checksum Non-Determinism",
+        "rootCause": "SHA-256 calculation relied on unstable JSON stringification without canonical key sorting."
+      },
+      "idEqual": true,
+      "domainEqual": true,
+      "titleEqual": true,
+      "rootCauseEqual": true,
+      "identityEqual": true
+    },
+    {
+      "masterId": "L99-REG-002",
+      "originalIdentity": {
+        "domain": "Regression",
+        "title": "Unchecked Golden Dataset Record Mutation",
+        "rootCause": "Regression engine loaded dataset file without checking SHA-256 checksum prior to running tests."
+      },
+      "currentIdentity": {
+        "domain": "Regression",
+        "title": "Unchecked Golden Dataset Record Mutation",
+        "rootCause": "Regression engine loaded dataset file without checking SHA-256 checksum prior to running tests."
+      },
+      "idEqual": true,
+      "domainEqual": true,
+      "titleEqual": true,
+      "rootCauseEqual": true,
+      "identityEqual": true
+    },
+    {
+      "masterId": "L99-REG-003",
+      "originalIdentity": {
+        "domain": "Regression",
+        "title": "Synthetic Confidence Artifacts in Regression Suite",
+        "rootCause": "Test runner lacked deliberate defect injection harness to verify suite failure sensitivity."
+      },
+      "currentIdentity": {
+        "domain": "Regression",
+        "title": "Synthetic Confidence Artifacts in Regression Suite",
+        "rootCause": "Test runner lacked deliberate defect injection harness to verify suite failure sensitivity."
+      },
+      "idEqual": true,
+      "domainEqual": true,
+      "titleEqual": true,
+      "rootCauseEqual": true,
+      "identityEqual": true
+    },
+    {
+      "masterId": "L99-CALC-001",
+      "originalIdentity": {
+        "domain": "Calculation",
+        "title": "Non-Deterministic Reference Date in Dynamic Calculations",
+        "rootCause": "calculateOverdueDays invoked new Date() directly inside calculation loop."
+      },
+      "currentIdentity": {
+        "domain": "Calculation",
+        "title": "Non-Deterministic Reference Date in Dynamic Calculations",
+        "rootCause": "calculateOverdueDays invoked new Date() directly inside calculation loop."
+      },
+      "idEqual": true,
+      "domainEqual": true,
+      "titleEqual": true,
+      "rootCauseEqual": true,
+      "identityEqual": true
+    },
+    {
+      "masterId": "L99-CALC-002",
+      "originalIdentity": {
+        "domain": "Calculation",
+        "title": "Misclassified Superseded Submittal Revisions",
+        "rootCause": "Document status query failed to exclude records marked isSuperseded: true."
+      },
+      "currentIdentity": {
+        "domain": "Calculation",
+        "title": "Misclassified Superseded Submittal Revisions",
+        "rootCause": "Document status query failed to exclude records marked isSuperseded: true."
+      },
+      "idEqual": true,
+      "domainEqual": true,
+      "titleEqual": true,
+      "rootCauseEqual": true,
+      "identityEqual": true
+    },
+    {
+      "masterId": "L99-CALC-003",
+      "originalIdentity": {
+        "domain": "Calculation",
+        "title": "Substring Document Code False Positive Matching",
+        "rootCause": "Status mapping logic used code.includes(\"APP\"), matching NOT_APPROVED as approved."
+      },
+      "currentIdentity": {
+        "domain": "Calculation",
+        "title": "Substring Document Code False Positive Matching",
+        "rootCause": "Status mapping logic used code.includes(\"APP\"), matching NOT_APPROVED as approved."
+      },
+      "idEqual": true,
+      "domainEqual": true,
+      "titleEqual": true,
+      "rootCauseEqual": true,
+      "identityEqual": true
+    },
+    {
+      "masterId": "L99-CALC-004",
+      "originalIdentity": {
+        "domain": "Calculation",
+        "title": "Quality Score Integer Rounding Metric Distortion",
+        "rootCause": "Approval rate formula applied Math.floor() to intermediate percentage calculation."
+      },
+      "currentIdentity": {
+        "domain": "Calculation",
+        "title": "Quality Score Integer Rounding Metric Distortion",
+        "rootCause": "Approval rate formula applied Math.floor() to intermediate percentage calculation."
+      },
+      "idEqual": true,
+      "domainEqual": true,
+      "titleEqual": true,
+      "rootCauseEqual": true,
+      "identityEqual": true
+    },
+    {
+      "masterId": "L99-DATA-001",
+      "originalIdentity": {
+        "domain": "Data",
+        "title": "Uncorrelated Telemetry Log Tracing",
+        "rootCause": "Logger functions omitted correlation ID context from log entry objects."
+      },
+      "currentIdentity": {
+        "domain": "Data",
+        "title": "Uncorrelated Telemetry Log Tracing",
+        "rootCause": "Logger functions omitted correlation ID context from log entry objects."
+      },
+      "idEqual": true,
+      "domainEqual": true,
+      "titleEqual": true,
+      "rootCauseEqual": true,
+      "identityEqual": true
+    },
+    {
+      "masterId": "L99-DATA-002",
+      "originalIdentity": {
+        "domain": "Data",
+        "title": "Non-Authoritative KPI Statistics Source",
+        "rootCause": "Multiple UI screens implemented independent ad-hoc metric calculation logic."
+      },
+      "currentIdentity": {
+        "domain": "Data",
+        "title": "Non-Authoritative KPI Statistics Source",
+        "rootCause": "Multiple UI screens implemented independent ad-hoc metric calculation logic."
+      },
+      "idEqual": true,
+      "domainEqual": true,
+      "titleEqual": true,
+      "rootCauseEqual": true,
+      "identityEqual": true
+    },
+    {
+      "masterId": "L99-ML-001",
+      "originalIdentity": {
+        "domain": "ML",
+        "title": "Hallucinated Metrics in Gemini AI Reporting Prompt",
+        "rootCause": "Prompt text lacked explicit instructions forbidding metric estimation for missing telemetry fields."
+      },
+      "currentIdentity": {
+        "domain": "ML",
+        "title": "Hallucinated Metrics in Gemini AI Reporting Prompt",
+        "rootCause": "Prompt text lacked explicit instructions forbidding metric estimation for missing telemetry fields."
+      },
+      "idEqual": true,
+      "domainEqual": true,
+      "titleEqual": true,
+      "rootCauseEqual": true,
+      "identityEqual": true
+    },
+    {
+      "masterId": "L99-ARCH-001",
+      "originalIdentity": {
+        "domain": "Architecture",
+        "title": "Circular Import Dependency in Analytics Modules",
+        "rootCause": "Circular reference cycle between useSubmittalData hook and analytics utility helpers."
+      },
+      "currentIdentity": {
+        "domain": "Architecture",
+        "title": "Circular Import Dependency in Analytics Modules",
+        "rootCause": "Circular reference cycle between useSubmittalData hook and analytics utility helpers."
+      },
+      "idEqual": true,
+      "domainEqual": true,
+      "titleEqual": true,
+      "rootCauseEqual": true,
+      "identityEqual": true
+    },
+    {
+      "masterId": "L99-ARCH-002",
+      "originalIdentity": {
+        "domain": "Architecture",
+        "title": "Business Logic Fragmentation Across UI Components",
+        "rootCause": "Filtering logic duplicated across individual UI component source files."
+      },
+      "currentIdentity": {
+        "domain": "Architecture",
+        "title": "Business Logic Fragmentation Across UI Components",
+        "rootCause": "Filtering logic duplicated across individual UI component source files."
+      },
+      "idEqual": true,
+      "domainEqual": true,
+      "titleEqual": true,
+      "rootCauseEqual": true,
+      "identityEqual": true
+    },
+    {
+      "masterId": "L99-BLD-001",
+      "originalIdentity": {
+        "domain": "Build",
+        "title": "Alleged Type Error in External Declaration (False Positive)",
+        "rootCause": "Audit false report; type interface was fully declared and valid in source baseline."
+      },
+      "currentIdentity": {
+        "domain": "Build",
+        "title": "Alleged Type Error in External Declaration (False Positive)",
+        "rootCause": "Audit false report; type interface was fully declared and valid in source baseline."
+      },
+      "idEqual": true,
+      "domainEqual": true,
+      "titleEqual": true,
+      "rootCauseEqual": true,
+      "identityEqual": true
+    },
+    {
+      "masterId": "L99-BLD-002",
+      "originalIdentity": {
+        "domain": "Build",
+        "title": "ES Module CJS Transpilation Output Failure",
+        "rootCause": "Build script failed to bundle server.ts into standalone CommonJS CJS artifact."
+      },
+      "currentIdentity": {
+        "domain": "Build",
+        "title": "ES Module CJS Transpilation Output Failure",
+        "rootCause": "Build script failed to bundle server.ts into standalone CommonJS CJS artifact."
+      },
+      "idEqual": true,
+      "domainEqual": true,
+      "titleEqual": true,
+      "rootCauseEqual": true,
+      "identityEqual": true
+    }
+  ]
+}

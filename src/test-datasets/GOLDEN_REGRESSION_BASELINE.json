@@ -3,7 +3,7 @@
   "frozenDate": "2026-07-29T05:32:00-07:00",
   "approvedBy": "Enterprise Technical Acceptance Board & PMC QA Director",
   "governanceStatus": "FROZEN_OFFICIAL_REGRESSION_BASELINE",
-  "checksum": "sha256-golden-baseline-20260729-v100",
+  "checksum": "d270ba9f41a129851fb082bbbe285cc88e55c8de9618e0ee3ba230f2212726ac",
   "registers": {
     "SDW": {
       "registerName": "Shop Drawings",

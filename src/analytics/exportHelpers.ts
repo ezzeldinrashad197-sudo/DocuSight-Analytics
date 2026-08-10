@@ -106,7 +106,22 @@ export const compileStatsForBaseType = (dataset: SubmittalRow[], bt: string, mon
        disciplinesInThisType = Array.from(new Set(typeData.map(d => d.stakeholder || 'GENERAL')));
     } else {
       const predefinedDisciplines = bt === 'NCR' ? ['STR', 'Arch', 'Mech', 'Elec', 'Infra', 'Landscape', 'HSE'] : ['STR', 'Arch', 'Mech', 'Elec', 'Infra', 'Landscape', 'SURVEY'];
-      disciplinesInThisType = [...predefinedDisciplines];
+      const parsedDisciplines = typeData.map(d => resolveRowDiscipline(d, bt));
+      const activeDisciplinesSet = new Set(parsedDisciplines);
+
+      let list: string[] = [];
+      predefinedDisciplines.forEach(b => {
+        list.push(b);
+        if (b === 'STR' && activeDisciplinesSet.has('STR/SUR')) {
+          list.push('STR/SUR');
+        }
+      });
+      parsedDisciplines.forEach(p => {
+        if (p && p !== 'GENERAL' && !list.includes(p)) {
+          list.push(p);
+        }
+      });
+      disciplinesInThisType = list;
     }
 
     const stats = disciplinesInThisType.map((disc) => {

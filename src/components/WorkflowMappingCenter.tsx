@@ -34,8 +34,10 @@ import {
   ChevronRight, 
   Sliders,
   FileSpreadsheet,
-  Bot
+  Bot,
+  Layers
 } from 'lucide-react';
+import { UniversalRegisterEngine } from './UniversalRegisterEngine';
 
 interface WorkflowMappingCenterProps {
   data: SubmittalRow[];
@@ -43,6 +45,7 @@ interface WorkflowMappingCenterProps {
 }
 
 export default function WorkflowMappingCenter({ data, onDataRefreshNeeded }: WorkflowMappingCenterProps) {
+  const [activeViewMode, setActiveViewMode] = useState<'universal' | 'aliases'>('universal');
   const [mappings, setMappings] = useState(() => getActiveMappings());
   const [newAlias, setNewAlias] = useState('');
   const [newDisplay, setNewDisplay] = useState('');
@@ -264,7 +267,30 @@ export default function WorkflowMappingCenter({ data, onDataRefreshNeeded }: Wor
         </div>
       </div>
 
-      {/* UNKNOWN WORKFLOW WARNINGS & ALERTS */}
+      {/* MODE SELECTOR TABS */}
+      <div className="flex items-center gap-2 border-b border-slate-200 pb-2">
+        <button
+          onClick={() => setActiveViewMode('universal')}
+          className={`px-6 py-3 font-bold text-xs rounded-xl transition-all flex items-center gap-2 shrink-0 ${activeViewMode === 'universal' ? 'bg-slate-900 text-indigo-400 shadow-md border border-indigo-500/30' : 'bg-white text-slate-600 hover:bg-slate-100'}`}
+        >
+          <Layers className="w-4 h-4 text-indigo-400" />
+          Universal Register Schema & Compatibility Engine (محرك السجلات الموحد وشبكة الربط الذكي)
+        </button>
+
+        <button
+          onClick={() => setActiveViewMode('aliases')}
+          className={`px-6 py-3 font-bold text-xs rounded-xl transition-all flex items-center gap-2 shrink-0 ${activeViewMode === 'aliases' ? 'bg-slate-900 text-amber-400 shadow-md border border-amber-500/30' : 'bg-white text-slate-600 hover:bg-slate-100'}`}
+        >
+          <Workflow className="w-4 h-4 text-amber-400" />
+          SSOT Workflow Aliases & Classification Engine (قواعد أسماء السجلات والمصطلحات)
+        </button>
+      </div>
+
+      {activeViewMode === 'universal' ? (
+        <UniversalRegisterEngine data={data} />
+      ) : (
+        <div className="space-y-8">
+          {/* UNKNOWN WORKFLOW WARNINGS & ALERTS */}
       {unknownRegistersInDataset.length > 0 && (
         <div className="bg-red-50/75 border border-red-200 rounded-xl p-6 shadow-sm animate-in fade-in-50 duration-300">
           <div className="flex items-start gap-4">
@@ -988,11 +1014,10 @@ export default function WorkflowMappingCenter({ data, onDataRefreshNeeded }: Wor
 
             </div>
           </div>
-
         </div>
-
       </div>
-
     </div>
+  )}
+</div>
   );
 }

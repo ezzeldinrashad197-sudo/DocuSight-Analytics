@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Shield, AlertCircle, ExternalLink, Globe } from 'lucide-react';
 import Logo from './Logo';
 import { auth, googleAuthProvider, resolveUserPermissions } from './firebase';
-import { signInWithPopup, onAuthStateChanged } from 'firebase/auth';
+import { signInWithPopup, signInWithRedirect, getRedirectResult, onAuthStateChanged } from 'firebase/auth';
 import { useLanguage } from './utils/i18n';
 
 interface LoginScreenProps {
@@ -12,33 +12,43 @@ interface LoginScreenProps {
 export default function LoginScreen({ onLogin }: LoginScreenProps) {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isIframe, setIsIframe] = useState(false);
+
+  // Guards against processLoginResult firing twice when both
+  // getRedirectResult() and onAuthStateChanged() resolve for the same sign-in.
+  const processedRef = useRef(false);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.self !== window.top) {
+      setIsIframe(true);
+    }
+  }, []);
 
   useEffect(() => {
     let isMounted = true;
 
+    // Check for redirect result from signInWithRedirect
+    getRedirectResult(auth).then(async (result) => {
+      if (result && result.user && isMounted) {
+        setLoading(true);
+        await processLoginResult(result.user);
+      }
+    }).catch((redirectErr) => {
+      console.warn('Redirect Auth Error:', redirectErr);
+      if (isMounted) {
+        setLoading(false);
+        if (redirectErr?.code === 'auth/unauthorized-domain') {
+          setError('This domain is not authorized. Please add the current URL to your Firebase Console -> Authentication -> Settings -> Authorized domains.');
+        } else {
+          setError(redirectErr?.message || 'Sign-in did not complete after redirect. Please try again.');
+        }
+      }
+    });
+
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
         if (isMounted) setLoading(true);
-        
-        // --- Instantaneous Fast-Boot Check for Google Authenticated User ---
-        const userEmail = typeof user.email === 'string' ? user.email.trim().toLowerCase() : '';
-        const currentCachedRole = localStorage.getItem('docuCtrl_activeRole');
-        const currentCachedEmail = localStorage.getItem('docuCtrl_activeEmail');
-        
-        if (currentCachedRole && currentCachedEmail && currentCachedEmail === userEmail) {
-          console.info("[Fast Boot Engine] Restoring session instantly via cached role:", currentCachedRole);
-          onLogin(currentCachedRole as any);
-          
-          // Refresh credentials in the background silently
-          resolveUserPermissions(user.uid, userEmail, user.displayName)
-            .then((refreshedRole) => {
-              localStorage.setItem('docuCtrl_activeRole', refreshedRole);
-              localStorage.setItem('docuCtrl_activeEmail', userEmail);
-            })
-            .catch((err) => console.warn("[Fast Boot Engine] Background refresh deferred:", err));
-        } else {
-          await processLoginResult(user);
-        }
+        await processLoginResult(user);
       } else {
         if (isMounted) setLoading(false);
       }
@@ -51,6 +61,11 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
   }, []);
 
   const processLoginResult = async (user: any) => {
+    // Prevent double execution: getRedirectResult() and onAuthStateChanged()
+    // can both fire for the same sign-in event.
+    if (processedRef.current) return;
+    processedRef.current = true;
+
     let assignedRole: 'all' | 'executive' | 'pd' | 'pm' | 'em' | 'qaqc' | 'dc' | 'viewer' = 'viewer';
     
     try {
@@ -59,7 +74,10 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
       const resolved = await resolveUserPermissions(user.uid, userEmail, user.displayName);
       assignedRole = resolved as any;
       
-      // Persist credentials locally to accelerate opening speed on next loads
+      // Persist credentials locally to accelerate opening speed on next loads.
+      // NOTE: This is a UI cache/hint only. Any privileged action must still be
+      // authorized server-side (Firestore rules / backend checks) rather than
+      // trusting this locally-stored role, since it is user-editable via DevTools.
       if (userEmail) {
         localStorage.setItem('docuCtrl_activeRole', assignedRole);
         localStorage.setItem('docuCtrl_activeEmail', userEmail);
@@ -83,16 +101,34 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
     setLoading(true);
     setError(null);
 
+    // If running inside an iframe, security policies prevent popup & redirect auth inside the frame.
+    // Seamlessly open the application in a full browser tab for authentication.
+    if (isIframe) {
+      window.open(window.location.href, '_blank');
+      setLoading(false);
+      return;
+    }
+
     try {
       await signInWithPopup(auth, googleAuthProvider);
     } catch (err: any) {
       console.warn('POPUP AUTH ERROR:', err);
       if (err.code === 'auth/unauthorized-domain') {
         setError('This domain is not authorized. Please add the current URL to your Firebase Console -> Authentication -> Settings -> Authorized domains.');
+        setLoading(false);
+      } else if (err.code === 'auth/popup-closed-by-user' || err.code === 'auth/popup-blocked' || err.code === 'auth/cancelled-popup-request') {
+        // Fallback to signInWithRedirect in full browser window if popup is blocked
+        try {
+          await signInWithRedirect(auth, googleAuthProvider);
+        } catch (redirectErr: any) {
+          console.warn('REDIRECT AUTH ERROR:', redirectErr);
+          setError('Authentication popup was restricted. Redirecting to full browser Google Sign-In...');
+          setLoading(false);
+        }
       } else {
-        setError(err.message || 'Authentication failed. If you are inside an iframe or popups are blocked, please open the application in a new tab.');
+        setError(err.message || 'Authentication failed. Please open the application in a new tab.');
+        setLoading(false);
       }
-      setLoading(false);
     }
   };
 
@@ -126,9 +162,28 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
                 </p>
             </div>
 
+            {isIframe && !error && (
+              <div className="mb-6 p-3.5 bg-amber-950/40 border border-amber-500/40 rounded-xl text-amber-200/90 text-xs text-center space-y-2">
+                <p className="font-medium">
+                  {t('login_popup_iframe_warning')}
+                </p>
+                <div>
+                  <a
+                    href={window.location.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 text-xs bg-indigo-600 hover:bg-indigo-500 text-white font-semibold px-3 py-1.5 rounded-lg transition-colors shadow"
+                  >
+                    <ExternalLink className="w-3.5 h-3.5" />
+                    {t('open_new_tab_login')}
+                  </a>
+                </div>
+              </div>
+            )}
+
             {error && (
               <div className="mb-6">
-                <div className="p-3 bg-red-900/30 border border-red-500/50 rounded text-red-200 text-sm mb-3">
+                <div className="p-3 bg-red-900/30 border border-red-500/50 rounded-xl text-red-200 text-sm mb-3">
                   <div className="flex items-center gap-2 mb-2 font-medium">
                     <AlertCircle className="w-4 h-4 shrink-0" />
                     {t('auth_error')}
@@ -137,8 +192,8 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
                     {error.includes('authorized') ? t('unauthorized_domain_msg') : error}
                   </div>
                 </div>
-                {(error.includes('popup') || error.includes('iframe') || error.includes('blocked')) && (
-                   <div className="p-4 bg-slate-800/80 rounded border border-slate-700 text-center">
+                {(error.includes('popup') || error.includes('iframe') || error.includes('blocked') || error.includes('closed')) && (
+                   <div className="p-4 bg-slate-800/80 rounded-xl border border-slate-700 text-center">
                       <p className="text-sm font-medium text-slate-300 mb-3">
                         {t('login_popup_iframe_warning')}
                       </p>
@@ -146,7 +201,7 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
                         href={window.location.href} 
                         target="_blank" 
                         rel="noopener noreferrer"
-                        className="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white py-2 px-4 rounded transition-colors text-sm font-medium shadow-lg"
+                        className="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white py-2 px-4 rounded-lg transition-colors text-sm font-medium shadow-lg"
                       >
                         <ExternalLink className="w-4 h-4" />
                         {t('open_new_tab_login')}
@@ -166,7 +221,7 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
                     {loading ? t('authenticating') : t('sign_in_with_sso')}
                 </button>
 
-                {typeof window !== 'undefined' && window.self !== window.top && (
+                {isIframe && (
                   <div className="text-center pt-2">
                     <a
                       href={window.location.href}

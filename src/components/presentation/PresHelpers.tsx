@@ -9,13 +9,15 @@ export function getDiscName(d: string, language: 'ar' | 'en') {
   const lower = d.toUpperCase().trim();
   if (lower === 'TOTAL' || lower === 'GRAND TOTAL') return 'الإجمالي';
   if (lower === 'STR' || lower === 'STRUCTURAL') return 'إنشائي';
-  if (lower === 'ARCH' || lower === 'ARCHITECTURAL') return 'معماري';
+  if (lower === 'STR/SUR' || lower === 'STR-SUR') return 'إنشائي / مساحة (STR/SUR)';
+  if (lower === 'ARCH' || lower === 'ARC' || lower === 'ARCHITECTURAL') return 'معماري';
   if (lower === 'MECH' || lower === 'MECHANICAL') return 'ميكانيك';
   if (lower === 'ELEC' || lower === 'ELECTRICAL') return 'كهرباء';
   if (lower === 'INFRA' || lower === 'INFRASTRUCTURE' || lower === 'INF') return 'طرق / بنية تحتية';
   if (lower === 'LANDSCAPE' || lower === 'LND') return 'لاندسكيب';
   if (lower === 'HSE') return 'السلامة والبيئة (HSE)';
   if (lower === 'SURVEY' || lower === 'SUR') return 'المساحة';
+  if (lower === 'GENERAL' || lower === 'UNCLASSIFIED') return 'غير مصنف (UNCLASSIFIED)';
   return d;
 }
 

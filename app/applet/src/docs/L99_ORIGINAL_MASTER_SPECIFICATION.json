@@ -1,0 +1,282 @@
+[
+  {
+    "masterId": "L99-SEC-001",
+    "originalDomain": "Security",
+    "originalTitle": "Unauthenticated API Endpoint Access",
+    "originalSeverity": "CRITICAL",
+    "originalRisk": "Exposing administrative metrics and system telemetry routes to anonymous unauthenticated callers.",
+    "originalRootCause": "Public access permitted on metrics API without attaching authentication middleware.",
+    "originalLocation": "server.ts:40",
+    "currentLocation": "server.ts:45"
+  },
+  {
+    "masterId": "L99-SEC-002",
+    "originalDomain": "Security",
+    "originalTitle": "Unrestricted User Role Claim Mutation",
+    "originalSeverity": "HIGH",
+    "originalRisk": "Client-side callers mutating role fields in user documents to escalate privileges.",
+    "originalRootCause": "Firestore update rule permitted user payload to update role field directly.",
+    "originalLocation": "server.ts:120",
+    "currentLocation": "server.ts:135"
+  },
+  {
+    "masterId": "L99-SEC-003",
+    "originalDomain": "Security",
+    "originalTitle": "Insecure CORS Configuration",
+    "originalSeverity": "HIGH",
+    "originalRisk": "Wildcard Access-Control-Allow-Origin header combined with credentials mode permitting cross-site data theft.",
+    "originalRootCause": "CORS configuration used origin: * with credentials: true enabled.",
+    "originalLocation": "server.ts:15",
+    "currentLocation": "server.ts:25"
+  },
+  {
+    "masterId": "L99-SEC-004",
+    "originalDomain": "Security",
+    "originalTitle": "Broad Audit Log Authorization Scope",
+    "originalSeverity": "HIGH",
+    "originalRisk": "Cross-tenant audit log disclosure allowing authenticated users to view foreign project events.",
+    "originalRootCause": "Audit log query endpoint lacked correlationId and project scope filtering bounds.",
+    "originalLocation": "server.ts:210",
+    "currentLocation": "server.ts:230"
+  },
+  {
+    "masterId": "L99-SEC-005",
+    "originalDomain": "Security",
+    "originalTitle": "Server-Side Gemini API Key Exposure Risk",
+    "originalSeverity": "CRITICAL",
+    "originalRisk": "API key leakage in client browser bundles allowing unauthorized API quota consumption.",
+    "originalRootCause": "Client components attempted direct Gemini API initialization using browser environment variables.",
+    "originalLocation": "src/AIInsights.tsx:35",
+    "currentLocation": "server.ts:480"
+  },
+  {
+    "masterId": "L99-SEC-006",
+    "originalDomain": "Security",
+    "originalTitle": "Missing Sensitive Header Stripping on Proxy",
+    "originalSeverity": "MEDIUM",
+    "originalRisk": "Internal authorization headers forwarded to downstream external HTTP requests.",
+    "originalRootCause": "Express proxy middleware forwarded incoming request headers unchanged.",
+    "originalLocation": "server.ts:80",
+    "currentLocation": "server.ts:95"
+  },
+  {
+    "masterId": "L99-SEC-007",
+    "originalDomain": "Security",
+    "originalTitle": "Session Token Insecurity & Replay Risk",
+    "originalSeverity": "HIGH",
+    "originalRisk": "Unsalted session tokens vulnerable to token replay and session hijacking attacks.",
+    "originalRootCause": "Auth state relied on plain token comparison without time-bound cryptographic nonces.",
+    "originalLocation": "server.ts:160",
+    "currentLocation": "server.ts:175"
+  },
+  {
+    "masterId": "L99-SEC-008",
+    "originalDomain": "Security",
+    "originalTitle": "Missing API Rate Limiting on Heavy Routes",
+    "originalSeverity": "HIGH",
+    "originalRisk": "Denial of Service (DoS) and API quota exhaustion via rapid automated HTTP requests on AI compute routes.",
+    "originalRootCause": "Heavy calculation endpoint /api/insights lacked request rate limiting controls.",
+    "originalLocation": "server.ts:310",
+    "currentLocation": "server.ts:330"
+  },
+  {
+    "masterId": "L99-SEC-009",
+    "originalDomain": "Security",
+    "originalTitle": "Unbounded Request Payload Memory Risk",
+    "originalSeverity": "MEDIUM",
+    "originalRisk": "Server memory exhaustion / OOM crash caused by oversized incoming JSON request bodies.",
+    "originalRootCause": "Express body parser installed without explicit size payload limit boundaries.",
+    "originalLocation": "server.ts:30",
+    "currentLocation": "server.ts:35"
+  },
+  {
+    "masterId": "L99-SEC-010",
+    "originalDomain": "Security",
+    "originalTitle": "AI Insights Payload Memory Exhaustion",
+    "originalSeverity": "HIGH",
+    "originalRisk": "Gemini prompt construction allocating multi-megabyte strings from un-curated telemetry arrays.",
+    "originalRootCause": "Raw telemetry arrays included directly in AI prompt string template without bounds checking.",
+    "originalLocation": "server.ts:460",
+    "currentLocation": "server.ts:490"
+  },
+  {
+    "masterId": "L99-SEC-011",
+    "originalDomain": "Security",
+    "originalTitle": "AI Insights Cache Cross-Tenant Leakage Risk",
+    "originalSeverity": "HIGH",
+    "originalRisk": "Cached AI insight responses served across different project tenants or unauthorized callers.",
+    "originalRootCause": "Cache key generated without explicit project scope prefix and authentication context binding.",
+    "originalLocation": "server.ts:450",
+    "currentLocation": "server.ts:475"
+  },
+  {
+    "masterId": "L99-SEC-012",
+    "originalDomain": "Security",
+    "originalTitle": "In-Memory Cache Unbounded Growth",
+    "originalSeverity": "MEDIUM",
+    "originalRisk": "Server heap memory leaks and crash caused by infinitely growing NodeCache key collection.",
+    "originalRootCause": "NodeCache initialized without maxKeys boundary limit or automatic TTL eviction.",
+    "originalLocation": "server.ts:440",
+    "currentLocation": "server.ts:460"
+  },
+  {
+    "masterId": "L99-SEC-013",
+    "originalDomain": "Security",
+    "originalTitle": "Circuit Breaker Lacking AI Fallback Isolation",
+    "originalSeverity": "HIGH",
+    "originalRisk": "Unresponsive Gemini API calls locking up Node.js event loop and hanging server requests.",
+    "originalRootCause": "AI model requests lacked execution timeout promises and sequential fallback handling.",
+    "originalLocation": "server.ts:510",
+    "currentLocation": "server.ts:540"
+  },
+  {
+    "masterId": "L99-SEC-014",
+    "originalDomain": "Security",
+    "originalTitle": "Client Privilege Escalation via LocalStorage Override",
+    "originalSeverity": "HIGH",
+    "originalRisk": "User modifying localStorage key to impersonate admin role in frontend UI views.",
+    "originalRootCause": "Application read user authorization role directly from unverified client localStorage item.",
+    "originalLocation": "src/hooks/useAuth.ts:25",
+    "currentLocation": "src/firebase.ts:45"
+  },
+  {
+    "masterId": "L99-REG-001",
+    "originalDomain": "Regression",
+    "originalTitle": "Golden Dataset SHA-256 Checksum Non-Determinism",
+    "originalSeverity": "CRITICAL",
+    "originalRisk": "Dataset checksum mismatch false alarms caused by non-canonical key order during SHA-256 calculation.",
+    "originalRootCause": "SHA-256 calculation relied on unstable JSON stringification without canonical key sorting.",
+    "originalLocation": "src/test-datasets/GOLDEN_REGRESSION_BASELINE.json:1",
+    "currentLocation": "src/test-datasets/GOLDEN_REGRESSION_BASELINE.json:1"
+  },
+  {
+    "masterId": "L99-REG-002",
+    "originalDomain": "Regression",
+    "originalTitle": "Unchecked Golden Dataset Record Mutation",
+    "originalSeverity": "HIGH",
+    "originalRisk": "Silent dataset corruption or record modification going undetected during regression testing.",
+    "originalRootCause": "Regression engine loaded dataset file without checking SHA-256 checksum prior to running tests.",
+    "originalLocation": "src/utils/calculationVerificationEngine.ts:60",
+    "currentLocation": "src/utils/calculationVerificationEngine.ts:85"
+  },
+  {
+    "masterId": "L99-REG-003",
+    "originalDomain": "Regression",
+    "originalTitle": "Synthetic Confidence Artifacts in Regression Suite",
+    "originalSeverity": "HIGH",
+    "originalRisk": "Regression test suite returning false PASS status on broken calculation logic.",
+    "originalRootCause": "Test runner lacked deliberate defect injection harness to verify suite failure sensitivity.",
+    "originalLocation": "scripts/runRegressionSuite.ts:40",
+    "currentLocation": "scripts/runRegressionSuite.ts:22"
+  },
+  {
+    "masterId": "L99-CALC-001",
+    "originalDomain": "Calculation",
+    "originalTitle": "Non-Deterministic Reference Date in Dynamic Calculations",
+    "originalSeverity": "CRITICAL",
+    "originalRisk": "Inconsistent KPI calculation results depending on the date/time the server or client executed the code.",
+    "originalRootCause": "calculateOverdueDays invoked new Date() directly inside calculation loop.",
+    "originalLocation": "src/utils/calculations.ts:110",
+    "currentLocation": "src/utils/calculations.ts:135"
+  },
+  {
+    "masterId": "L99-CALC-002",
+    "originalDomain": "Calculation",
+    "originalTitle": "Misclassified Superseded Submittal Revisions",
+    "originalSeverity": "HIGH",
+    "originalRisk": "Obsolete superseded revisions inflated active document counts and distorted project KPIs.",
+    "originalRootCause": "Document status query failed to exclude records marked isSuperseded: true.",
+    "originalLocation": "src/utils/calculations.ts:210",
+    "currentLocation": "src/utils/calculations.ts:240"
+  },
+  {
+    "masterId": "L99-CALC-003",
+    "originalDomain": "Calculation",
+    "originalTitle": "Substring Document Code False Positive Matching",
+    "originalSeverity": "HIGH",
+    "originalRisk": "Submittals misclassified as approved due to loose substring matching on status codes.",
+    "originalRootCause": "Status mapping logic used code.includes(\"APP\"), matching NOT_APPROVED as approved.",
+    "originalLocation": "src/utils/calculations.ts:310",
+    "currentLocation": "src/utils/calculations.ts:335"
+  },
+  {
+    "masterId": "L99-CALC-004",
+    "originalDomain": "Calculation",
+    "originalTitle": "Quality Score Integer Rounding Metric Distortion",
+    "originalSeverity": "MEDIUM",
+    "originalRisk": "Dashboard displaying inaccurate truncated quality scores due to premature Math.floor() call.",
+    "originalRootCause": "Approval rate formula applied Math.floor() to intermediate percentage calculation.",
+    "originalLocation": "src/utils/calculations.ts:420",
+    "currentLocation": "src/utils/calculations.ts:450"
+  },
+  {
+    "masterId": "L99-DATA-001",
+    "originalDomain": "Data",
+    "originalTitle": "Uncorrelated Telemetry Log Tracing",
+    "originalSeverity": "MEDIUM",
+    "originalRisk": "Inability to correlate server errors and security alerts with specific user HTTP request flows.",
+    "originalRootCause": "Logger functions omitted correlation ID context from log entry objects.",
+    "originalLocation": "server.ts:280",
+    "currentLocation": "server.ts:305"
+  },
+  {
+    "masterId": "L99-DATA-002",
+    "originalDomain": "Data",
+    "originalTitle": "Non-Authoritative KPI Statistics Source",
+    "originalSeverity": "HIGH",
+    "originalRisk": "Conflicting KPI metric values displayed on different UI dashboard screens.",
+    "originalRootCause": "Multiple UI screens implemented independent ad-hoc metric calculation logic.",
+    "originalLocation": "src/EnterpriseDashboard.tsx:80",
+    "currentLocation": "src/utils/calculations.ts:15"
+  },
+  {
+    "masterId": "L99-ML-001",
+    "originalDomain": "ML",
+    "originalTitle": "Hallucinated Metrics in Gemini AI Reporting Prompt",
+    "originalSeverity": "MEDIUM",
+    "originalRisk": "Gemini AI generating fictitious metric figures when underlying project data was missing or incomplete.",
+    "originalRootCause": "Prompt text lacked explicit instructions forbidding metric estimation for missing telemetry fields.",
+    "originalLocation": "server.ts:490",
+    "currentLocation": "server.ts:520"
+  },
+  {
+    "masterId": "L99-ARCH-001",
+    "originalDomain": "Architecture",
+    "originalTitle": "Circular Import Dependency in Analytics Modules",
+    "originalSeverity": "HIGH",
+    "originalRisk": "Module loading order issues, undefined runtime references, and bundle instability.",
+    "originalRootCause": "Circular reference cycle between useSubmittalData hook and analytics utility helpers.",
+    "originalLocation": "src/analytics/index.ts:15",
+    "currentLocation": "src/utils/calculations.ts:1"
+  },
+  {
+    "masterId": "L99-ARCH-002",
+    "originalDomain": "Architecture",
+    "originalTitle": "Business Logic Fragmentation Across UI Components",
+    "originalSeverity": "HIGH",
+    "originalRisk": "Inconsistent data filtering behavior between table views, charts, and summary KPI widgets.",
+    "originalRootCause": "Filtering logic duplicated across individual UI component source files.",
+    "originalLocation": "src/components/ReportTable.tsx:140",
+    "currentLocation": "src/utils/calculations.ts:50"
+  },
+  {
+    "masterId": "L99-BLD-001",
+    "originalDomain": "Build",
+    "originalTitle": "Alleged Type Error in External Declaration (False Positive)",
+    "originalSeverity": "LOW",
+    "originalRisk": "Reported build failure due to missing global interface declaration in src/types.ts.",
+    "originalRootCause": "Audit false report; type interface was fully declared and valid in source baseline.",
+    "originalLocation": "src/types.ts:10",
+    "currentLocation": "src/types.ts:10"
+  },
+  {
+    "masterId": "L99-BLD-002",
+    "originalDomain": "Build",
+    "originalTitle": "ES Module CJS Transpilation Output Failure",
+    "originalSeverity": "CRITICAL",
+    "originalRisk": "Production server crash on startup due to improper module resolution in Node runtime.",
+    "originalRootCause": "Build script failed to bundle server.ts into standalone CommonJS CJS artifact.",
+    "originalLocation": "package.json:12",
+    "currentLocation": "package.json:12"
+  }
+]

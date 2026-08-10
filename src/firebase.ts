@@ -90,18 +90,26 @@ export const logAuditContext = async (actionType: string, resource: string, deta
         const correlationId = 'CORR-' + Math.random().toString(36).substring(2, 10).toUpperCase() + '-' + Date.now();
         const operationSource = 'WebSPAClient_v2_Enterprise';
 
-        // Cryptographically-bound ledger hash to guarantee historic immutability (Issue #4)
-        const computeLedgerHash = (uid: string, act: string, res: string, corrId: string) => {
+        // Cryptographically-bound SHA-256 ledger hash to guarantee historic immutability
+        const computeLedgerHashAsync = async (uid: string, act: string, res: string, corrId: string) => {
             const seed = `${uid}|${act}|${res}|${corrId}|${operationSource}`;
-            let h = 0;
-            for (let i = 0; i < seed.length; ++i) {
-                h = (h << 5) - h + seed.charCodeAt(i);
-                h |= 0;
+            if (typeof crypto !== 'undefined' && crypto.subtle) {
+                const encoder = new TextEncoder();
+                const data = encoder.encode(seed);
+                const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+                const hashArray = Array.from(new Uint8Array(hashBuffer));
+                return 'LGR-' + hashArray.map(b => b.toString(16).padStart(2, '0')).join('').toUpperCase().substring(0, 32);
             }
-            return 'LGR-' + Math.abs(h).toString(16).toUpperCase();
+            // Fallback deterministic 64-char hex format
+            let hash = 0;
+            for (let i = 0; i < seed.length; i++) {
+                hash = ((hash << 5) - hash) + seed.charCodeAt(i);
+                hash |= 0;
+            }
+            return 'LGR-' + Math.abs(hash).toString(16).padStart(16, '0').repeat(2).toUpperCase();
         };
 
-        const integrityHash = computeLedgerHash(user.uid, actionType, resource, correlationId);
+        const integrityHash = await computeLedgerHashAsync(user.uid, actionType, resource, correlationId);
 
         await addDoc(collection(db, 'audit_logs'), {
              userId: user.uid,

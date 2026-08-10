@@ -212,8 +212,12 @@ export const parseExcelFile = (file: File): Promise<SubmittalRow[]> => {
             }
 
             const extractDiscipline = (str: string): string | null => {
-              const t = str.toUpperCase();
-              const words = t.split(/[-_ \/(),]/);
+              const t = str.toUpperCase().trim();
+              if (t.includes("STR/SUR") || t.includes("STR-SUR") || t.includes("STR_SUR")) return "STR/SUR";
+              const words = t.split(/[-_ \/(),&]/);
+              if (words.includes("STR") && (words.includes("ARC") || words.includes("ARCH"))) {
+                return null; // Multi-discipline name (e.g. ARCH & STR)
+              }
               if (
                 words.includes("ARC") ||
                 words.includes("ARCH") ||
@@ -307,14 +311,14 @@ export const parseExcelFile = (file: File): Promise<SubmittalRow[]> => {
 
             const contextDiscipline = extractDiscipline(sheetName) || extractDiscipline(file.name);
 
-            if (contextDiscipline) {
-              disciplineVal = contextDiscipline;
-            } else if (
+            if (
               rawDiscipline &&
               rawDiscipline.length > 0 &&
               !["YES", "NO", "N/A", "-"].includes(rawDiscipline)
             ) {
               disciplineVal = extractDiscipline(rawDiscipline) || rawDiscipline;
+            } else if (contextDiscipline) {
+              disciplineVal = contextDiscipline;
             } else {
               const refString = (
                 colNcrRef >= 0

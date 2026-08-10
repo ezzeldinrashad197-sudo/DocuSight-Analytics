@@ -5,6 +5,10 @@ import helmet from "helmet";
 import cors from "cors";
 import rateLimit from "express-rate-limit";
 import NodeCache from "node-cache";
+import { 
+  buildCanonicalDataset, 
+  evaluatePerformanceLayer 
+} from "./src/analytics/calculationFoundation";
 
 // Initialize cache
 const cache = new NodeCache({ stdTTL: 600 }); // 10 minutes cache
@@ -225,7 +229,7 @@ async function startServer() {
     });
   });
 
-  // --- CHAPTER 16 / ER-013 METRICS LAYER CALCULATION ENGINE ENDPOINT ---
+  // --- CHAPTER 16 / ER-013 METRICS LAYER CALCULATION ENGINE ENDPOINT (SSOT Delegated) ---
   app.post("/api/metrics/calculate", (req, res) => {
     try {
       const { filters, dataset } = req.body || {};
@@ -254,33 +258,25 @@ async function startServer() {
         return true;
       });
 
-      const totalCount = filtered.length;
-      let approvedCount = 0;
-      let pendingCount = 0;
-      let openCount = 0;
-      let closedCount = 0;
-
-      filtered.forEach((r: any) => {
-        const s = (r.status || '').toUpperCase();
-        if (s.includes('CLOSED') || s === 'A' || s === 'APPROVED' || s === 'B') {
-          closedCount++;
-          if (s.includes('A') || s.includes('APPROVED')) approvedCount++;
-        } else {
-          openCount++;
-          pendingCount++;
-        }
-      });
+      // Delegate calculation directly to SSOT Canonical Foundation Engine
+      const canonicalRecords = buildCanonicalDataset(filtered, rawData);
+      const perfResult = evaluatePerformanceLayer(canonicalRecords);
 
       res.json({
         status: "success",
+        engineVersion: "2.1.0-ENTERPRISE-SSOT",
         filtersApplied: filters || {},
         metrics: {
-          totalRecords: totalCount,
-          openRecords: openCount,
-          closedRecords: closedCount,
-          approvedRecords: approvedCount,
-          pendingRecords: pendingCount,
-          qualityScore: totalCount > 0 ? Number(((closedCount / totalCount) * 100).toFixed(1)) : 100
+          totalRecords: perfResult.totalUniqueItems,
+          openRecords: perfResult.rejectedOpen + perfResult.pending,
+          closedRecords: perfResult.approved + perfResult.rejectedClosed,
+          approvedRecords: perfResult.approved,
+          rejectedOpenRecords: perfResult.rejectedOpen,
+          rejectedClosedRecords: perfResult.rejectedClosed,
+          pendingRecords: perfResult.pending,
+          qualityScore: perfResult.totalUniqueItems > 0 
+            ? Number(((perfResult.approved / perfResult.totalUniqueItems) * 100).toFixed(1)) 
+            : 100
         },
         filteredCount: filtered.length
       });
