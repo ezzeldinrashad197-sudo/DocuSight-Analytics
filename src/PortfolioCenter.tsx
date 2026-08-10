@@ -20,7 +20,7 @@ export default function PortfolioCenter({ projects }: PortfolioCenterProps) {
              snap.forEach(d => st.push({ id: d.id, ...d.data() }));
              setRealStats(st);
          } catch (err) {
-             handleFirestoreError(err, OperationType.LIST, 'project_stats');
+             console.warn('[Portfolio Center] Non-fatal project_stats fetch warning:', err);
          }
      };
      fetchStats();

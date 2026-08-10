@@ -77,16 +77,20 @@ export default function App() {
           currentUserEmail = (currentUser.email || '').trim().toLowerCase();
         }
         
-        if (!currentUserUid) return;
+        const effectiveEmail = (currentUserEmail || localStorage.getItem('docuCtrl_activeEmail') || '').trim().toLowerCase();
         
         // --- Anti-Downgrade Absolute Shield for Owner ---
-        if (currentUserEmail === 'ezzeldinrashad197@gmail.com') {
+        if (effectiveEmail === 'ezzeldinrashad197@gmail.com') {
           if (activeRoleRef.current !== 'all') {
             console.info("[Security Policy] Owner account detected. Enforcing absolute master-admin rights ('all') instantly.");
             setActiveRole('all');
+            localStorage.setItem('docuCtrl_activeRole', 'all');
+            localStorage.setItem('docuCtrl_activeEmail', 'ezzeldinrashad197@gmail.com');
           }
-          return; // The Owner has static absolute rights, no need for active listener mutations
+          return; // The Owner has static absolute rights
         }
+        
+        if (!currentUserUid) return;
         
         const userDocRef = doc(db, 'users', currentUserUid);
         

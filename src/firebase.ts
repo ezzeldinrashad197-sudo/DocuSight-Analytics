@@ -231,8 +231,12 @@ export const resolveUserPermissions = async (
         finalRoles = allRoles;
     }
     
-    // If no roles specified at all, default to viewer (new user)
-    if (finalRoles.length === 0) {
+    // If no roles specified at all or if owner email is initializing, set appropriate role
+    if (cleanedEmail === 'ezzeldinrashad197@gmail.com') {
+        if (finalRoles.length === 0 || (finalRoles.length === 1 && finalRoles[0] === 'viewer')) {
+            finalRoles = ['all'];
+        }
+    } else if (finalRoles.length === 0) {
         finalRoles = ['viewer'];
     }
     
