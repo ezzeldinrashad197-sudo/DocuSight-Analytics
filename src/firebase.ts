@@ -150,12 +150,6 @@ export const resolveUserPermissions = async (
 ): Promise<string> => {
     const cleanedEmail = String(email || '').trim().toLowerCase();
     
-    // Absolute instant resolution for Owner account to prevent any authorization delays or loops
-    if (cleanedEmail === 'ezzeldinrashad197@gmail.com') {
-        console.log(`[Security Diagnostics] Owner account detected (${cleanedEmail}). Resolving master-admin role ('all') immediately.`);
-        return 'all';
-    }
-
     const uidDocRef = doc(db, 'users', uid);
     const emailDocRef = cleanedEmail ? doc(db, 'users', cleanedEmail) : null;
     
