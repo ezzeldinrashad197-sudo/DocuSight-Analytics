@@ -353,7 +353,7 @@ export default function EnterpriseDashboard({ data }: EnterpriseDashboardProps) 
         pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
         heightLeft -= pageHeight;
       }
-      pdf.save("DocuSight_Enterprise_Intelligence_Suite.pdf");
+      pdf.save("StructuSight_Executive_Intelligence_Suite.pdf");
       logAuditChange("Export Executive PDF", "PDF Engine", "Entire workspace", "System PDF", "Obtain printed board documentation", "SYS-DOC-PDF");
     } catch(e) {
       console.error(e);
@@ -392,7 +392,7 @@ export default function EnterpriseDashboard({ data }: EnterpriseDashboardProps) 
             <span>ENTERPRISE DOCUMENT CONTROL INTELLIGENCE SUITE</span>
           </div>
           <h1 className="text-3xl font-bold tracking-tight text-white flex items-center gap-3">
-            DocuSight Executive Command Center
+            StructuSight Executive Command Center
           </h1>
           <p className="text-slate-400 text-sm max-w-4xl mt-1.5 leading-relaxed">
             Real-time analytics engine, multi-project status validator, and dynamic predictive decision support. Verified by <strong className="text-blue-300 font-bold">{data.length} objective transactions</strong>.

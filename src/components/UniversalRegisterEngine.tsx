@@ -262,7 +262,7 @@ export const UniversalRegisterEngine: React.FC<Props> = ({ data = [], onApplyMap
             </div>
           </div>
           <p className="text-sm text-slate-300 max-w-3xl leading-relaxed">
-            Your register remains yours. DocuSight adapts to any contractor Excel without forcing schema changes. 
+            Your register remains yours. StructuSight adapts to any contractor Excel without forcing schema changes. 
             Missing requirements disable specific KPIs (<span className="font-mono text-amber-400 font-bold">KPI = NOT CALCULABLE</span>) rather than inventing false statistics.
           </p>
         </div>
@@ -428,7 +428,7 @@ export const UniversalRegisterEngine: React.FC<Props> = ({ data = [], onApplyMap
                   Zero-Code Universal Register Onboarding Wizard
                 </h2>
                 <p className="text-xs text-slate-300 mt-1">
-                  Keep your existing Excel file format intact. DocuSight automatically detects, maps, and validates your register in 10 seamless steps.
+                  Keep your existing Excel file format intact. StructuSight automatically detects, maps, and validates your register in 10 seamless steps.
                 </p>
               </div>
 
@@ -512,7 +512,7 @@ export const UniversalRegisterEngine: React.FC<Props> = ({ data = [], onApplyMap
                     placeholder="Enter headers comma-separated..."
                     className="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs font-mono text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   />
-                  <span className="text-[10px] text-slate-400">DocuSight will adapt to your exact column names without schema conversion.</span>
+                  <span className="text-[10px] text-slate-400">StructuSight will adapt to your exact column names without schema conversion.</span>
                 </div>
 
                 <div className="space-y-3">
@@ -631,7 +631,7 @@ export const UniversalRegisterEngine: React.FC<Props> = ({ data = [], onApplyMap
                     STEP 3 OF 10 — STRUCTURE ANALYSIS
                   </span>
                   <h3 className="text-lg font-bold text-slate-900">
-                    DocuSight Detected {rawHeadersList.length} Column Headers
+                    StructuSight Detected {rawHeadersList.length} Column Headers
                   </h3>
                   <p className="text-xs text-slate-500 mt-1">
                     Inspecting raw workbook column structure for {selectedRegisterType} register type.
@@ -683,7 +683,7 @@ export const UniversalRegisterEngine: React.FC<Props> = ({ data = [], onApplyMap
                   {mappingDetails.filter(d => d.confidenceBadge === 'AUTO-MAPPED').length} Columns Automatically Mapped (🟢 AUTO-MAPPED)
                 </h3>
                 <p className="text-xs text-slate-500 mt-1">
-                  High-confidence semantic alignment between raw contractor columns and DocuSight canonical schema.
+                  High-confidence semantic alignment between raw contractor columns and StructuSight canonical schema.
                 </p>
               </div>
 
@@ -735,7 +735,7 @@ export const UniversalRegisterEngine: React.FC<Props> = ({ data = [], onApplyMap
                   {mappingDetails.filter(d => d.confidenceBadge === 'REVIEW REQUIRED').length} Columns Require Quick Confirmation (🟡 REVIEW REQUIRED)
                 </h3>
                 <p className="text-xs text-slate-500 mt-1">
-                  DocuSight identified medium-confidence matches. You can confirm or re-assign them below.
+                  StructuSight identified medium-confidence matches. You can confirm or re-assign them below.
                 </p>
               </div>
 
@@ -850,7 +850,7 @@ export const UniversalRegisterEngine: React.FC<Props> = ({ data = [], onApplyMap
                   KPI Calculability Matrix Preview
                 </h3>
                 <p className="text-xs text-slate-500 mt-1">
-                  DocuSight checks which analytical metrics can be computed safely with 100% precision.
+                  StructuSight checks which analytical metrics can be computed safely with 100% precision.
                 </p>
               </div>
 
@@ -955,7 +955,7 @@ export const UniversalRegisterEngine: React.FC<Props> = ({ data = [], onApplyMap
                   Approve Mapping & Lock SSOT Canonical Model
                 </h3>
                 <p className="text-xs text-slate-500 mt-1">
-                  Once approved, DocuSight locks the schema mapping contract, generates immutable line-by-line lineage, and unlocks analytics.
+                  Once approved, StructuSight locks the schema mapping contract, generates immutable line-by-line lineage, and unlocks analytics.
                 </p>
               </div>
 
@@ -1018,7 +1018,7 @@ export const UniversalRegisterEngine: React.FC<Props> = ({ data = [], onApplyMap
                   Register Successfully Onboarded!
                 </h3>
                 <p className="text-xs text-slate-300 leading-relaxed">
-                  Your contractor register format is now bound to DocuSight&apos;s <strong>Enterprise Data Trust Layer</strong> with 0 schema changes required.
+                  Your contractor register format is now bound to StructuSight&apos;s <strong>Enterprise Data Trust Layer</strong> with 0 schema changes required.
                 </p>
               </div>
 
@@ -1271,7 +1271,7 @@ export const UniversalRegisterEngine: React.FC<Props> = ({ data = [], onApplyMap
             </div>
 
             <p className="text-sm text-slate-300 max-w-3xl leading-relaxed">
-              To guarantee that client Excel registers remain untouched while providing zero-variance calculations, DocuSight executes data processing across 3 decoupled layers:
+              To guarantee that client Excel registers remain untouched while providing zero-variance calculations, StructuSight executes data processing across 3 decoupled layers:
             </p>
 
             {/* 3 TIERS VISUAL FLOW */}
@@ -1355,7 +1355,7 @@ export const UniversalRegisterEngine: React.FC<Props> = ({ data = [], onApplyMap
                 COMMERCIAL TIERS & PRODUCT ARCHITECTURE
               </span>
               <h3 className="text-2xl font-black text-slate-900 font-sans">
-                DocuSight Enterprise Data Trust Layer
+                StructuSight Enterprise Data Trust Layer
               </h3>
               <p className="text-xs text-slate-500">
                 Transforming document log management from fragile Excel spreadsheets into an audited, court-admissible Enterprise Data Governance & Audit Intelligence Platform.
@@ -1434,7 +1434,7 @@ export const UniversalRegisterEngine: React.FC<Props> = ({ data = [], onApplyMap
                 </div>
                 <div>
                   <span className="text-xs font-mono text-emerald-400 font-bold uppercase tracking-wider block">
-                    DocuSight Assurance Layer — Formal Audit Proof
+                    StructuSight Assurance Layer — Formal Audit Proof
                   </span>
                   <h3 className="text-2xl font-black text-white">
                     Evidence-Backed Universal Audit Certificate
@@ -1454,7 +1454,7 @@ export const UniversalRegisterEngine: React.FC<Props> = ({ data = [], onApplyMap
             {/* CERTIFICATE DETAILS PREVIEW CARD */}
             <div className="bg-slate-950 p-8 rounded-2xl border-2 border-emerald-500/40 space-y-6 font-mono text-xs">
               <div className="text-center space-y-1 border-b border-slate-800 pb-4">
-                <div className="text-lg font-bold text-emerald-400 tracking-wider">DOCUSIGHT ENTERPRISE GOVERNANCE CERTIFICATE</div>
+                <div className="text-lg font-bold text-emerald-400 tracking-wider">STRUCTUSIGHT ENTERPRISE GOVERNANCE CERTIFICATE</div>
                 <div className="text-xs text-slate-400">CERTIFICATE OF REPRODUCIBLE CALCULATION & INTEGRITY</div>
                 <div className="text-[10px] text-slate-500">ISSUED UNDER UNIVERSAL REGISTER ENGINE CONTRACT (L99 GUARANTEE)</div>
               </div>
@@ -1512,7 +1512,7 @@ export const UniversalRegisterEngine: React.FC<Props> = ({ data = [], onApplyMap
                   Multi-Register Real Test Bench (6 Real Construction Preset Logs)
                 </h3>
                 <p className="text-xs text-slate-500 mt-0.5">
-                  Test DocuSight&apos;s Universal Compatibility Engine against real contractor registers from major regional projects.
+                  Test StructuSight&apos;s Universal Compatibility Engine against real contractor registers from major regional projects.
                 </p>
               </div>
 
@@ -1735,7 +1735,7 @@ export const UniversalRegisterEngine: React.FC<Props> = ({ data = [], onApplyMap
               <span>Immutable Raw Source Lineage Chain</span>
             </div>
             <p className="text-xs text-slate-300 leading-relaxed max-w-3xl">
-              DocuSight retains the original source data completely untransformed. Raw imported rows maintain 100% traceability to source files and line numbers.
+              StructuSight retains the original source data completely untransformed. Raw imported rows maintain 100% traceability to source files and line numbers.
             </p>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 text-xs pt-2">

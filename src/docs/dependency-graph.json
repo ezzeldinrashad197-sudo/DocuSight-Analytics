@@ -109,6 +109,10 @@
       "layer": 2
     },
     {
+      "id": "src/analytics/governance/goldenRegressionSuite.ts",
+      "layer": 2
+    },
+    {
       "id": "src/analytics/governance/validationFramework.ts",
       "layer": 2
     },
@@ -149,6 +153,18 @@
       "layer": 3
     },
     {
+      "id": "src/components/AuditIntegrityCenter.tsx",
+      "layer": 3
+    },
+    {
+      "id": "src/components/CalculationAuditCenter.tsx",
+      "layer": 3
+    },
+    {
+      "id": "src/components/CommercialValidationGateCenter.tsx",
+      "layer": 3
+    },
+    {
       "id": "src/components/DataValidationEngine.tsx",
       "layer": 3
     },
@@ -186,6 +202,10 @@
     },
     {
       "id": "src/components/TrendAndForecastEngine.tsx",
+      "layer": 3
+    },
+    {
+      "id": "src/components/UniversalRegisterEngine.tsx",
       "layer": 3
     },
     {
@@ -233,8 +253,24 @@
       "layer": 3
     },
     {
+      "id": "src/scripts/audit_abd_negative.ts",
+      "layer": 3
+    },
+    {
+      "id": "src/scripts/audit_abd_populations.ts",
+      "layer": 3
+    },
+    {
+      "id": "src/scripts/audit_abd_suite.ts",
+      "layer": 3
+    },
+    {
       "id": "src/types.ts",
       "layer": 0
+    },
+    {
+      "id": "src/utils/calculationVerificationEngine.ts",
+      "layer": 3
     },
     {
       "id": "src/utils/calculations.ts",
@@ -283,6 +319,10 @@
     {
       "id": "src/utils/statusMatrixEngine.ts",
       "layer": 1
+    },
+    {
+      "id": "src/utils/universalRegisterSchema.ts",
+      "layer": 3
     },
     {
       "id": "src/utils/workflowMapping.ts",
@@ -428,6 +468,14 @@
     },
     {
       "source": "src/App.tsx",
+      "target": "src/components/CalculationAuditCenter.tsx"
+    },
+    {
+      "source": "src/App.tsx",
+      "target": "src/components/UniversalRegisterEngine.tsx"
+    },
+    {
+      "source": "src/App.tsx",
       "target": "src/utils/calculations.ts"
     },
     {
@@ -520,6 +568,10 @@
     },
     {
       "source": "src/RFIAnalytics.tsx",
+      "target": "src/utils/enterpriseUpgradeEngine.ts"
+    },
+    {
+      "source": "src/RFIAnalytics.tsx",
       "target": "src/analytics/analyticsCore.ts"
     },
     {
@@ -591,6 +643,14 @@
       "target": "src/analytics/analyticsCore.ts"
     },
     {
+      "source": "src/analytics/calculationFoundation.ts",
+      "target": "src/utils/enterpriseUpgradeEngine.ts"
+    },
+    {
+      "source": "src/analytics/calculationFoundation.ts",
+      "target": "src/utils/calculations.ts"
+    },
+    {
       "source": "src/analytics/dataValidator.ts",
       "target": "src/analytics/models.ts"
     },
@@ -655,6 +715,26 @@
       "target": "src/analytics/governance/formulaRegistry.ts"
     },
     {
+      "source": "src/analytics/governance/goldenRegressionSuite.ts",
+      "target": "src/types.ts"
+    },
+    {
+      "source": "src/analytics/governance/goldenRegressionSuite.ts",
+      "target": "src/analytics/calculationFoundation.ts"
+    },
+    {
+      "source": "src/analytics/governance/goldenRegressionSuite.ts",
+      "target": "src/analytics/analyticsCore.ts"
+    },
+    {
+      "source": "src/analytics/governance/goldenRegressionSuite.ts",
+      "target": "src/utils/enterpriseUpgradeEngine.ts"
+    },
+    {
+      "source": "src/analytics/governance/goldenRegressionSuite.ts",
+      "target": "src/utils/calculations.ts"
+    },
+    {
       "source": "src/analytics/governance/validationFramework.ts",
       "target": "src/types.ts"
     },
@@ -677,6 +757,10 @@
     {
       "source": "src/analytics/governance/validationFramework.ts",
       "target": "src/utils/calculations.ts"
+    },
+    {
+      "source": "src/analytics/governance/validationFramework.ts",
+      "target": "src/analytics/governance/goldenRegressionSuite.ts"
     },
     {
       "source": "src/analytics/kpiEngine.ts",
@@ -719,6 +803,14 @@
       "target": "src/analytics/models.ts"
     },
     {
+      "source": "src/analytics/revisionEngine.ts",
+      "target": "src/analytics/analyticsCore.ts"
+    },
+    {
+      "source": "src/analytics/revisionEngine.ts",
+      "target": "src/utils/enterpriseUpgradeEngine.ts"
+    },
+    {
       "source": "src/analytics/sor/sorEngine.ts",
       "target": "src/types.ts"
     },
@@ -747,6 +839,34 @@
       "target": "src/utils/calculations.ts"
     },
     {
+      "source": "src/components/AuditIntegrityCenter.tsx",
+      "target": "src/types.ts"
+    },
+    {
+      "source": "src/components/CalculationAuditCenter.tsx",
+      "target": "src/types.ts"
+    },
+    {
+      "source": "src/components/CalculationAuditCenter.tsx",
+      "target": "src/utils/calculations.ts"
+    },
+    {
+      "source": "src/components/CalculationAuditCenter.tsx",
+      "target": "src/analytics/analyticsCore.ts"
+    },
+    {
+      "source": "src/components/CalculationAuditCenter.tsx",
+      "target": "src/utils/enterpriseUpgradeEngine.ts"
+    },
+    {
+      "source": "src/components/CalculationAuditCenter.tsx",
+      "target": "src/components/AuditIntegrityCenter.tsx"
+    },
+    {
+      "source": "src/components/CommercialValidationGateCenter.tsx",
+      "target": "src/utils/universalRegisterSchema.ts"
+    },
+    {
       "source": "src/components/DataValidationEngine.tsx",
       "target": "src/types.ts"
     },
@@ -757,6 +877,14 @@
     {
       "source": "src/components/DataValidationEngine.tsx",
       "target": "src/analytics/calculationFoundation.ts"
+    },
+    {
+      "source": "src/components/DataValidationEngine.tsx",
+      "target": "src/analytics/analyticsCore.ts"
+    },
+    {
+      "source": "src/components/DataValidationEngine.tsx",
+      "target": "src/utils/enterpriseUpgradeEngine.ts"
     },
     {
       "source": "src/components/EngineeringItemDatasetView.tsx",
@@ -789,6 +917,14 @@
     {
       "source": "src/components/FinalAcceptanceAuditView.tsx",
       "target": "src/utils/calculations.ts"
+    },
+    {
+      "source": "src/components/FinalAcceptanceAuditView.tsx",
+      "target": "src/analytics/analyticsCore.ts"
+    },
+    {
+      "source": "src/components/FinalAcceptanceAuditView.tsx",
+      "target": "src/utils/enterpriseUpgradeEngine.ts"
     },
     {
       "source": "src/components/FinalAcceptanceAuditView.tsx",
@@ -851,6 +987,18 @@
       "target": "src/utils/calculations.ts"
     },
     {
+      "source": "src/components/UniversalRegisterEngine.tsx",
+      "target": "src/components/CommercialValidationGateCenter.tsx"
+    },
+    {
+      "source": "src/components/UniversalRegisterEngine.tsx",
+      "target": "src/types.ts"
+    },
+    {
+      "source": "src/components/UniversalRegisterEngine.tsx",
+      "target": "src/utils/universalRegisterSchema.ts"
+    },
+    {
       "source": "src/components/WorkflowMappingCenter.tsx",
       "target": "src/types.ts"
     },
@@ -861,6 +1009,10 @@
     {
       "source": "src/components/WorkflowMappingCenter.tsx",
       "target": "src/utils/classificationEngine.ts"
+    },
+    {
+      "source": "src/components/WorkflowMappingCenter.tsx",
+      "target": "src/components/UniversalRegisterEngine.tsx"
     },
     {
       "source": "src/components/presentation/PresHelpers.tsx",
@@ -915,6 +1067,66 @@
       "target": "src/utils/i18n.tsx"
     },
     {
+      "source": "src/scripts/audit_abd_negative.ts",
+      "target": "src/utils/calculations.ts"
+    },
+    {
+      "source": "src/scripts/audit_abd_negative.ts",
+      "target": "src/utils/enterpriseUpgradeEngine.ts"
+    },
+    {
+      "source": "src/scripts/audit_abd_negative.ts",
+      "target": "src/analytics/calculationFoundation.ts"
+    },
+    {
+      "source": "src/scripts/audit_abd_negative.ts",
+      "target": "src/types.ts"
+    },
+    {
+      "source": "src/scripts/audit_abd_populations.ts",
+      "target": "src/utils/calculationVerificationEngine.ts"
+    },
+    {
+      "source": "src/scripts/audit_abd_populations.ts",
+      "target": "src/utils/calculations.ts"
+    },
+    {
+      "source": "src/scripts/audit_abd_populations.ts",
+      "target": "src/utils/enterpriseUpgradeEngine.ts"
+    },
+    {
+      "source": "src/scripts/audit_abd_populations.ts",
+      "target": "src/analytics/calculationFoundation.ts"
+    },
+    {
+      "source": "src/scripts/audit_abd_suite.ts",
+      "target": "src/utils/calculationVerificationEngine.ts"
+    },
+    {
+      "source": "src/scripts/audit_abd_suite.ts",
+      "target": "src/utils/calculations.ts"
+    },
+    {
+      "source": "src/scripts/audit_abd_suite.ts",
+      "target": "src/utils/enterpriseUpgradeEngine.ts"
+    },
+    {
+      "source": "src/scripts/audit_abd_suite.ts",
+      "target": "src/analytics/calculationFoundation.ts"
+    },
+    {
+      "source": "src/utils/calculationVerificationEngine.ts",
+      "target": "src/types.ts"
+    },
+    {
+      "source": "src/utils/calculationVerificationEngine.ts",
+      "target": "src/utils/calculations.ts"
+    },
+    {
+      "source": "src/utils/calculationVerificationEngine.ts",
+      "target": "src/analytics/calculationFoundation.ts"
+    },
+    {
       "source": "src/utils/calculations.ts",
       "target": "src/types.ts"
     },
@@ -924,11 +1136,23 @@
     },
     {
       "source": "src/utils/calculations.ts",
+      "target": "src/analytics/analyticsCore.ts"
+    },
+    {
+      "source": "src/utils/calculations.ts",
+      "target": "src/utils/enterpriseUpgradeEngine.ts"
+    },
+    {
+      "source": "src/utils/calculations.ts",
       "target": "src/utils/workflowMapping.ts"
     },
     {
       "source": "src/utils/classificationEngine.ts",
       "target": "src/utils/workflowMapping.ts"
+    },
+    {
+      "source": "src/utils/classificationEngine.ts",
+      "target": "src/types.ts"
     },
     {
       "source": "src/utils/enterpriseEngine.ts",

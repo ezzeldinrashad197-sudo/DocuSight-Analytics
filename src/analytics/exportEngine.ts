@@ -43,10 +43,10 @@ export const generatePptxReport = async (
 ) => {
     let pres = new pptxgen();
     pres.layout = "LAYOUT_16x9";
-    pres.author = "DocuSight Analytics Platform";
+    pres.author = "StructuSight Engineering Intelligence Platform";
     pres.company = "Corporate Management Report";
     let titleStr = mode === 'monthly' ? 'Monthly' : (mode === 'presentation' ? 'Presentation' : 'Cumulative');
-    pres.title = `DocuSight Analytics - ${titleStr} Report`;
+    pres.title = `StructuSight Intelligence - ${titleStr} Report`;
 
     // Define native slide master layout for branding and metadata consistency
     defineDocusightSlideMaster(pres, projectInfo, options);
@@ -642,7 +642,7 @@ export const generatePptxReport = async (
             }
         }
 
-        await pres.writeFile({ fileName: `DocuSight-Presentation-${new Date().toISOString().split('T')[0]}.pptx` });
+        await pres.writeFile({ fileName: `StructuSight-Presentation-${new Date().toISOString().split('T')[0]}.pptx` });
         return;
     }
 
@@ -1110,8 +1110,8 @@ export const generatePptxReport = async (
     }
 
     const outputFilename = mode === 'monthly' 
-        ? `DocuSight-monthly-${new Date().toISOString().split('T')[0]}.pptx` 
-        : `DocuSight-cumulative-${new Date().toISOString().split('T')[0]}.pptx`;
+        ? `StructuSight-monthly-${new Date().toISOString().split('T')[0]}.pptx` 
+        : `StructuSight-cumulative-${new Date().toISOString().split('T')[0]}.pptx`;
 
     await pres.writeFile({ fileName: outputFilename });
 };

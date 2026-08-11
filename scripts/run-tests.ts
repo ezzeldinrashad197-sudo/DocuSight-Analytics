@@ -219,7 +219,8 @@ const {
   calculateNCRStats, 
   getUniqueNCRs, 
   getStatusCodeCategory,
-  getDelayDays
+  getDelayDays,
+  normalizeData
 } = await import(path.join(__dirname, '../src/utils/calculations.instrumented.js'));
 
 // Tracking overall suite execution
@@ -462,6 +463,37 @@ const failsafeAssertions: MutationFailsafeAssertion[] = [
     test: () => {
       const delay = getDelayDays('2026-07-01', '', '2026-07-15');
       return delay > 0;
+    }
+  },
+  {
+    name: "Trade Check: 'INFRASTRUCTURE' MUST map to Infrastructure and NOT Structural",
+    test: () => {
+      const norm1 = normalizeData([{ id: 't1', docNo: 'D1', rev: '0', status: 'A', submissionDate: '2026-01-01', discipline: 'INFRASTRUCTURE', logType: 'SDW' } as any]);
+      const norm2 = normalizeData([{ id: 't2', docNo: 'D2', rev: '0', status: 'A', submissionDate: '2026-01-01', trade: 'Infrastructure', logType: 'SDW' } as any]);
+      const norm3 = normalizeData([{ id: 't3', docNo: 'D3', rev: '0', status: 'A', submissionDate: '2026-01-01', discipline: 'INF', logType: 'SDW' } as any]);
+      return norm1[0].trade === 'Infrastructure' && norm1[0].documentType === 'SDW-INFRA' &&
+             norm2[0].trade === 'Infrastructure' && norm2[0].documentType === 'SDW-INFRA' &&
+             norm3[0].trade === 'Infrastructure' && norm3[0].documentType === 'SDW-INFRA';
+    }
+  },
+  {
+    name: "Trade Check: 'STRUCTURAL' / 'CIVIL' MUST map exclusively to Structural (STR)",
+    test: () => {
+      const normStr = normalizeData([{ id: 't4', docNo: 'D4', rev: '0', status: 'A', submissionDate: '2026-01-01', discipline: 'STRUCTURAL', logType: 'SDW' } as any]);
+      const normCvl = normalizeData([{ id: 't5', docNo: 'D5', rev: '0', status: 'A', submissionDate: '2026-01-01', discipline: 'CIVIL', logType: 'SDW' } as any]);
+      return normStr[0].trade === 'Structural' && normStr[0].documentType === 'SDW-STR' &&
+             normCvl[0].trade === 'Structural' && normCvl[0].documentType === 'SDW-STR';
+    }
+  },
+  {
+    name: "Mixed-Trade Check: Row-level Trade (IRR) in Infra worksheet MUST map to Irrigation (SDW-IRR) and NOT Infrastructure",
+    test: () => {
+      const mixed = normalizeData([
+        { id: 'inf1', docNo: 'SDW-INF-001', rev: '0', status: 'A', submissionDate: '2026-01-01', trade: 'INF', discipline: 'INF', logType: 'SDW-INFRA', compositeIdentity: { family: 'SDW', discipline: 'INFRA', compositeCode: 'SDW-INFRA' } } as any,
+        { id: 'irr1', docNo: 'SDW-IRR-001', rev: '0', status: 'A', submissionDate: '2026-01-01', trade: 'IRR', discipline: 'IRR', logType: 'SDW-INFRA', compositeIdentity: { family: 'SDW', discipline: 'INFRA', compositeCode: 'SDW-INFRA' } } as any
+      ]);
+      return mixed[0].trade === 'Infrastructure' && mixed[0].documentType === 'SDW-INFRA' &&
+             mixed[1].trade === 'Irrigation' && mixed[1].documentType === 'SDW-IRR';
     }
   }
 ];

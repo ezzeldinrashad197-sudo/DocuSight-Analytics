@@ -66,24 +66,6 @@ export function useFilters(data: SubmittalRow[], startDate: string, endDate: str
 
   const applyFilters = () => {
      setFilters(pendingFilters);
-     // Chapter 16 / ER-013 Compliance: Send request to Server Metrics Layer
-     try {
-       fetch('/api/metrics/calculate', {
-         method: 'POST',
-         headers: { 'Content-Type': 'application/json' },
-         body: JSON.stringify({
-           filters: pendingFilters,
-           dataset: data.slice(0, 500)
-         })
-       }).then(res => res.json())
-         .then(metricsResult => {
-           console.info('[Metrics Layer] Server recalculated metrics for active filters:', metricsResult);
-         }).catch(err => {
-           console.warn('[Metrics Layer] Server call fallback notice:', err);
-         });
-     } catch (e) {
-       console.warn('[Metrics Layer] Request dispatch deferred:', e);
-     }
   };
 
   const resetFilters = () => {

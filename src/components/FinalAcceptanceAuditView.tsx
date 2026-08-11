@@ -139,7 +139,7 @@ export default function FinalAcceptanceAuditView({ data, filterMonthly, filterCu
       // 1. Measure WRITE Latency
       const tWriteStart = performance.now();
       await setDoc(testDocRef, {
-        testVal: 'DocuSight Connection Probe',
+        testVal: 'StructuSight Connection Probe',
         timestamp: new Date().toISOString(),
         initiator: uid,
         email: auth.currentUser.email || 'anonymous'
@@ -923,7 +923,7 @@ export default function FinalAcceptanceAuditView({ data, filterMonthly, filterCu
             </div>
             
             <p className="text-slate-400 text-sm max-w-3xl leading-relaxed font-sans">
-              This interactive dashboard serves as official, mathematical, and runtime proof of the production readiness of **DocuSight**. It runs a complete, on-screen unit-test suite, benchmarks memory classifiers, maps runtime call chains, and proves zero mathematical deltas across presentation outputs.
+              This interactive dashboard serves as official, mathematical, and runtime proof of the production readiness of **StructuSight**. It runs a complete, on-screen unit-test suite, benchmarks memory classifiers, maps runtime call chains, and proves zero mathematical deltas across presentation outputs.
             </p>
           </div>
 
@@ -2113,7 +2113,7 @@ export default function FinalAcceptanceAuditView({ data, filterMonthly, filterCu
               <p className="text-emerald-400">✔ coverage report ⟶ PASSED (All 30 sections matched perfectly with zero data gaps)</p>
 
               <p className="text-slate-500 mt-1">[5/5] Deploying build container to staging cluster...</p>
-              <p className="text-emerald-400">🚀 PIPELINE PASSED: DocuSight Analytics Certified for Enterprise Production!</p>
+              <p className="text-emerald-400">🚀 PIPELINE PASSED: StructuSight Engineering Intelligence Certified for Enterprise Production!</p>
             </div>
           </div>
         </div>
@@ -2392,7 +2392,7 @@ export default function FinalAcceptanceAuditView({ data, filterMonthly, filterCu
             Executive Declaration of Sign-off (بيان الاعتماد للمطابقة الفنية)
           </h3>
           <p className="text-slate-500 text-sm max-w-3xl leading-relaxed font-sans">
-            By executing this verification report, the DocuSight compliance validator confirms that all logical code pathways conform with absolute strict mathematical subset rules. This project is formally certified as ready for Production deployment and Executive presentation.
+            By executing this verification report, the StructuSight compliance validator confirms that all logical code pathways conform with absolute strict mathematical subset rules. This project is formally certified as ready for Production deployment and Executive presentation.
           </p>
         </div>
         
@@ -2438,7 +2438,7 @@ export default function FinalAcceptanceAuditView({ data, filterMonthly, filterCu
           <div className="w-24 h-0.5 bg-slate-400 mx-auto my-4"></div>
 
           <p className="text-sm leading-relaxed max-w-2xl mx-auto text-slate-700 text-center">
-            This document formally certifies that the <strong>DocuSight Analytics System Core (v1.2.0-Prod)</strong> 
+            This document formally certifies that the <strong>StructuSight Intelligence System Core (v1.2.0-Prod)</strong> 
             has successfully passed all internally defined architectural verification gates and deterministic audit checks, and is prepared for independent third-party review. The analytical modules, databases, and 
             report compilers have been verified to function strictly in accordance with 
             the <strong>Frozen Specification</strong> and <strong>Governance Invariants</strong>. No double-counting, 
@@ -2500,7 +2500,7 @@ export default function FinalAcceptanceAuditView({ data, filterMonthly, filterCu
           <div className="grid grid-cols-2 gap-12 max-w-2xl mx-auto pt-4 text-center">
             <div className="space-y-2">
               <div className="font-serif italic text-slate-700 border-b border-slate-400 pb-1 max-w-[200px] mx-auto text-sm">
-                DocuSight Automated Compliance Code
+                StructuSight Automated Compliance Code
               </div>
               <span className="text-[9px] text-slate-400 uppercase tracking-wider block font-bold font-sans">
                 Automated Auditor Core Verification Sign-off

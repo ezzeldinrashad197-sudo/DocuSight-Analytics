@@ -1,6 +1,6 @@
 {
-  "name": "DocuSight Analytics",
-  "description": "Engineering Reporting & KPI Intelligence Platform designed to extract, analyze, and visualize project performance data from raw logs. Focuses on advanced monthly reports, cumulative trends, KPI dashboards, and data-driven insights. Concept & Product Vision by Ezz Rashad.",
+  "name": "StructuSight",
+  "description": "StructuSight — Engineering Intelligence Platform. SEE STRUCTURE. BUILD BETTER. Transforms raw project logs into executive intelligence, KPI dashboards, SLA compliance analysis, and submittal tracking.",
   "requestFramePermissions": [],
   "majorCapabilities": [
     "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"

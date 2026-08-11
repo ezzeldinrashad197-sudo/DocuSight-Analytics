@@ -1,11 +1,11 @@
 [
   {
     "functionName": "getStatusCodeCategory",
-    "cyclomatic": 28,
-    "loc": 34,
-    "halsteadVolume": 687.89,
-    "maintainabilityIndex": 124.87,
-    "normalizedMi": 73
+    "cyclomatic": 47,
+    "loc": 52,
+    "halsteadVolume": 1410.64,
+    "maintainabilityIndex": 116.08,
+    "normalizedMi": 68
   },
   {
     "functionName": "getDelayDays",
@@ -33,26 +33,26 @@
   },
   {
     "functionName": "calculateSORStats",
-    "cyclomatic": 27,
-    "loc": 73,
-    "halsteadVolume": 1463.77,
-    "maintainabilityIndex": 119.94,
-    "normalizedMi": 70
+    "cyclomatic": 25,
+    "loc": 74,
+    "halsteadVolume": 1372.29,
+    "maintainabilityIndex": 120.71,
+    "normalizedMi": 71
   },
   {
     "functionName": "calculateNCRStats",
-    "cyclomatic": 19,
-    "loc": 69,
-    "halsteadVolume": 1217.49,
-    "maintainabilityIndex": 122.83,
+    "cyclomatic": 17,
+    "loc": 70,
+    "halsteadVolume": 1128.29,
+    "maintainabilityIndex": 123.66,
     "normalizedMi": 72
   },
   {
     "functionName": "calculateStats",
-    "cyclomatic": 23,
-    "loc": 84,
-    "halsteadVolume": 1458.77,
-    "maintainabilityIndex": 120.65,
-    "normalizedMi": 71
+    "cyclomatic": 46,
+    "loc": 145,
+    "halsteadVolume": 2810.35,
+    "maintainabilityIndex": 111.06,
+    "normalizedMi": 65
   }
 ]

@@ -69,8 +69,8 @@ export default function Presentation({
 
   const pInfo = useMemo(() => {
     return projectInfo || {
-      projectName: "DocuSight Project",
-      projectCode: "PRJ-DS",
+      projectName: "StructuSight Project",
+      projectCode: "PRJ-STS",
       clientName: "N/A",
       consultantName: "N/A",
       contractorName: "N/A",

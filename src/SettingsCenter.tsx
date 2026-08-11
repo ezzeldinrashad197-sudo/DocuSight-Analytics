@@ -33,7 +33,11 @@ export default function SettingsCenter({ projects, activeProjectId, onSaveProjec
 
     const loadUsers = async () => {
         const userRoles = activeRole.split(',').map(r => r.trim().toLowerCase());
-        if (!userRoles.includes('all')) return;
+        const activeEmail = (localStorage.getItem('docuCtrl_activeEmail') || '').trim().toLowerCase();
+        const isOwner = activeEmail === 'ezzeldinrashad197@gmail.com';
+        const canManageUsers = isOwner || userRoles.includes('all') || userRoles.includes('executive') || userRoles.includes('pd') || userRoles.includes('pm') || userRoles.includes('dc');
+        
+        if (!canManageUsers) return;
         setLoadingUsers(true);
         try {
             const snap = await getDocs(collection(db, 'users'));
@@ -115,7 +119,7 @@ export default function SettingsCenter({ projects, activeProjectId, onSaveProjec
             
             // 2. Write the new role to ALL related documents in Firestore
             const promises = uniqueDocIds.map(docId => 
-                setDoc(doc(db, 'users', docId), { role: newRole }, { merge: true })
+                setDoc(doc(db, 'users', docId), { role: newRole, updatedAt: new Date().toISOString() }, { merge: true })
             );
             await Promise.all(promises);
             
@@ -148,13 +152,29 @@ export default function SettingsCenter({ projects, activeProjectId, onSaveProjec
 
         setAddingUser(true);
         try {
-            // Pre-register user using their email address as the document ID
-            await setDoc(doc(db, 'users', cleanedEmail), {
-                email: cleanedEmail,
-                name: newUserName.trim() || cleanedEmail.split('@')[0],
-                role: newUserRole,
-                createdAt: new Date().toISOString()
-            }, { merge: true });
+            // Find all documents in 'users' collection matching this email (to update UID docs if user already logged in)
+            const snap = await getDocs(collection(db, 'users'));
+            const docsToSet: string[] = [cleanedEmail];
+            
+            snap.forEach(d => {
+                const dData = d.data();
+                const dEmail = (dData.email || d.id || '').trim().toLowerCase();
+                if (dEmail === cleanedEmail) {
+                    docsToSet.push(d.id);
+                }
+            });
+            
+            const uniqueDocs = Array.from(new Set(docsToSet));
+            const promises = uniqueDocs.map(docId => 
+                setDoc(doc(db, 'users', docId), {
+                    email: cleanedEmail,
+                    name: newUserName.trim() || cleanedEmail.split('@')[0],
+                    role: newUserRole,
+                    createdAt: new Date().toISOString(),
+                    updatedAt: new Date().toISOString()
+                }, { merge: true })
+            );
+            await Promise.all(promises);
 
             setSuccessMsg(t('user_added_success_params').replace('{email}', cleanedEmail));
 
@@ -518,26 +538,26 @@ export default function SettingsCenter({ projects, activeProjectId, onSaveProjec
 
                     {activeTab === 'about' && (
                         <div className="p-10 h-full overflow-y-auto">
-                            <h3 className="text-2xl font-bold text-white mb-8 border-b border-slate-800 pb-4">About DocuSight Analytics Platform</h3>
+                            <h3 className="text-2xl font-bold text-white mb-8 border-b border-slate-800 pb-4">About StructuSight — Engineering Intelligence Platform</h3>
                             <div className="prose prose-invert max-w-none text-slate-300">
                                 <p className="text-lg leading-relaxed mb-6">
-                                    DocuSight is an enterprise-grade Project Information Intelligence Platform designed specifically for large engineering, construction, and PMO organizations. It transforms raw document control data into predictive intelligence, portfolio oversight, and executive governance workflows.
+                                    StructuSight is an enterprise-grade Engineering Intelligence Platform designed specifically for large engineering, construction, and PMO organizations. It transforms raw document control data into executive intelligence, portfolio oversight, and governance workflows. SEE STRUCTURE. BUILD BETTER.
                                 </p>
                                 <div className="grid grid-cols-2 gap-8 mb-8">
                                     <div className="bg-[#0B1120] p-6 rounded-2xl border border-slate-800">
-                                        <h4 className="text-indigo-400 font-bold mb-2">Built For Scale</h4>
+                                        <h4 className="text-blue-400 font-bold mb-2">Built For Scale</h4>
                                         <p className="text-sm text-slate-400">Capable of handling massive datasets across dozens of simultaneous megaprojects without degradation in calculation speed.</p>
                                     </div>
                                     <div className="bg-[#0B1120] p-6 rounded-2xl border border-slate-800">
-                                        <h4 className="text-indigo-400 font-bold mb-2">Predictive AI Engine</h4>
-                                        <p className="text-sm text-slate-400">Trained on historical project logs to forecast SLA breaches, RFI accumulations, and document turnaround bottlenecks before they impact the critical path.</p>
+                                        <h4 className="text-blue-400 font-bold mb-2">Engineering Intelligence</h4>
+                                        <p className="text-sm text-slate-400">Analyzes project logs to highlight SLA compliance, RFI accumulations, and document turnaround bottlenecks before they impact the critical path.</p>
                                     </div>
                                 </div>
                                 <h4 className="font-bold text-white mb-4">Enterprise User Guide</h4>
                                 <div className="flex items-center gap-3 p-4 bg-slate-800/50 border border-slate-700 rounded-xl cursor-pointer hover:bg-slate-800 transition-colors">
                                     <BookOpen className="w-6 h-6 text-slate-400" />
                                     <div>
-                                        <div className="font-bold text-slate-200">DocuSight Quick Start Guide</div>
+                                        <div className="font-bold text-slate-200">StructuSight Platform Guide</div>
                                         <div className="text-xs text-slate-500">PDF Documentation (2.4 MB)</div>
                                     </div>
                                 </div>

@@ -1,5 +1,5 @@
 # DocuSight E2E Integration Pipeline Verification Report
-*Generated on 2026-07-24T18:28:36.816Z | Deterministic Audit Evidence*
+*Generated on 2026-08-11T12:19:01.018Z | Deterministic Audit Evidence*
 
 > [!NOTE]
 > **AUDIT ENGINE DISCLAIMER & VERIFICATION NOTICE**
@@ -109,8 +109,8 @@ This trace represents the full travel of records from unstructured file ingestio
     {
       "docNo": "DOC-ST-001",
       "category": "PENDING",
-      "delayDays": 0,
-      "isOverdue": false
+      "delayDays": 17,
+      "isOverdue": true
     },
     {
       "docNo": "DOC-AR-002",
@@ -121,7 +121,7 @@ This trace represents the full travel of records from unstructured file ingestio
     {
       "docNo": "DOC-ME-003",
       "category": "REJECTED_OPEN",
-      "delayDays": 6,
+      "delayDays": 24,
       "isOverdue": true
     },
     {
@@ -145,19 +145,19 @@ This trace represents the full travel of records from unstructured file ingestio
     "totalSubmittedSheets": 5,
     "totalSheetsRev0": 4,
     "totalSheetsFurtherRev": 1,
-    "totalDrawingsRev0": 4,
+    "totalDrawingsRev0": 3,
     "totalDrawingsFurtherRev": 1,
     "totalUniqueDrawings": 4,
-    "approved": 2,
+    "approved": 1,
     "rejectedOpen": 1,
     "rejectedClosed": 1,
     "pending": 1,
-    "overdue": 1,
-    "avgResponseTime": 12.333333333333334,
-    "approvalRate": 50,
-    "rejectionOpenRate": 25,
-    "rejectionClosedRate": 25,
-    "delayRate": 20
+    "overdue": 2,
+    "avgResponseTime": 14,
+    "approvalRate": 33.33333333333333,
+    "rejectionOpenRate": 33.33333333333333,
+    "rejectionClosedRate": 33.33333333333333,
+    "delayRate": 40
   }
 }
 ```
@@ -169,8 +169,8 @@ This trace represents the full travel of records from unstructured file ingestio
 - **Programmatic Metadata Excerpt**:
 ```json
 {
-  "totalUnique": 5,
-  "closed": 3,
+  "totalUnique": 4,
+  "closed": 2,
   "open": 2
 }
 ```
@@ -184,7 +184,7 @@ This trace represents the full travel of records from unstructured file ingestio
 {
   "payloadExcerpt": {
     "totalRecords": 5,
-    "approvedCount": 2,
+    "approvedCount": 1,
     "pendingCount": 1,
     "rejectedOpenCount": 1,
     "rejectedClosedCount": 1

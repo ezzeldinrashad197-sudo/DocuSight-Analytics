@@ -238,7 +238,7 @@ export const defineDocusightSlideMaster = (
     const primary = options?.primaryColor ? options.primaryColor.replace('#', '') : "0A192F";
     const accent = options?.accentColor ? options.accentColor.replace('#', '') : "D4AF37";
     const font = options?.fontFace || "Arial";
-    const customHeader = options?.customHeader || "DOCUSIGHT ENTERPRISE ANALYTICS";
+    const customHeader = options?.customHeader || "STRUCTUSIGHT ENTERPRISE INTELLIGENCE";
     const customFooter = options?.customFooter || `[${projectInfo?.projectName || 'Project'}]  |  Document Control Enterprise Report  |  Generated: ${new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' })}`;
     const showProjectInfo = options?.showProjectInfo !== false;
 

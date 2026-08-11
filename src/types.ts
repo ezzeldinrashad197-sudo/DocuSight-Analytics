@@ -85,6 +85,34 @@ export interface SubmittalRow {
   displayDocType?: string;
   isUnknownWorkflow?: boolean;
   calculationEngine?: string;
+
+  // Composite Identity Fields
+  rawSourceIdentity?: string;
+  contextDiscipline?: string;
+  compositeIdentity?: CompositeIdentity;
+}
+
+export type EvidenceLevel = 
+  | 'LEVEL_1_FILENAME_COMPOSITE'
+  | 'LEVEL_2_WORKSHEET_COMPOSITE'
+  | 'LEVEL_3_HEADER_TITLE_BLOCK'
+  | 'LEVEL_4_ROW_DATA_CELL'
+  | 'LEVEL_5_CONTENT_PATTERN'
+  | 'LEVEL_6_PROJECT_DEFAULT'
+  | 'LEVEL_7_UNCLASSIFIED_FALLBACK';
+
+export interface CompositeIdentity {
+  family: string;
+  discipline: string;
+  compositeCode: string;
+  rawSourceIdentity: string;
+  evidenceSource: string;
+  evidenceLevel: EvidenceLevel;
+  confidence: number;
+  lockedBy: string;
+  fallbackState: boolean;
+  hasConflict: boolean;
+  conflictDetails?: string;
 }
 
 export interface KPIStats {

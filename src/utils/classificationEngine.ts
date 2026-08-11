@@ -2,11 +2,207 @@
 // Implements the official multi-evidence scoring system for Sprint 4.
 
 import { WorkflowFamily, WORKFLOW_FAMILIES_META, AliasMapping } from './workflowMapping';
+import { CompositeIdentity, EvidenceLevel } from '../types';
 
 export interface ClassificationResult {
   detectedFamily: WorkflowFamily;
   confidence: number;
   evidence: string[];
+  compositeIdentity?: CompositeIdentity;
+}
+
+export function detectDisciplineFromText(text: string): { discipline: string; rawMatch: string } | null {
+  if (!text) return null;
+  const clean = text.toUpperCase().trim();
+
+  // Arabic detection
+  if (clean.includes('معماري') || clean.includes('معمارى') || clean.includes('عمارة')) {
+    return { discipline: 'ARCH', rawMatch: 'معماري' };
+  }
+  if (clean.includes('إنشائي') || clean.includes('انشائي') || clean.includes('إنشائى') || clean.includes('انشائى') || clean.includes('مدني') || clean.includes('مدنى')) {
+    return { discipline: 'STR', rawMatch: 'إنشائي' };
+  }
+  if (clean.includes('كهرباء') || clean.includes('كهربائية')) {
+    return { discipline: 'ELEC', rawMatch: 'كهرباء' };
+  }
+  if (clean.includes('كهروميكانيك') || clean.includes('اليكتروميكانيك') || clean.includes('الكتروميكانيك')) {
+    return { discipline: 'MEP', rawMatch: 'كهروميكانيك' };
+  }
+  if (clean.includes('ميكانيك') || clean.includes('ميكانيكا') || clean.includes('ميكانيكية')) {
+    return { discipline: 'MECH', rawMatch: 'ميكانيك' };
+  }
+  if (clean.includes('بنية تحتية') || clean.includes('طرق') || clean.includes('مرافق')) {
+    return { discipline: 'INFRA', rawMatch: 'بنية تحتية' };
+  }
+  if (clean.includes('سلامة') || clean.includes('سلامه') || clean.includes('بيئة') || clean.includes('بيئه')) {
+    return { discipline: 'HSE', rawMatch: 'سلامة' };
+  }
+  if (clean.includes('مساحة') || clean.includes('مساحه')) {
+    return { discipline: 'SURVEY', rawMatch: 'مساحة' };
+  }
+
+  const words = clean.split(/[-_ \/(),&.]+/);
+  if ((words.includes('ARCH') || words.includes('ARC')) && (words.includes('STR') || words.includes('CIVIL'))) {
+    return { discipline: 'MULTIDISCIPLINE', rawMatch: 'ARCH & STR' };
+  }
+
+  if (words.includes('MEP') || words.includes('M.E.P')) {
+    return { discipline: 'MEP', rawMatch: 'MEP' };
+  }
+  if (words.includes('ARCH') || words.includes('ARC') || words.includes('ARCHITECTURAL') || words.includes('ARCHITECTURE')) {
+    return { discipline: 'ARCH', rawMatch: 'ARCH' };
+  }
+  if (words.includes('STR') || words.includes('STRUCT') || words.includes('STRUCTURAL') || words.includes('CIVIL') || words.includes('CVL')) {
+    return { discipline: 'STR', rawMatch: 'STR' };
+  }
+  if (words.includes('ELEC') || words.includes('ELE') || words.includes('ELECTRICAL') || words.includes('ELECTRIC')) {
+    return { discipline: 'ELEC', rawMatch: 'ELEC' };
+  }
+  if (words.includes('MECH') || words.includes('MEC') || words.includes('MECHANICAL') || words.includes('HVAC')) {
+    return { discipline: 'MECH', rawMatch: 'MECH' };
+  }
+  if (words.includes('INFRA') || words.includes('INFR') || words.includes('INF') || words.includes('INFRASTRUCTURE') || words.includes('UTILITIES')) {
+    return { discipline: 'INFRA', rawMatch: 'INFRA' };
+  }
+  if (words.includes('IRR') || words.includes('IRRIGATION')) {
+    return { discipline: 'IRR', rawMatch: 'IRR' };
+  }
+  if (words.includes('LAND') || words.includes('LND') || words.includes('LANDSCAPE')) {
+    return { discipline: 'LAND', rawMatch: 'LAND' };
+  }
+  if (words.includes('HSE') || words.includes('SAFETY') || words.includes('HEALTH') || words.includes('ENV')) {
+    return { discipline: 'HSE', rawMatch: 'HSE' };
+  }
+  if (words.includes('GEN') || words.includes('GENERAL')) {
+    return { discipline: 'GEN', rawMatch: 'GEN' };
+  }
+  if (words.includes('SURVEY') || words.includes('SURV')) {
+    return { discipline: 'SURVEY', rawMatch: 'SURVEY' };
+  }
+
+  if (clean.includes('-ARCH') || clean.includes('_ARCH') || clean.includes('-ARC') || clean.includes('_ARC')) {
+    return { discipline: 'ARCH', rawMatch: 'ARCH' };
+  }
+  if (clean.includes('-STR') || clean.includes('_STR') || clean.includes('-CIVIL') || clean.includes('_CIVIL')) {
+    return { discipline: 'STR', rawMatch: 'STR' };
+  }
+  if (clean.includes('-ELEC') || clean.includes('_ELEC') || clean.includes('-ELE') || clean.includes('_ELE')) {
+    return { discipline: 'ELEC', rawMatch: 'ELEC' };
+  }
+  if (clean.includes('-MECH') || clean.includes('_MECH') || clean.includes('-MEC') || clean.includes('_MEC')) {
+    return { discipline: 'MECH', rawMatch: 'MECH' };
+  }
+  if (clean.includes('-INFRA') || clean.includes('_INFRA') || clean.includes('-INF') || clean.includes('_INF')) {
+    return { discipline: 'INFRA', rawMatch: 'INFRA' };
+  }
+  if (clean.includes('-GEN') || clean.includes('_GEN')) {
+    return { discipline: 'GEN', rawMatch: 'GEN' };
+  }
+
+  return null;
+}
+
+export function buildCompositeIdentity(
+  family: string,
+  fileName: string,
+  sheetName: string,
+  headers: string[],
+  sampleRows: any[][]
+): CompositeIdentity {
+  const fileDisc = detectDisciplineFromText(fileName);
+  const sheetDisc = detectDisciplineFromText(sheetName);
+
+  let hdrDisc: { discipline: string; rawMatch: string } | null = null;
+  for (const h of headers) {
+    const res = detectDisciplineFromText(String(h || ''));
+    if (res) { hdrDisc = res; break; }
+  }
+
+  let rowDisc: { discipline: string; rawMatch: string } | null = null;
+  for (const r of sampleRows) {
+    if (!Array.isArray(r)) continue;
+    for (const cell of r) {
+      const res = detectDisciplineFromText(String(cell || ''));
+      if (res && res.discipline !== 'GEN') { rowDisc = res; break; }
+    }
+    if (rowDisc) break;
+  }
+
+  // 7-Level Hierarchy Resolution
+  if (fileDisc) {
+    const hasConflict = !!(sheetDisc && sheetDisc.discipline !== fileDisc.discipline && sheetDisc.discipline !== 'GEN');
+    return {
+      family,
+      discipline: fileDisc.discipline,
+      compositeCode: `${family}-${fileDisc.discipline}`,
+      rawSourceIdentity: fileName,
+      evidenceSource: 'filename',
+      evidenceLevel: 'LEVEL_1_FILENAME_COMPOSITE',
+      confidence: 1.0,
+      lockedBy: `Filename composite match: ${fileName}`,
+      fallbackState: false,
+      hasConflict,
+      conflictDetails: hasConflict ? `Filename discipline (${fileDisc.discipline}) conflicts with worksheet discipline (${sheetDisc.discipline})` : undefined
+    };
+  }
+
+  if (sheetDisc) {
+    return {
+      family,
+      discipline: sheetDisc.discipline,
+      compositeCode: `${family}-${sheetDisc.discipline}`,
+      rawSourceIdentity: `${fileName}::${sheetName}`,
+      evidenceSource: 'worksheet',
+      evidenceLevel: 'LEVEL_2_WORKSHEET_COMPOSITE',
+      confidence: 0.95,
+      lockedBy: `Worksheet composite match: ${sheetName}`,
+      fallbackState: false,
+      hasConflict: false
+    };
+  }
+
+  if (hdrDisc) {
+    return {
+      family,
+      discipline: hdrDisc.discipline,
+      compositeCode: `${family}-${hdrDisc.discipline}`,
+      rawSourceIdentity: `${fileName}::headers`,
+      evidenceSource: 'header_title_block',
+      evidenceLevel: 'LEVEL_3_HEADER_TITLE_BLOCK',
+      confidence: 0.85,
+      lockedBy: `Header title block match`,
+      fallbackState: false,
+      hasConflict: false
+    };
+  }
+
+  if (rowDisc) {
+    return {
+      family,
+      discipline: rowDisc.discipline,
+      compositeCode: `${family}-${rowDisc.discipline}`,
+      rawSourceIdentity: `${fileName}::rows`,
+      evidenceSource: 'row_data_cell',
+      evidenceLevel: 'LEVEL_4_ROW_DATA_CELL',
+      confidence: 0.75,
+      lockedBy: `Row content match`,
+      fallbackState: false,
+      hasConflict: false
+    };
+  }
+
+  return {
+    family,
+    discipline: 'UNCLASSIFIED',
+    compositeCode: `${family}-UNCLASSIFIED`,
+    rawSourceIdentity: fileName,
+    evidenceSource: 'unclassified_fallback',
+    evidenceLevel: 'LEVEL_7_UNCLASSIFIED_FALLBACK',
+    confidence: 0.0,
+    lockedBy: 'Fallback unclassified state',
+    fallbackState: true,
+    hasConflict: false
+  };
 }
 
 export interface LearnRule {
@@ -182,10 +378,12 @@ export function classifyRegisterSheet(params: {
   if (lockedFamily) {
     evidence.push(`[ARCHITECTURAL LOCK] Locked register family to "${lockedFamily}" based on file name matching: ${lockReason}`);
     evidence.push(`Worksheet "${sheetName}" inherits family "${lockedFamily}" automatically. Ignoring worksheet-level register family evidence.`);
+    const compositeIdentity = buildCompositeIdentity(lockedFamily, fileName, sheetName, headers, sampleRows);
     return {
       detectedFamily: lockedFamily,
       confidence: 1.0,
-      evidence
+      evidence,
+      compositeIdentity
     };
   }
 
@@ -210,10 +408,12 @@ export function classifyRegisterSheet(params: {
   if (projectProfile[cleanSheetName]) {
     const matchedFamily = projectProfile[cleanSheetName];
     evidence.push(`Smart Import Profile match for worksheet "${sheetName}" -> ${matchedFamily}`);
+    const compositeIdentity = buildCompositeIdentity(matchedFamily, fileName, sheetName, headers, sampleRows);
     return {
       detectedFamily: matchedFamily,
       confidence: 1.0,
-      evidence
+      evidence,
+      compositeIdentity
     };
   }
 
@@ -223,10 +423,12 @@ export function classifyRegisterSheet(params: {
   if (learnedRegRule) {
     const matchedFamily = learnedRegRule.target as WorkflowFamily;
     evidence.push(`Enterprise Learning Engine match for worksheet "${sheetName}" -> ${matchedFamily}`);
+    const compositeIdentity = buildCompositeIdentity(matchedFamily, fileName, sheetName, headers, sampleRows);
     return {
       detectedFamily: matchedFamily,
       confidence: 1.0,
-      evidence
+      evidence,
+      compositeIdentity
     };
   }
 
@@ -438,19 +640,24 @@ export function classifyRegisterSheet(params: {
   // Minimum threshold is 70% (confidence >= 0.70)
   if (confidence >= 0.70 && bestFamily !== 'UNKNOWN') {
     evidence.push(`Automatic Classification APPROVED: ${bestFamily} exceeds 70% threshold`);
+    const compositeIdentity = buildCompositeIdentity(bestFamily, fileName, sheetName, headers, sampleRows);
     return {
       detectedFamily: bestFamily,
       confidence,
-      evidence
+      evidence,
+      compositeIdentity
     };
   }
 
   // Under the 70% threshold, it is classified as UNKNOWN but we list the candidates in evidence
   evidence.push(`Automatic Classification SUSPENDED: Best candidate is ${bestFamily} (${(confidence * 100).toFixed(1)}%) but falls below 70% threshold.`);
+  const fallbackFamily = bestFamily !== 'UNKNOWN' ? bestFamily : 'UNKNOWN';
+  const compositeIdentity = buildCompositeIdentity(fallbackFamily, fileName, sheetName, headers, sampleRows);
   return {
     detectedFamily: 'UNKNOWN',
     confidence,
-    evidence
+    evidence,
+    compositeIdentity
   };
 }
 
@@ -459,13 +666,32 @@ export function classifyRegisterSheet(params: {
  */
 export function normalizeDiscipline(rawDiscipline: string, projectId: string = 'default_project'): string {
   const clean = rawDiscipline.trim().toUpperCase();
-  if (!clean) return 'General';
+  if (!clean || clean === 'UNCLASSIFIED') return 'UNCLASSIFIED';
+  if (clean === 'GEN' || clean === 'GENERAL') return 'General';
 
   // Check learned discipline mappings
   const rules = getLearningRules(projectId);
   const matchedRule = rules.find(r => r.type === 'discipline' && r.input.toUpperCase() === clean);
   if (matchedRule) {
-    return matchedRule.target; // Return the learned target discipline (e.g. "STRUCTURAL")
+    return matchedRule.target;
+  }
+
+  const detected = detectDisciplineFromText(clean);
+  if (detected) {
+    switch (detected.discipline) {
+      case 'ARCH': return 'Architectural';
+      case 'STR': return 'Structural';
+      case 'ELEC': return 'Electrical';
+      case 'MECH': return 'Mechanical';
+      case 'INFRA': return 'Infrastructure';
+      case 'IRR': return 'Irrigation';
+      case 'LAND': return 'Landscape';
+      case 'HSE': return 'HSE';
+      case 'SURVEY': return 'Survey';
+      case 'MULTIDISCIPLINE': return 'Multi-Discipline';
+      case 'GEN': return 'General';
+      default: return rawDiscipline;
+    }
   }
 
   return rawDiscipline;

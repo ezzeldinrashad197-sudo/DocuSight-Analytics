@@ -101,63 +101,113 @@ export const normalizeData = (rows: SubmittalRow[]): SubmittalRow[] => {
       let docType = mapped.workflowFamily === 'LETTER' ? 'LTR' : mapped.workflowFamily;
 
       const resolveTradeFromRow = (r: SubmittalRow, docTypeFamily: string) => {
-          const logType = (r.logType || r.documentType || '').toUpperCase().trim();
+          const compDisc = (r.compositeIdentity?.discipline || r.contextDiscipline || '').toUpperCase().trim();
+          const logType = (r.logType || r.rawSourceIdentity || r.documentType || '').toUpperCase().trim();
           const explicitDisc = (r.discipline || '').toUpperCase().trim();
           const tradeField = (r.trade || r.tradeSystem || '').toUpperCase().trim();
 
-          // 1. Primary check: logType / documentType tab name
-          if (logType.includes('STR') || logType.includes('CIVIL')) {
-              return { trade: 'Structural', tradeShort: 'STR' };
-          }
-          if (logType.includes('ARC') || logType.includes('ARCH')) {
-              return { trade: 'Architectural', tradeShort: 'ARC' };
-          }
-          if (logType.includes('MEC') || logType.includes('MECH')) {
-              return { trade: 'Mechanical', tradeShort: 'MEC' };
-          }
-          if (logType.includes('LND') || logType.includes('LAND')) {
-              return { trade: 'Landscape', tradeShort: 'LND' };
-          }
-          if (logType.includes('INFRA') || logType.includes('INFR') || logType.includes('INF')) {
-              return { trade: 'Infrastructure', tradeShort: 'INFRA' };
-          }
-          if (logType.includes('ELE') || logType.includes('ELEC')) {
-              return { trade: 'Electrical', tradeShort: 'ELE' };
-          }
-          if (logType.includes('GEN') || logType.includes('SURV') || logType.includes('SUR') || logType.includes('HSE')) {
-              return { trade: 'General', tradeShort: 'GEN' };
-          }
+          const mapDiscToTrade = (str: string) => {
+              if (!str) return null;
+              const clean = str.toUpperCase().trim();
+              if (!clean) return null;
 
-          // 2. Secondary check: explicit discipline field
-          if (explicitDisc && explicitDisc !== 'GEN' && explicitDisc !== 'GENERAL') {
-              if (explicitDisc.includes('STR') || explicitDisc.includes('CIVIL') || explicitDisc.includes('CVL') || explicitDisc.includes('إنشائي')) {
-                  return { trade: 'Structural', tradeShort: 'STR' };
+              // Tokenize string by standard punctuation/whitespace boundaries
+              const tokens = clean.split(/[-_ \/(),&.]+/).filter(Boolean);
+
+              // 1. Multi-discipline (e.g. ARCH & STR)
+              if (clean.includes('MULTIDISCIPLINE') || (tokens.includes('ARCH') && tokens.includes('STR')) || (tokens.includes('ARC') && tokens.includes('STR'))) {
+                  return { trade: 'Multi-Discipline', tradeShort: 'MULTI' };
               }
-              if (explicitDisc.includes('ARCH') || explicitDisc.includes('ARC') || explicitDisc.includes('معماري')) {
-                  return { trade: 'Architectural', tradeShort: 'ARC' };
-              }
-              if (explicitDisc.includes('MECH') || explicitDisc.includes('MEC') || explicitDisc.includes('ميكانيك')) {
-                  return { trade: 'Mechanical', tradeShort: 'MEC' };
-              }
-              if (explicitDisc.includes('ELEC') || explicitDisc.includes('ELE') || explicitDisc.includes('كهرباء')) {
-                  return { trade: 'Electrical', tradeShort: 'ELE' };
-              }
-              if (explicitDisc.includes('INFRA') || explicitDisc.includes('INFR') || explicitDisc.includes('INF') || explicitDisc.includes('UTILITIES')) {
+
+              // 2. INFRASTRUCTURE / INFRA / INFR / INF / UTILITIES / بنية تحتية
+              // MUST be resolved explicitly FIRST before Structural or any other matcher
+              if (
+                  tokens.some(t => ['INF', 'INFR', 'INFRA', 'INFRASTRUCTURE', 'UTILITIES'].includes(t)) ||
+                  clean.includes('بنية تحتية') ||
+                  clean.includes('مرافق') ||
+                  clean === 'INF' || clean === 'INFRA' || clean === 'INFR' || clean === 'INFRASTRUCTURE'
+              ) {
                   return { trade: 'Infrastructure', tradeShort: 'INFRA' };
               }
-              if (explicitDisc.includes('LAND') || explicitDisc.includes('LND')) {
+
+              // 3. MEP (e.g. MEP, M.E.P, كهروميكانيك)
+              if (tokens.some(t => ['MEP', 'M.E.P'].includes(t)) || clean.includes('كهروميكانيك') || clean.includes('الكتروميكانيك') || clean.includes('اليكتروميكانيك')) {
+                  return { trade: 'MEP', tradeShort: 'MEP' };
+              }
+
+              // 4. Structural (e.g. STR, STRUCT, STRUCTURAL, CIVIL, CVL, إنشائي)
+              if (tokens.some(t => ['STR', 'STRUCT', 'STRUCTURAL', 'CIVIL', 'CVL'].includes(t)) || clean.includes('إنشائي') || clean.includes('انشائي') || clean.includes('مدني') || clean.includes('مدنى')) {
+                  return { trade: 'Structural', tradeShort: 'STR' };
+              }
+
+              // 5. Architectural (e.g. ARCH, ARC, ARCHITECTURAL, ARCHITECTURE, معماري)
+              if (tokens.some(t => ['ARCH', 'ARC', 'ARCHITECTURAL', 'ARCHITECTURE'].includes(t)) || clean.includes('معماري') || clean.includes('معمارى') || clean.includes('عمارة')) {
+                  return { trade: 'Architectural', tradeShort: 'ARC' };
+              }
+
+              // 6. Mechanical (e.g. MECH, MEC, MECHANICAL, HVAC, ميكانيك)
+              if (tokens.some(t => ['MECH', 'MEC', 'MECHANICAL', 'HVAC'].includes(t)) || clean.includes('ميكانيك') || clean.includes('ميكانيكا')) {
+                  return { trade: 'Mechanical', tradeShort: 'MEC' };
+              }
+
+              // 7. Electrical (e.g. ELEC, ELE, ELECTRICAL, ELECTRIC, كهرباء)
+              if (tokens.some(t => ['ELEC', 'ELE', 'ELECTRICAL', 'ELECTRIC'].includes(t)) || clean.includes('كهرباء') || clean.includes('كهربائية')) {
+                  return { trade: 'Electrical', tradeShort: 'ELE' };
+              }
+
+              // 8. Landscape (e.g. LAND, LND, LANDSCAPE, لاند)
+              if (tokens.some(t => ['LAND', 'LND', 'LANDSCAPE'].includes(t)) || clean.includes('لاند')) {
                   return { trade: 'Landscape', tradeShort: 'LND' };
               }
+
+              // 9. Irrigation (e.g. IRR, IRRIGATION, ري)
+              if (tokens.some(t => ['IRR', 'IRRIGATION'].includes(t)) || clean.includes('ري')) {
+                  return { trade: 'Irrigation', tradeShort: 'IRR' };
+              }
+
+              // 10. HSE / Safety (e.g. HSE, SAFETY, HEALTH, ENV, سلامة)
+              if (tokens.some(t => ['HSE', 'SAFETY', 'HEALTH', 'ENV'].includes(t)) || clean.includes('سلامة') || clean.includes('سلامه')) {
+                  return { trade: 'HSE', tradeShort: 'HSE' };
+              }
+
+              // 10. Survey (e.g. SURVEY, SURV, SUR, مساحة)
+              if (tokens.some(t => ['SURVEY', 'SURV', 'SUR'].includes(t)) || clean.includes('مساحة') || clean.includes('مساحه')) {
+                  return { trade: 'Survey', tradeShort: 'SURV' };
+              }
+
+              // 11. General
+              if (tokens.some(t => ['GEN', 'GENERAL'].includes(t)) || clean === 'GEN' || clean === 'GENERAL') {
+                  return { trade: 'General', tradeShort: 'GEN' };
+              }
+
+              return null;
+          };
+
+          // 1. Explicit Row Discipline (Highest priority for multi-trade row separation)
+          if (explicitDisc && explicitDisc !== 'GEN' && explicitDisc !== 'GENERAL' && explicitDisc !== 'UNCLASSIFIED') {
+              const mappedExplicit = mapDiscToTrade(explicitDisc);
+              if (mappedExplicit) return mappedExplicit;
           }
 
-          // 3. Secondary check: tradeField
-          if (tradeField && tradeField !== 'GEN' && tradeField !== 'GENERAL') {
-              if (tradeField.includes('STR') || tradeField.includes('CIVIL')) return { trade: 'Structural', tradeShort: 'STR' };
-              if (tradeField.includes('ARCH') || tradeField.includes('ARC')) return { trade: 'Architectural', tradeShort: 'ARC' };
-              if (tradeField.includes('MECH') || tradeField.includes('MEC')) return { trade: 'Mechanical', tradeShort: 'MEC' };
-              if (tradeField.includes('ELEC') || tradeField.includes('ELE')) return { trade: 'Electrical', tradeShort: 'ELE' };
-              if (tradeField.includes('INFRA') || tradeField.includes('INFR')) return { trade: 'Infrastructure', tradeShort: 'INFRA' };
-              if (tradeField.includes('LAND') || tradeField.includes('LND')) return { trade: 'Landscape', tradeShort: 'LND' };
+          // 2. Explicit Trade Field
+          if (tradeField && tradeField !== 'GEN' && tradeField !== 'GENERAL' && tradeField !== 'UNCLASSIFIED') {
+              const mappedTrade = mapDiscToTrade(tradeField);
+              if (mappedTrade) return mappedTrade;
+          }
+
+          // 3. Container Composite Identity Fallback (from filename or worksheet level lock)
+          if (compDisc && compDisc !== 'UNCLASSIFIED') {
+              const mappedComp = mapDiscToTrade(compDisc);
+              if (mappedComp) return mappedComp;
+          }
+
+          // 4. LogType / Raw Source Identity string fallback
+          const mappedLog = mapDiscToTrade(logType);
+          if (mappedLog && mappedLog.tradeShort !== 'GEN') return mappedLog;
+
+          // 5. Zero-Invention Rule Fallback
+          if (explicitDisc === 'UNCLASSIFIED' || compDisc === 'UNCLASSIFIED') {
+              return { trade: 'UNCLASSIFIED', tradeShort: 'UNCLASS' };
           }
 
           return { trade: 'General', tradeShort: 'GEN' };
@@ -166,7 +216,7 @@ export const normalizeData = (rows: SubmittalRow[]): SubmittalRow[] => {
       const { trade, tradeShort } = resolveTradeFromRow(r, docType);
 
       docType = `${docType}-${tradeShort}`;
-      let finalDiscipline = (r.discipline && r.discipline !== 'GEN' && r.discipline !== 'GENERAL') ? r.discipline : trade;
+      let finalDiscipline = (r.discipline && r.discipline !== 'GEN' && r.discipline !== 'GENERAL' && r.discipline !== 'UNCLASSIFIED') ? r.discipline : trade;
 
       // DO NOT override GEN to HSE. The user explicitly requested to respect the parsed content.
 
@@ -862,7 +912,9 @@ export function resolveRowDiscipline(d: SubmittalRow, bt: string): string {
   if (['STR', 'STRUCT', 'CIVIL', 'CVL'].includes(suffix)) return 'STR';
   if (['MEC', 'MECH', 'MECHANICAL'].includes(suffix)) return 'Mech';
   if (['ELE', 'ELEC', 'ELECTRICAL'].includes(suffix)) return 'Elec';
+  if (['MEP', 'M.E.P', 'كهروميكانيك'].includes(suffix)) return 'MEP';
   if (['INF', 'INFR', 'INFRA', 'UTILITIES'].includes(suffix)) return 'Infra';
+  if (['IRR', 'IRRIGATION'].includes(suffix)) return 'Irrigation';
   if (['LND', 'LAND', 'LANDSCAPE'].includes(suffix)) return 'Landscape';
   if (['SUR', 'SURV', 'SURVEY'].includes(suffix)) return 'SURVEY';
   if (['HSE', 'SAFETY'].includes(suffix)) return 'HSE';
@@ -875,7 +927,9 @@ export function resolveRowDiscipline(d: SubmittalRow, bt: string): string {
       if (['STR', 'STRUCT', 'STRUCTURAL', 'CIVIL', 'CVL', 'إنشائي'].includes(t)) return 'STR';
       if (['MECH', 'MEC', 'MECHANICAL', 'ميكانيك'].includes(t)) return 'Mech';
       if (['ELEC', 'ELE', 'ELECTRICAL', 'كهرباء'].includes(t)) return 'Elec';
+      if (['MEP', 'M.E.P', 'كهروميكانيك', 'الكتروميكانيك', 'اليكتروميكانيك'].includes(t)) return 'MEP';
       if (['INFRA', 'INFR', 'INF', 'INFRASTRUCTURE', 'UTILITIES', 'بنية'].includes(t)) return 'Infra';
+      if (['IRR', 'IRRIGATION', 'ري'].includes(t)) return 'Irrigation';
       if (['LANDSCAPE', 'LAND', 'LND', 'موقع'].includes(t)) return 'Landscape';
       if (['SURVEY', 'SURV', 'SUR', 'مساحة'].includes(t)) return 'SURVEY';
       if (['HSE', 'SAFETY', 'سلامة'].includes(t)) return 'HSE';
@@ -891,7 +945,9 @@ export function resolveRowDiscipline(d: SubmittalRow, bt: string): string {
       if (['STR', 'STRUCT', 'STRUCTURAL', 'CIVIL', 'CVL', 'إنشائي'].includes(t)) return 'STR';
       if (['MECH', 'MEC', 'MECHANICAL', 'ميكانيك'].includes(t)) return 'Mech';
       if (['ELEC', 'ELE', 'ELECTRICAL', 'كهرباء'].includes(t)) return 'Elec';
+      if (['MEP', 'M.E.P', 'كهروميكانيك', 'الكتروميكانيك', 'اليكتروميكانيك'].includes(t)) return 'MEP';
       if (['INFRA', 'INFR', 'INF', 'INFRASTRUCTURE', 'UTILITIES'].includes(t)) return 'Infra';
+      if (['IRR', 'IRRIGATION', 'ري'].includes(t)) return 'Irrigation';
       if (['LANDSCAPE', 'LAND', 'LND'].includes(t)) return 'Landscape';
       if (['SURVEY', 'SURV', 'SUR', 'مساحة'].includes(t)) return 'SURVEY';
       if (['HSE', 'SAFETY', 'سلامة'].includes(t)) return 'HSE';

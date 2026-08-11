@@ -57,7 +57,7 @@ export const parseExcelFile = (file: File): Promise<SubmittalRow[]> => {
             rawData[headerRowIdx] || [];
           const rows = rawData.slice(headerRowIdx + 1);
 
-          const activeProjectId = typeof window !== 'undefined' ? (localStorage.getItem('docuCtrl_activeProjectId') || 'default_project') : 'default_project';
+            const activeProjectId = typeof window !== 'undefined' ? (localStorage.getItem('docuCtrl_activeProjectId') || 'default_project') : 'default_project';
           const classification = classifyRegisterSheet({
             fileName: file.name,
             sheetName: sheetName,
@@ -67,6 +67,7 @@ export const parseExcelFile = (file: File): Promise<SubmittalRow[]> => {
           });
 
           const detectedType = classification.detectedFamily;
+          const compIdent = classification.compositeIdentity;
 
           const getColIdx = (aliases: string[], exclusions: string[] = []) => {
             return headers.findIndex((h) => {
@@ -95,6 +96,16 @@ export const parseExcelFile = (file: File): Promise<SubmittalRow[]> => {
             "trade",
             "department",
             "related discipline",
+            "category",
+            "submittal category",
+            "discipline / trade",
+            "discipline/trade",
+            "trade / system",
+            "trade/system",
+            "spec section",
+            "spec. section",
+            "discipline/category",
+            "discipline / category",
           ]);
           const colContractor = getColIdx(["contractor"]);
           const colConsultant = getColIdx(["consultant"]);
@@ -214,13 +225,17 @@ export const parseExcelFile = (file: File): Promise<SubmittalRow[]> => {
             const extractDiscipline = (str: string): string | null => {
               const t = str.toUpperCase().trim();
               if (t.includes("STR/SUR") || t.includes("STR-SUR") || t.includes("STR_SUR")) return "STR/SUR";
-              const words = t.split(/[-_ \/(),&]/);
+              const words = t.split(/[-_ \/(),&.]/);
               if (words.includes("STR") && (words.includes("ARC") || words.includes("ARCH"))) {
                 return null; // Multi-discipline name (e.g. ARCH & STR)
+              }
+              if (words.includes("MEP") || words.includes("M.E.P") || t.includes("كهروميكانيك") || t.includes("اليكتروميكانيك") || t.includes("الكتروميكانيك")) {
+                return "MEP";
               }
               if (
                 words.includes("ARC") ||
                 words.includes("ARCH") ||
+                words.includes("ARCHITECTURAL") ||
                 t.includes("ARCHITECT") ||
                 t.includes("معماري") ||
                 t.includes("معمارى")
@@ -229,6 +244,7 @@ export const parseExcelFile = (file: File): Promise<SubmittalRow[]> => {
               if (
                 words.includes("STR") ||
                 words.includes("STRUCT") ||
+                words.includes("STRUCTURAL") ||
                 words.includes("CIVIL") ||
                 words.includes("CVL") ||
                 t.includes("انشائي") ||
@@ -240,6 +256,7 @@ export const parseExcelFile = (file: File): Promise<SubmittalRow[]> => {
               if (
                 words.includes("MEC") ||
                 words.includes("MECH") ||
+                words.includes("MECHANICAL") ||
                 t.includes("MECHANIC") ||
                 t.includes("ميكانيك") ||
                 t.includes("ميكانيكا")
@@ -248,18 +265,20 @@ export const parseExcelFile = (file: File): Promise<SubmittalRow[]> => {
               if (
                 words.includes("ELE") ||
                 words.includes("ELEC") ||
+                words.includes("ELECTRICAL") ||
                 t.includes("ELECTRIC") ||
                 t.includes("كهربا") ||
                 t.includes("كهرباء")
               )
                 return "ELEC";
-              if (words.includes("INF") || words.includes("INFRA") || t.includes("طرق") || t.includes("بنية تحتية"))
+              if (words.includes("INF") || words.includes("INFR") || words.includes("INFRA") || words.includes("INFRASTRUCTURE") || t.includes("طرق") || t.includes("بنية تحتية"))
                 return "INFRA";
               if (
                 words.includes("LND") ||
                 words.includes("LAN") ||
+                words.includes("LAND") ||
                 t.includes("LANDSCAPE") ||
-                t.includes("كاندسكيب") ||
+                t.includes("لاندسكيب") ||
                 t.includes("لاند سكيب")
               )
                 return "LAND";
@@ -277,7 +296,6 @@ export const parseExcelFile = (file: File): Promise<SubmittalRow[]> => {
               )
                 return "HSE";
               if (
-                words.includes("SUR") ||
                 words.includes("SURV") ||
                 words.includes("SURVEY") ||
                 t.includes("SURVEY") ||
@@ -309,16 +327,27 @@ export const parseExcelFile = (file: File): Promise<SubmittalRow[]> => {
               sheetName.toLowerCase().includes("safety") ||
               file.name.toLowerCase().includes("safety");
 
-            const contextDiscipline = extractDiscipline(sheetName) || extractDiscipline(file.name);
+            const compDisc = compIdent?.discipline;
+            const isCompDiscValid = compDisc && compDisc !== 'UNCLASSIFIED';
 
             if (
               rawDiscipline &&
               rawDiscipline.length > 0 &&
-              !["YES", "NO", "N/A", "-"].includes(rawDiscipline)
+              !["YES", "NO", "N/A", "-", "NONE", "NULL"].includes(rawDiscipline)
             ) {
-              disciplineVal = extractDiscipline(rawDiscipline) || rawDiscipline;
-            } else if (contextDiscipline) {
-              disciplineVal = contextDiscipline;
+              const extracted = extractDiscipline(rawDiscipline);
+              if (extracted && extracted !== 'GEN') {
+                disciplineVal = extracted;
+              } else if (isCompDiscValid && (rawDiscipline === 'GEN' || rawDiscipline === 'GENERAL')) {
+                // Evidence Protection Rule:
+                // Level 1 / Level 2 composite identity (e.g. WIR-ARCH) MUST NOT be overwritten by generic row value
+                disciplineVal = compDisc;
+              } else {
+                disciplineVal = rawDiscipline;
+              }
+            } else if (isCompDiscValid) {
+              // Inherit from CompositeIdentity if no explicit row discipline
+              disciplineVal = compDisc;
             } else {
               const refString = (
                 colNcrRef >= 0
@@ -327,24 +356,18 @@ export const parseExcelFile = (file: File): Promise<SubmittalRow[]> => {
                     ? String(r[colDocNo])
                     : ""
               ).toUpperCase();
-              disciplineVal =
-                extractDiscipline(sheetName) ||
-                extractDiscipline(file.name) ||
-                extractDiscipline(refString) ||
-                (isLetter ? "GENERAL" : (isNcr ? "HSE" : "SURVEY"));
-            }
-
-            // Normalize common general/survey names (except for letters)
-            if (!isLetter) {
-              if (disciplineVal === "GEN" || disciplineVal === "GE" || disciplineVal === "GENERAL") {
-                disciplineVal = isNcr ? "HSE" : "SURVEY";
-              }
-              if (isNcr && (disciplineVal === "SURVEY" || disciplineVal === "SURV" || disciplineVal === "SUR")) {
-                disciplineVal = "HSE";
-              }
-            } else {
-              if (disciplineVal === "GEN" || disciplineVal === "GE" || disciplineVal === "SURVEY")
+              const extractedRefDisc = extractDiscipline(refString);
+              if (extractedRefDisc) {
+                disciplineVal = extractedRefDisc;
+              } else if (isLetter) {
                 disciplineVal = "GENERAL";
+              } else if (isNcr && (contextualStr.includes("hse") || contextualStr.includes("safety"))) {
+                disciplineVal = "HSE";
+              } else {
+                // Zero-Invention Rule: Output UNCLASSIFIED when evidence is insufficient.
+                // NEVER silently convert to SURVEY or HSE or GENERAL!
+                disciplineVal = "UNCLASSIFIED";
+              }
             }
 
             const rawCode =
@@ -371,8 +394,11 @@ export const parseExcelFile = (file: File): Promise<SubmittalRow[]> => {
 
             parsed.push({
               id: `${sheetName}-${idx}`,
-              logType: detectedType !== 'UNKNOWN' ? detectedType : sheetName.trim().toUpperCase(),
+              logType: compIdent?.compositeCode || (detectedType !== 'UNKNOWN' ? detectedType : sheetName.trim().toUpperCase()),
               sourceFile: file.name.replace(/\.[^/.]+$/, ""),
+              rawSourceIdentity: compIdent?.rawSourceIdentity || file.name,
+              contextDiscipline: compIdent?.discipline,
+              compositeIdentity: compIdent,
               documentType: "", // Normalized later
               trade: "", // Normalized later
               workflowStage: "", // Normalized later

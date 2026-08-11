@@ -114,14 +114,6 @@
     },
     {
       "file": "src/analytics/calculationFoundation.ts",
-      "exportName": "getBusinessEntityKey",
-      "type": "Function",
-      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
-      "reason": "No incoming imports of 'getBusinessEntityKey' detected in any active source modules.",
-      "referencedBy": []
-    },
-    {
-      "file": "src/analytics/calculationFoundation.ts",
       "exportName": "EngineeringItemClassification",
       "type": "Type/Interface",
       "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
@@ -177,6 +169,14 @@
       "referencedBy": []
     },
     {
+      "file": "src/analytics/governance/businessRuleRegistry.ts",
+      "exportName": "ENGINE_RULE_VERSIONS",
+      "type": "Component",
+      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+      "reason": "No incoming imports of 'ENGINE_RULE_VERSIONS' detected in any active source modules.",
+      "referencedBy": []
+    },
+    {
       "file": "src/analytics/governance/canonicalEngineAdapter.ts",
       "exportName": "AdaptedCalculationResult",
       "type": "Type/Interface",
@@ -222,6 +222,54 @@
       "type": "Function",
       "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
       "reason": "No incoming imports of 'updateSystemConfiguration' detected in any active source modules.",
+      "referencedBy": []
+    },
+    {
+      "file": "src/analytics/governance/goldenRegressionSuite.ts",
+      "exportName": "InvariantCheckResult",
+      "type": "Type/Interface",
+      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+      "reason": "No incoming imports of 'InvariantCheckResult' detected in any active source modules.",
+      "referencedBy": []
+    },
+    {
+      "file": "src/analytics/governance/goldenRegressionSuite.ts",
+      "exportName": "GoldenRegisterTestResult",
+      "type": "Type/Interface",
+      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+      "reason": "No incoming imports of 'GoldenRegisterTestResult' detected in any active source modules.",
+      "referencedBy": []
+    },
+    {
+      "file": "src/analytics/governance/goldenRegressionSuite.ts",
+      "exportName": "GOLDEN_REGISTER_TYPES",
+      "type": "Component",
+      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+      "reason": "No incoming imports of 'GOLDEN_REGISTER_TYPES' detected in any active source modules.",
+      "referencedBy": []
+    },
+    {
+      "file": "src/analytics/governance/validationFramework.ts",
+      "exportName": "runInvariantGuards",
+      "type": "Constant/Enum/Class",
+      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+      "reason": "No incoming imports of 'runInvariantGuards' detected in any active source modules.",
+      "referencedBy": []
+    },
+    {
+      "file": "src/analytics/governance/validationFramework.ts",
+      "exportName": "runGoldenRegressionSuite",
+      "type": "Constant/Enum/Class",
+      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+      "reason": "No incoming imports of 'runGoldenRegressionSuite' detected in any active source modules.",
+      "referencedBy": []
+    },
+    {
+      "file": "src/analytics/governance/validationFramework.ts",
+      "exportName": "ENGINE_VERSIONS",
+      "type": "Component",
+      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+      "reason": "No incoming imports of 'ENGINE_VERSIONS' detected in any active source modules.",
       "referencedBy": []
     },
     {
@@ -497,6 +545,14 @@
       "referencedBy": []
     },
     {
+      "file": "src/components/CommercialValidationGateCenter.tsx",
+      "exportName": "CVGTestRecord",
+      "type": "Type/Interface",
+      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+      "reason": "No incoming imports of 'CVGTestRecord' detected in any active source modules.",
+      "referencedBy": []
+    },
+    {
       "file": "src/db/index.ts",
       "exportName": "createPool",
       "type": "Function",
@@ -737,6 +793,46 @@
       "referencedBy": []
     },
     {
+      "file": "src/utils/calculationVerificationEngine.ts",
+      "exportName": "BenchmarkTestCase",
+      "type": "Type/Interface",
+      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+      "reason": "No incoming imports of 'BenchmarkTestCase' detected in any active source modules.",
+      "referencedBy": []
+    },
+    {
+      "file": "src/utils/calculationVerificationEngine.ts",
+      "exportName": "RawEvidenceSnapshot",
+      "type": "Type/Interface",
+      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+      "reason": "No incoming imports of 'RawEvidenceSnapshot' detected in any active source modules.",
+      "referencedBy": []
+    },
+    {
+      "file": "src/utils/calculationVerificationEngine.ts",
+      "exportName": "StressBenchmarkResult",
+      "type": "Type/Interface",
+      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+      "reason": "No incoming imports of 'StressBenchmarkResult' detected in any active source modules.",
+      "referencedBy": []
+    },
+    {
+      "file": "src/utils/calculationVerificationEngine.ts",
+      "exportName": "RejectedItemAuditEntry",
+      "type": "Type/Interface",
+      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+      "reason": "No incoming imports of 'RejectedItemAuditEntry' detected in any active source modules.",
+      "referencedBy": []
+    },
+    {
+      "file": "src/utils/calculationVerificationEngine.ts",
+      "exportName": "VerificationEvidencePackSummary",
+      "type": "Type/Interface",
+      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+      "reason": "No incoming imports of 'VerificationEvidencePackSummary' detected in any active source modules.",
+      "referencedBy": []
+    },
+    {
       "file": "src/utils/calculations.ts",
       "exportName": "getUniqueNCRs",
       "type": "Function",
@@ -758,6 +854,22 @@
       "type": "Type/Interface",
       "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
       "reason": "No incoming imports of 'ClassificationResult' detected in any active source modules.",
+      "referencedBy": []
+    },
+    {
+      "file": "src/utils/classificationEngine.ts",
+      "exportName": "detectDisciplineFromText",
+      "type": "Function",
+      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+      "reason": "No incoming imports of 'detectDisciplineFromText' detected in any active source modules.",
+      "referencedBy": []
+    },
+    {
+      "file": "src/utils/classificationEngine.ts",
+      "exportName": "buildCompositeIdentity",
+      "type": "Function",
+      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+      "reason": "No incoming imports of 'buildCompositeIdentity' detected in any active source modules.",
       "referencedBy": []
     },
     {
@@ -950,6 +1062,70 @@
       "type": "Type/Interface",
       "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
       "reason": "No incoming imports of 'NormalizedStatus' detected in any active source modules.",
+      "referencedBy": []
+    },
+    {
+      "file": "src/utils/universalRegisterSchema.ts",
+      "exportName": "FieldRequirementType",
+      "type": "Type/Interface",
+      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+      "reason": "No incoming imports of 'FieldRequirementType' detected in any active source modules.",
+      "referencedBy": []
+    },
+    {
+      "file": "src/utils/universalRegisterSchema.ts",
+      "exportName": "FieldRequirementSpec",
+      "type": "Type/Interface",
+      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+      "reason": "No incoming imports of 'FieldRequirementSpec' detected in any active source modules.",
+      "referencedBy": []
+    },
+    {
+      "file": "src/utils/universalRegisterSchema.ts",
+      "exportName": "KPICalculabilityStatus",
+      "type": "Type/Interface",
+      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+      "reason": "No incoming imports of 'KPICalculabilityStatus' detected in any active source modules.",
+      "referencedBy": []
+    },
+    {
+      "file": "src/utils/universalRegisterSchema.ts",
+      "exportName": "CompatibilityScoreBreakdown",
+      "type": "Type/Interface",
+      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+      "reason": "No incoming imports of 'CompatibilityScoreBreakdown' detected in any active source modules.",
+      "referencedBy": []
+    },
+    {
+      "file": "src/utils/universalRegisterSchema.ts",
+      "exportName": "ThreeTierDataArchitectureSpec",
+      "type": "Type/Interface",
+      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+      "reason": "No incoming imports of 'ThreeTierDataArchitectureSpec' detected in any active source modules.",
+      "referencedBy": []
+    },
+    {
+      "file": "src/utils/universalRegisterSchema.ts",
+      "exportName": "CommercialTierSpec",
+      "type": "Type/Interface",
+      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+      "reason": "No incoming imports of 'CommercialTierSpec' detected in any active source modules.",
+      "referencedBy": []
+    },
+    {
+      "file": "src/utils/universalRegisterSchema.ts",
+      "exportName": "ContractValidationResult",
+      "type": "Type/Interface",
+      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+      "reason": "No incoming imports of 'ContractValidationResult' detected in any active source modules.",
+      "referencedBy": []
+    },
+    {
+      "file": "src/utils/universalRegisterSchema.ts",
+      "exportName": "autoMapColumns",
+      "type": "Function",
+      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+      "reason": "No incoming imports of 'autoMapColumns' detected in any active source modules.",
       "referencedBy": []
     },
     {

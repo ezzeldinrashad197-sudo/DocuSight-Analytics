@@ -162,8 +162,8 @@ export const resolveUserPermissions = async (
     let uidExists = false;
     let emailExists = false;
 
-    // Fast 2-second timeout wrapper to prevent any hanging network state
-    const fetchWithTimeout = async <T>(promise: Promise<T>, fallback: T, ms = 2000): Promise<T> => {
+    // Reliable 8-second timeout wrapper to allow standard Firestore network reads
+    const fetchWithTimeout = async <T>(promise: Promise<T>, fallback: T, ms = 8000): Promise<T> => {
         let timer: any;
         const timeoutPromise = new Promise<T>((res) => {
             timer = setTimeout(() => res(fallback), ms);

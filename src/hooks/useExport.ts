@@ -171,7 +171,7 @@ const drawPdfHeaderFooter = (pdf: any, projectInfo: ProjectSettings | null, acti
         pdf.setTextColor(255, 255, 255);
         pdf.setFont("helvetica", "bold");
         pdf.setFontSize(9);
-        const headerTitle = options?.customHeader || "DOCUSIGHT ENTERPRISE ANALYTICS";
+        const headerTitle = options?.customHeader || "STRUCTUSIGHT ENTERPRISE INTELLIGENCE";
         pdf.text(headerTitle.toUpperCase(), 10, 6);
         
         pdf.setFont("helvetica", "normal");
@@ -229,7 +229,7 @@ const drawPdfHeaderFooter = (pdf: any, projectInfo: ProjectSettings | null, acti
         pdf.setFont("helvetica", "normal");
         pdf.setFontSize(7);
         pdf.setTextColor(100, 116, 139); // slate-500
-        const footerText = options?.customFooter || `DocuSight Enterprise Document Control Platform | CONCEPT & PRODUCT VISION BY EZZ RASHAD`;
+        const footerText = options?.customFooter || `StructuSight Enterprise Engineering Intelligence Platform | CONCEPT & PRODUCT VISION BY EZZ RASHAD`;
         pdf.text(footerText, 10, pdfHeight - 7);
         pdf.text(`Page ${i} of ${totalPages}`, pdfWidth - 30, pdfHeight - 7);
     }
@@ -257,7 +257,7 @@ export function useExport({ data, activeTab, filterMonthly, filterCumulative, ac
         
         try {
             await new Promise(r => setTimeout(r, 100));
-            const filename = `DocuSight-${activeTab}-${new Date().toISOString().split('T')[0]}.pptx`;
+            const filename = `StructuSight-${activeTab}-${new Date().toISOString().split('T')[0]}.pptx`;
 
             if (activeTab === 'presentation') {
                 // Programmatic, native slide-by-slide generator for presentation mode
@@ -330,7 +330,7 @@ export function useExport({ data, activeTab, filterMonthly, filterCumulative, ac
                 throw new Error(`Element #${elementId} was unmounted during export wait.`);
             }
 
-            const filename = `DocuSight-${activeTab}-${new Date().toISOString().split('T')[0]}.pdf`;
+            const filename = `StructuSight-${activeTab}-${new Date().toISOString().split('T')[0]}.pdf`;
 
             if (activeTab === 'presentation') {
                 const slides = Array.from(exportElement.querySelectorAll('.presentation-slide'));
@@ -421,7 +421,7 @@ export function useExport({ data, activeTab, filterMonthly, filterCumulative, ac
 
                 let rootOutline: any = null;
                 try {
-                    rootOutline = safeAddOutline(pdf, null, isArabic ? "تقرير تحليلات دوكوسايت" : "DocuSight Analytics Report", 1);
+                    rootOutline = safeAddOutline(pdf, null, isArabic ? "تقرير تحليلات StructuSight" : "StructuSight Intelligence Report", 1);
                 } catch (oe) {
                     console.warn(oe);
                 }

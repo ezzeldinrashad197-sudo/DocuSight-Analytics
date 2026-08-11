@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { FileSpreadsheet, FileUp, LayoutDashboard, CalendarDays, Clock, Database, CheckCircle2, AlertCircle, Printer, Presentation as PresentationIcon, Filter, Settings, Bot, ChevronLeft, ChevronRight, BarChart, Loader2, FileText, CheckSquare, ShieldAlert, ShieldCheck, Network, Hexagon, LogOut, Globe, Cpu, Building2, Layers } from 'lucide-react';
+import { FileSpreadsheet, FileUp, LayoutDashboard, CalendarDays, Clock, Database, CheckCircle2, AlertCircle, Printer, Presentation as PresentationIcon, Filter, Settings, Bot, ChevronLeft, ChevronRight, BarChart, Loader2, FileText, CheckSquare, ShieldAlert, ShieldCheck, Network, Hexagon, LogOut, Globe, Cpu, Layers } from 'lucide-react';
 import { SubmittalRow, ProjectSettings } from './types';
 import MasterRegister from './components/MasterRegister';
 import ReportTable from './ReportTable';
@@ -35,14 +35,13 @@ import EnterpriseMonitoringDashboard from './components/EnterpriseMonitoringDash
 import FinalAcceptanceAuditView from './components/FinalAcceptanceAuditView';
 import WorkflowMappingCenter from './components/WorkflowMappingCenter';
 import { CalculationAuditCenter } from './components/CalculationAuditCenter';
-import { CorporateReportsView } from './components/CorporateReportsView';
 import { UniversalRegisterEngine } from './components/UniversalRegisterEngine';
 import { normalizeData } from './utils/calculations';
 
 export default function App() {
   const { t, language, setLanguage, isRtl } = useLanguage();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [activeTab, setActiveTab] = useState<'enterprise_dashboard' | 'portfolio' | 'master_register' | 'validation' | 'aging' | 'sla' | 'actions' | 'monthly' | 'cumulative' | 'delay' | 'rfi' | 'presentation' | 'corporate_reports' | 'insights' | 'ncr' | 'sor' | 'ltr' | 'trend_forecast' | 'warehouse' | 'monitoring' | 'engineering_dataset' | 'final_audit' | 'mapping' | 'calc_audit' | 'universal_engine'>('portfolio');
+  const [activeTab, setActiveTab] = useState<'enterprise_dashboard' | 'portfolio' | 'master_register' | 'validation' | 'aging' | 'sla' | 'actions' | 'monthly' | 'cumulative' | 'delay' | 'rfi' | 'presentation' | 'insights' | 'ncr' | 'sor' | 'ltr' | 'trend_forecast' | 'warehouse' | 'monitoring' | 'engineering_dataset' | 'final_audit' | 'mapping' | 'calc_audit' | 'universal_engine'>('portfolio');
   const [activeRole, setActiveRole] = useState<string>('all');
 
   const activeRoleRef = useRef(activeRole);
@@ -255,21 +254,24 @@ export default function App() {
   
   useEffect(() => {
     if (data.length > 0 && activeProjectId) {
-       const generalData = data.filter(d => !isExcludedFromGeneralStats(d));
-       const totalDocs = generalData.length;
-       const approved = generalData.filter(d => ['A', 'B', 'APP', 'APPROVED'].includes(d.status || '')).length;
-       const overdue = generalData.filter(d => (d.delayDays || 0) > 0).length;
-       
-       const approvalRate = totalDocs > 0 ? (approved / totalDocs) * 100 : 0;
-       const overdueRate = totalDocs > 0 ? (overdue / totalDocs) * 100 : 0;
-       const healthScore = Math.max(0, Math.min(100, Math.round(100 - overdueRate + (approvalRate * 0.5))));
+       const timer = setTimeout(() => {
+         const generalData = data.filter(d => !isExcludedFromGeneralStats(d));
+         const totalDocs = generalData.length;
+         const approved = generalData.filter(d => ['A', 'B', 'APP', 'APPROVED'].includes(d.status || '')).length;
+         const overdue = generalData.filter(d => (d.delayDays || 0) > 0).length;
+         
+         const approvalRate = totalDocs > 0 ? (approved / totalDocs) * 100 : 0;
+         const overdueRate = totalDocs > 0 ? (overdue / totalDocs) * 100 : 0;
+         const healthScore = Math.max(0, Math.min(100, Math.round(100 - overdueRate + (approvalRate * 0.5))));
 
-       syncProjectStats(activeProjectId, {
-           totalDocs,
-           approvalRate,
-           overdueRate,
-           healthScore
-       });
+         syncProjectStats(activeProjectId, {
+             totalDocs,
+             approvalRate,
+             overdueRate,
+             healthScore
+         });
+       }, 1000);
+       return () => clearTimeout(timer);
     }
   }, [data, activeProjectId]);
 
@@ -353,10 +355,11 @@ export default function App() {
       <aside className={`bg-[#0A192F] text-white flex flex-col transition-all duration-300 ease-in-out border-r border-slate-700 print:hidden ${sidebarOpen ? 'w-64' : 'w-20'} sticky top-0 h-screen z-30`}>
         <div className="p-4 flex items-center justify-between border-b border-slate-700">
             <div className={`flex items-center gap-3 overflow-hidden ${!sidebarOpen && 'justify-center w-full'}`}>
-                <div className="bg-white p-1 rounded-md shrink-0">
-                    <BarChart className="w-6 h-6 text-[#0A192F]" />
-                </div>
-                {sidebarOpen && <span className="font-bold tracking-wide whitespace-nowrap text-sm">DocuSight</span>}
+                {sidebarOpen ? (
+                    <Logo variant="on-dark" className="h-8" showSubtitle={true} />
+                ) : (
+                    <Logo variant="symbol" className="h-8" />
+                )}
             </div>
             {sidebarOpen && (
                 <button onClick={() => setSidebarOpen(false)} className="text-slate-400 hover:text-white transition-colors">
@@ -415,10 +418,6 @@ export default function App() {
             
             {hasPermission(['executive', 'pd', 'pm']) && (
                 <TabButton id="presentation" label="Executive Monthly Report" icon={PresentationIcon} />
-            )}
-            
-            {hasPermission(['executive', 'pd', 'pm', 'dc', 'qaqc', 'em']) && (
-                <TabButton id="corporate_reports" label="Corporate Reports" icon={Building2} />
             )}
             
             {hasPermission(['executive', 'pd', 'pm']) && (
@@ -669,7 +668,7 @@ export default function App() {
                         <Logo className="h-12" />
                     </div>
                     <div className="text-right">
-                        <h2 className="text-xl font-bold tracking-tight text-[#0A192F]">DocuSight Analytics Form</h2>
+                        <h2 className="text-xl font-bold tracking-tight text-[#0D1B2A]">StructuSight Intelligence Platform</h2>
                         <p className="text-xs text-[#64748b] font-medium tracking-widest uppercase mt-0.5">
                             {activeProject ? `${activeProject.projectName} - ${activeProject.projectCode}` : 'No Project Configured'}
                         </p>
@@ -722,7 +721,6 @@ export default function App() {
                   {activeTab === 'delay' && <DelayAnalysis data={data.filter(filterCumulative)} projectInfo={activeProject} />}
                   {activeTab === 'rfi' && <RFIAnalytics data={data.filter(matchesFilters)} projectInfo={activeProject} monthlyStart={startDate} monthlyEnd={endDate} />}
                   {activeTab === 'presentation' && <Presentation data={data.filter(matchesFilters)} filterMonthly={filterMonthly} filterCumulative={filterCumulative} projectInfo={activeProject} startDate={startDate} />}
-                  {activeTab === 'corporate_reports' && <CorporateReportsView data={data.filter(matchesFilters)} filterMonthly={filterMonthly} filterCumulative={filterCumulative} projectInfo={activeProject} startDate={startDate} endDate={endDate} />}
                   {activeTab === 'insights' && <AIInsights data={data.filter(matchesFilters)} projectInfo={activeProject} />}
                   {activeTab === 'ncr' && <NCRAnalytics data={data.filter(matchesFilters)} projectInfo={activeProject} monthlyStart={startDate} monthlyEnd={endDate} />}
                   {activeTab === 'sor' && <SORAnalytics data={data.filter(matchesFilters)} projectInfo={activeProject} monthlyStart={startDate} monthlyEnd={endDate} />}

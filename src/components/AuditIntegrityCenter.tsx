@@ -237,7 +237,7 @@ export const AuditIntegrityCenter: React.FC<AuditIntegrityCenterProps> = ({ proj
                 Audit & Governance Intelligence (مركز الحوكمة والنزاهة)
               </span>
               <h1 className="text-2xl font-black text-white font-sans tracking-tight flex items-center gap-3">
-                DocuSight Audit & Integrity Center
+                StructuSight Audit & Integrity Center
               </h1>
             </div>
           </div>
@@ -662,13 +662,13 @@ export const AuditIntegrityCenter: React.FC<AuditIntegrityCenterProps> = ({ proj
                 <div>
                   <div className="flex items-center gap-2 text-emerald-700 font-mono font-bold text-xs uppercase tracking-widest mb-1">
                     <ShieldCheck className="w-5 h-5 text-emerald-600" />
-                    DocuSight Analytics Enterprise Audit Certification
+                    StructuSight Enterprise Audit Certification
                   </div>
                   <h1 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tight font-sans">
                     OFFICIAL AUDIT & BASELINE CERTIFICATE
                   </h1>
                   <p className="text-xs text-slate-500 font-mono mt-1">
-                    Issuance Authority: DocuSight Quality & Audit Governance Engine
+                    Issuance Authority: StructuSight Quality & Audit Governance Engine
                   </p>
                 </div>
 
@@ -691,11 +691,11 @@ export const AuditIntegrityCenter: React.FC<AuditIntegrityCenterProps> = ({ proj
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-slate-100/70 rounded-2xl border border-slate-200 text-xs font-mono">
                 <div>
                   <span className="text-slate-500 block text-[10px] uppercase font-bold">Target Platform</span>
-                  <span className="font-bold text-slate-900">DocuSight Analytics</span>
+                  <span className="font-bold text-slate-900">StructuSight Platform</span>
                 </div>
                 <div>
                   <span className="text-slate-500 block text-[10px] uppercase font-bold">Project Ref</span>
-                  <span className="font-bold text-slate-900">{projectInfo?.projectCode || 'DOCUSIGHT-ENT'}</span>
+                  <span className="font-bold text-slate-900">{projectInfo?.projectCode || 'STRUCTUSIGHT-ENT'}</span>
                 </div>
                 <div>
                   <span className="text-slate-500 block text-[10px] uppercase font-bold">Baseline Version</span>
@@ -836,7 +836,7 @@ export const AuditIntegrityCenter: React.FC<AuditIntegrityCenterProps> = ({ proj
                 <div className="space-y-1 text-left">
                   <p className="font-bold text-slate-900 font-sans">Ezz Rashad</p>
                   <p className="text-slate-500 text-[11px]">Product Lead & Principal System Architect</p>
-                  <p className="text-slate-400 font-mono text-[10px]">DocuSight Quality & Audit Governance</p>
+                  <p className="text-slate-400 font-mono text-[10px]">StructuSight Quality & Audit Governance</p>
                 </div>
 
                 <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-2xl text-center space-y-1">

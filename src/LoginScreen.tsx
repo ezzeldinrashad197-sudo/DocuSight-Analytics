@@ -233,9 +233,9 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
             </div>
 
             <div className="flex flex-col items-center mb-8 relative z-10">
-                <Logo className="h-16 mb-4" />
-                <h1 className="text-2xl font-bold tracking-tight text-white mb-2">{t('enterprise_access')}</h1>
-                <p className="text-sm text-slate-400 text-center px-4">
+                <Logo variant="on-dark" className="h-12 mb-4" showSubtitle={true} showTagline={true} />
+                <h1 className="text-xl font-bold tracking-tight text-white mb-2">{t('enterprise_access')}</h1>
+                <p className="text-xs text-slate-400 text-center px-4">
                     {t('docusight_platform')}
                     <br/>
                     {t('sso_required_message')}

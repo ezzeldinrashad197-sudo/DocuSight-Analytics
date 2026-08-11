@@ -79,7 +79,7 @@ export default function SmartExportModal({
     const [showFooterNotes, setShowFooterNotes] = useState<boolean>(true);
     
     // Custom Headers & Footers
-    const [customHeader, setCustomHeader] = useState<string>('DOCUSIGHT ENTERPRISE ANALYTICS');
+    const [customHeader, setCustomHeader] = useState<string>('STRUCTUSIGHT ENTERPRISE INTELLIGENCE');
     const [customFooter, setCustomFooter] = useState<string>('');
     const [logoUrl, setLogoUrl] = useState<string>(''); // Base64 encoded uploaded logo
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -214,7 +214,7 @@ export default function SmartExportModal({
                 // @ts-ignore
                 const html2pdf = (await import('html2pdf.js')).default;
 
-                const filename = `DocuSight-Smart-${activeTab}-${new Date().toISOString().split('T')[0]}.pdf`;
+                const filename = `StructuSight-Smart-${activeTab}-${new Date().toISOString().split('T')[0]}.pdf`;
 
                 const opt: any = {
                     margin:       activeTab === 'presentation' ? [0, 0, 0, 0] : [16, 0, 14, 0], // Zero margin for standalone slides
@@ -289,7 +289,7 @@ export default function SmartExportModal({
                             pdf.setTextColor(255, 255, 255);
                             pdf.setFont("helvetica", "bold");
                             pdf.setFontSize(9);
-                            const topHeaderVal = customHeader || "DOCUSIGHT ENTERPRISE ANALYTICS";
+                            const topHeaderVal = customHeader || "STRUCTUSIGHT ENTERPRISE INTELLIGENCE";
                             pdf.text(topHeaderVal.toUpperCase(), 10, 6);
                             
                             pdf.setFont("helvetica", "normal");
@@ -346,7 +346,7 @@ export default function SmartExportModal({
                             pdf.setFont("helvetica", "normal");
                             pdf.setFontSize(7);
                             pdf.setTextColor(100, 116, 139); // slate-500
-                            const footerBottomText = customFooter || `DocuSight Enterprise Document Control Platform | CONCEPT & PRODUCT VISION BY EZZ RASHAD`;
+                            const footerBottomText = customFooter || `StructuSight Enterprise Engineering Intelligence Platform | CONCEPT & PRODUCT VISION BY EZZ RASHAD`;
                             pdf.text(footerBottomText, 10, pdfHeight - 7);
                             pdf.text(`Page ${i} of ${totalPages}`, pdfWidth - 30, pdfHeight - 7);
                         }
@@ -898,7 +898,7 @@ export default function SmartExportModal({
                                         type="text" 
                                         value={customHeader}
                                         onChange={(e) => setCustomHeader(e.target.value)}
-                                        placeholder="DOCUSIGHT ENTERPRISE ANALYTICS"
+                                        placeholder="STRUCTUSIGHT ENTERPRISE INTELLIGENCE"
                                         className="w-full bg-white border border-slate-200 rounded-xl p-3 text-sm font-semibold text-slate-800 focus:ring-1 focus:ring-[#0A192F] focus:border-[#0A192F]"
                                     />
                                 </div>

@@ -113,6 +113,7 @@ const DEFAULT_ALIASES: AliasMapping[] = [
   { alias: 'SDW-MEC', display: 'SDW-MEC', workflowFamily: 'SDW' },
   { alias: 'SDW-LND', display: 'SDW-LND', workflowFamily: 'SDW' },
   { alias: 'SDW-INFRA', display: 'SDW-INFRA', workflowFamily: 'SDW' },
+  { alias: 'SDW-IRR', display: 'SDW-IRR', workflowFamily: 'SDW' },
 
   // ABD As-Built Drawing Family
   { alias: 'ABD', display: 'ABD', workflowFamily: 'ABD' },
@@ -174,7 +175,7 @@ const LOCAL_STORAGE_KEY = 'docusight_custom_aliases';
 // Load all mappings (combining defaults and user-defined mappings from localStorage)
 export function getActiveMappings(): AliasMapping[] {
   try {
-    const saved = localStorage.getItem(LOCAL_STORAGE_KEY);
+    const saved = typeof window !== 'undefined' && typeof localStorage !== 'undefined' ? localStorage.getItem(LOCAL_STORAGE_KEY) : null;
     if (saved) {
       const parsed = JSON.parse(saved);
       if (Array.isArray(parsed)) {
@@ -300,7 +301,7 @@ export function mapDocumentToWorkflow(rawName: string): {
   const cleanName = rawName.trim().toUpperCase();
 
   // Safeguard: Trade/discipline names alone do not specify a workflow family and must not be partial-matched (e.g. to LETTER)
-  const disciplines = ['STR', 'ARCH', 'ELEC', 'MECH', 'MEC', 'ELE', 'CIVIL', 'CVL', 'LAND', 'LND', 'INFRA', 'INF', 'SURVEY', 'SUR'];
+  const disciplines = ['STR', 'ARCH', 'ELEC', 'MECH', 'MEC', 'ELE', 'CIVIL', 'CVL', 'LAND', 'LND', 'INFRA', 'INF', 'IRR', 'IRRIGATION', 'SURVEY', 'SUR'];
   if (disciplines.includes(cleanName)) {
     return {
       workflowFamily: 'UNKNOWN',
