@@ -137,6 +137,14 @@
       "referencedBy": []
     },
     {
+      "file": "src/analytics/exportHelpers.ts",
+      "exportName": "defineStructusightSlideMaster",
+      "type": "Function",
+      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+      "reason": "No incoming imports of 'defineStructusightSlideMaster' detected in any active source modules.",
+      "referencedBy": []
+    },
+    {
       "file": "src/analytics/exportTelemetryTestSuite.ts",
       "exportName": "runExportTelemetrySuite",
       "type": "Function",
@@ -793,6 +801,14 @@
       "referencedBy": []
     },
     {
+      "file": "src/hooks/useFilters.ts",
+      "exportName": "BackendMetricsResult",
+      "type": "Type/Interface",
+      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+      "reason": "No incoming imports of 'BackendMetricsResult' detected in any active source modules.",
+      "referencedBy": []
+    },
+    {
       "file": "src/utils/calculationVerificationEngine.ts",
       "exportName": "BenchmarkTestCase",
       "type": "Type/Interface",
@@ -998,6 +1014,14 @@
       "type": "Function",
       "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
       "reason": "No incoming imports of 'calculateNCRStats' detected in any active source modules.",
+      "referencedBy": []
+    },
+    {
+      "file": "src/utils/parser.ts",
+      "exportName": "formatDate",
+      "type": "Function",
+      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+      "reason": "No incoming imports of 'formatDate' detected in any active source modules.",
       "referencedBy": []
     },
     {

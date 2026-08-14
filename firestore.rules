@@ -10,6 +10,34 @@ service cloud.firestore {
     function isCurrentUser(userId) {
       return isSignedIn() && request.auth.uid == userId;
     }
+
+    function getUserData() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+
+    function getUserRole() {
+      return getUserData().role;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && (
+        getUserRole() == 'all' || 
+        getUserRole() == 'executive' || 
+        getUserRole() == 'admin' ||
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid))
+      );
+    }
+
+    function isEditor() {
+      return isSignedIn() && (
+        isAdmin() ||
+        getUserRole() == 'pd' ||
+        getUserRole() == 'pm' ||
+        getUserRole() == 'em' ||
+        getUserRole() == 'qaqc' ||
+        getUserRole() == 'dc'
+      );
+    }
     
     function isValidId(id) {
       return id.size() <= 128 && id.matches('^[a-zA-Z0-9_@.+-]+$');
@@ -21,41 +49,63 @@ service cloud.firestore {
     }
 
     // --- COLLECTION: users ---
+    // Protected: Users can read their own profile, or admins can read all profiles.
+    // Non-admins cannot edit sensitive security fields (roles, accessLevel, accountStatus).
     match /users/{userId} {
-      allow read: if isSignedIn();
-      allow create, update: if isSignedIn();
-      allow delete: if false;
+      allow read: if isSignedIn() && (isCurrentUser(userId) || isAdmin());
+      allow create: if isSignedIn() && (
+        isAdmin() || (
+          isCurrentUser(userId) && 
+          (!request.resource.data.keys().hasAny(['role']) || request.resource.data.role == 'viewer')
+        )
+      );
+      allow update: if isSignedIn() && (
+        isAdmin() || (
+          isCurrentUser(userId) && 
+          request.resource.data.role == resource.data.role &&
+          request.resource.data.accountStatus == resource.data.accountStatus &&
+          request.resource.data.accessLevel == resource.data.accessLevel
+        )
+      );
+      allow delete: if isSignedIn() && isAdmin();
     }
 
     // --- COLLECTION: project_stats ---
     match /project_stats/{projectId} {
-      allow read, write: if isSignedIn();
+      allow read: if isSignedIn();
+      allow write: if isEditor();
     }
 
     // --- COLLECTION: audit_logs ---
+    // Append-only audit logs. Normal users cannot modify or delete logs, and must write their own uid.
     match /audit_logs/{logId} {
-      allow read, create: if isSignedIn();
+      allow read: if isSignedIn();
+      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
       allow update, delete: if false;
     }
 
     // --- COLLECTION: projects ---
     match /projects/{projectId} {
-      allow read, write: if isSignedIn();
+      allow read: if isSignedIn();
+      allow write: if isEditor();
     }
 
     // --- COLLECTION: analytics ---
     match /analytics/{analyticsId} {
-      allow read, write: if isSignedIn();
+      allow read: if isSignedIn();
+      allow write: if isEditor();
     }
 
     // --- COLLECTION: settings ---
     match /settings/{settingsId} {
-      allow read, write: if isSignedIn();
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
     }
 
     // --- COLLECTION: reports ---
     match /reports/{reportId} {
-      allow read, write: if isSignedIn();
+      allow read: if isSignedIn();
+      allow write: if isEditor();
     }
   }
 }

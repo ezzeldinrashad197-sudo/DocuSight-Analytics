@@ -4,6 +4,56 @@ import { normalizeData } from "./calculations";
 import { classifyRegisterSheet, normalizeDiscipline } from "./classificationEngine";
 import { mapDocumentToWorkflow } from "./workflowMapping";
 
+export const formatDate = (raw: unknown): string => {
+  if (!raw) return "";
+  if (raw instanceof Date) {
+    return raw.toISOString().split("T")[0];
+  }
+  if (typeof raw === "number") {
+    const date = new Date(Math.round((raw - 25569) * 86400 * 1000));
+    if (!isNaN(date.getTime()))
+      return date.toISOString().split("T")[0];
+  }
+  if (typeof raw === "string") {
+    const str = raw.trim();
+    if (!str) return "";
+
+    // 1. Explicit DD/MM/YYYY or DD-MM-YYYY or DD.MM.YYYY
+    const dmYMatch = str.match(/^(\d{1,2})[\/\.-](\d{1,2})[\/\.-](\d{4})$/);
+    if (dmYMatch) {
+      const p1 = parseInt(dmYMatch[1], 10);
+      const p2 = parseInt(dmYMatch[2], 10);
+      const year = parseInt(dmYMatch[3], 10);
+
+      // If p1 <= 31 and p2 <= 12, assume DD/MM/YYYY (standard in UK/EU/Gulf construction registers)
+      if (p2 >= 1 && p2 <= 12 && p1 >= 1 && p1 <= 31) {
+        const dStr = String(p1).padStart(2, '0');
+        const mStr = String(p2).padStart(2, '0');
+        return `${year}-${mStr}-${dStr}`;
+      }
+    }
+
+    // 2. Explicit YYYY-MM-DD
+    const yMdMatch = str.match(/^(\d{4})[\/\.-](\d{1,2})[\/\.-](\d{1,2})$/);
+    if (yMdMatch) {
+      const year = parseInt(yMdMatch[1], 10);
+      const month = parseInt(yMdMatch[2], 10);
+      const day = parseInt(yMdMatch[3], 10);
+      if (month >= 1 && month <= 12 && day >= 1 && day <= 31) {
+        const dStr = String(day).padStart(2, '0');
+        const mStr = String(month).padStart(2, '0');
+        return `${year}-${mStr}-${dStr}`;
+      }
+    }
+
+    // 3. Fallback to JS Date parser
+    const parsed = new Date(str);
+    if (!isNaN(parsed.getTime()))
+      return parsed.toISOString().split("T")[0];
+  }
+  return "";
+};
+
 export const parseExcelFile = (file: File): Promise<SubmittalRow[]> => {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -181,24 +231,6 @@ export const parseExcelFile = (file: File): Promise<SubmittalRow[]> => {
             else if (contextualStr.includes("imkan"))
               determinedStakeholder = "IMKAN";
           }
-
-          const formatDate = (raw: unknown): string => {
-            if (!raw) return "";
-            if (raw instanceof Date) {
-              return raw.toISOString().split("T")[0];
-            }
-            if (typeof raw === "number") {
-              const date = new Date(Math.round((raw - 25569) * 86400 * 1000));
-              if (!isNaN(date.getTime()))
-                return date.toISOString().split("T")[0];
-            }
-            if (typeof raw === "string") {
-              const parsed = new Date(raw);
-              if (!isNaN(parsed.getTime()))
-                return parsed.toISOString().split("T")[0];
-            }
-            return "";
-          };
 
           rows.forEach((r, idx: number) => {
             if (!r || !Array.isArray(r) || r.length === 0) return;
@@ -535,7 +567,7 @@ export const parseExcelFile = (file: File): Promise<SubmittalRow[]> => {
         }
 
         // Print trace beautifully to console
-        console.group(`%c📊 [DocuSight Ingestion Trace Logs]`, "color: #D4AF37; font-weight: bold; font-size: 14px;");
+        console.group(`%c📊 [StructuSight Ingestion Trace Logs]`, "color: #D4AF37; font-weight: bold; font-size: 14px;");
         traces.forEach(t => {
           console.log(`%cWorksheet: %c${t.sheetName} %cin File: %c${t.fileName}`, "color: #94a3b8;", "color: #e2e8f0; font-weight: bold;", "color: #94a3b8;", "color: #cbd5e1;");
           console.log(`%c  Detected Type : %c${t.detectedType} %c(Confidence: ${t.confidence}%)`, "color: #94a3b8;", "color: #38bdf8; font-weight: bold;", "color: #a7f3d0; font-style: italic;");

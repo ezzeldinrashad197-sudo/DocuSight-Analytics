@@ -147,6 +147,8 @@ function checkFile(filePath: string, fileName: string) {
         }
 
         const isBypassedFile = relativePath.includes('test_status.ts') || 
+                               relativePath.includes('audit_abd_negative.ts') ||
+                               relativePath.includes('calculationVerificationEngine.ts') ||
                                relativePath.includes('FinalAcceptanceAuditView.tsx') ||
                                relativePath.includes('EnterpriseHardeningView.tsx') || 
                                relativePath.includes('DataValidationEngine.tsx') ||

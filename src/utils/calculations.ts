@@ -183,7 +183,18 @@ export const normalizeData = (rows: SubmittalRow[]): SubmittalRow[] => {
               return null;
           };
 
-          // 1. Explicit Row Discipline (Highest priority for multi-trade row separation)
+          // 0. Precedence Check: Explicit Document Reference Pattern / Register Code Lock
+          // If docNo, logType, or rawSourceIdentity explicitly contains a composite family pattern (e.g. WIR-STR, SDW-ARC, MAR-MEC),
+          // the document reference pattern / container identity takes precedence for the register documentType.
+          const refPatternStr = `${r.docNo || ''} ${r.logType || ''} ${r.rawSourceIdentity || ''} ${r.compositeIdentity?.compositeCode || ''}`.toUpperCase();
+          const compositeCodeMatch = refPatternStr.match(/\b(WIR|SDW|MAR|RFI|NCR|MIR|SOR|ABD)[-_ ](STR|ARC|ARCH|MEC|MECH|ELE|ELEC|MEP|INFRA|INF|LND|LAND|IRR)\b/);
+          if (compositeCodeMatch) {
+              const codeTradeToken = compositeCodeMatch[2];
+              const mappedRefCodeTrade = mapDiscToTrade(codeTradeToken);
+              if (mappedRefCodeTrade) return mappedRefCodeTrade;
+          }
+
+          // 1. Explicit Row Discipline (Highest priority for multi-trade row separation in generic registers)
           if (explicitDisc && explicitDisc !== 'GEN' && explicitDisc !== 'GENERAL' && explicitDisc !== 'UNCLASSIFIED') {
               const mappedExplicit = mapDiscToTrade(explicitDisc);
               if (mappedExplicit) return mappedExplicit;

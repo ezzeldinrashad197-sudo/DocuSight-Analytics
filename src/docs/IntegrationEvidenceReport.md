@@ -1,5 +1,5 @@
 # DocuSight E2E Integration Pipeline Verification Report
-*Generated on 2026-08-11T12:19:01.018Z | Deterministic Audit Evidence*
+*Generated on 2026-08-13T18:17:16.181Z | Deterministic Audit Evidence*
 
 > [!NOTE]
 > **AUDIT ENGINE DISCLAIMER & VERIFICATION NOTICE**
@@ -109,7 +109,7 @@ This trace represents the full travel of records from unstructured file ingestio
     {
       "docNo": "DOC-ST-001",
       "category": "PENDING",
-      "delayDays": 17,
+      "delayDays": 19,
       "isOverdue": true
     },
     {
@@ -121,7 +121,7 @@ This trace represents the full travel of records from unstructured file ingestio
     {
       "docNo": "DOC-ME-003",
       "category": "REJECTED_OPEN",
-      "delayDays": 24,
+      "delayDays": 26,
       "isOverdue": true
     },
     {

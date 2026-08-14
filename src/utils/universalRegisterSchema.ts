@@ -517,8 +517,8 @@ export const THREE_TIER_DATA_ARCHITECTURE: ThreeTierDataArchitectureSpec = {
 export const COMMERCIAL_TIERS_SPEC: CommercialTierSpec[] = [
   {
     tierCode: 'STANDARD',
-    tierName: 'DocuSight Standard',
-    tierNameAr: 'دوكوسايت القياسي',
+    tierName: 'StructuSight Standard',
+    tierNameAr: 'ستراكتوسايت القياسي',
     tagline: 'Excel Import, Mapping, Analytics & Operational Reports',
     targetAudience: 'Single projects & contractor site teams requiring quick document tracking.',
     features: [
@@ -532,8 +532,8 @@ export const COMMERCIAL_TIERS_SPEC: CommercialTierSpec[] = [
   },
   {
     tierCode: 'ENTERPRISE',
-    tierName: 'DocuSight Enterprise',
-    tierNameAr: 'دوكوسايت للمؤسسات',
+    tierName: 'StructuSight Enterprise',
+    tierNameAr: 'ستراكتوسايت للمؤسسات',
     tagline: 'Universal Schema, SSOT, Calculation Lineage & Governance',
     targetAudience: 'Project Management Consultancies (PMO), Program Directors & Multi-Package Teams.',
     features: [
@@ -549,8 +549,8 @@ export const COMMERCIAL_TIERS_SPEC: CommercialTierSpec[] = [
   },
   {
     tierCode: 'ASSURANCE',
-    tierName: 'DocuSight Assurance (Audit & Verification)',
-    tierNameAr: 'دوكوسايت لضمان التدقيق',
+    tierName: 'StructuSight Assurance (Audit & Verification)',
+    tierNameAr: 'ستراكتوسايت لضمان التدقيق',
     tagline: 'Evidence-Backed Certificates, Immutable Baselines & Independent Verification',
     targetAudience: 'Legal Counsel, Dispute Experts, External Auditors & Government Oversight Authorities.',
     features: [

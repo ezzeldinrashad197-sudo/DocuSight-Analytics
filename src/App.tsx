@@ -36,7 +36,7 @@ import FinalAcceptanceAuditView from './components/FinalAcceptanceAuditView';
 import WorkflowMappingCenter from './components/WorkflowMappingCenter';
 import { CalculationAuditCenter } from './components/CalculationAuditCenter';
 import { UniversalRegisterEngine } from './components/UniversalRegisterEngine';
-import { normalizeData } from './utils/calculations';
+import { normalizeData, calculateStats } from './utils/calculations';
 
 export default function App() {
   const { t, language, setLanguage, isRtl } = useLanguage();
@@ -78,17 +78,7 @@ export default function App() {
         
         const effectiveEmail = (currentUserEmail || localStorage.getItem('docuCtrl_activeEmail') || '').trim().toLowerCase();
         
-        // --- Anti-Downgrade Absolute Shield for Owner ---
-        if (effectiveEmail === 'ezzeldinrashad197@gmail.com') {
-          if (activeRoleRef.current !== 'all') {
-            console.info("[Security Policy] Owner account detected. Enforcing absolute master-admin rights ('all') instantly.");
-            setActiveRole('all');
-            localStorage.setItem('docuCtrl_activeRole', 'all');
-            localStorage.setItem('docuCtrl_activeEmail', 'ezzeldinrashad197@gmail.com');
-          }
-          return; // The Owner has static absolute rights
-        }
-        
+
         if (!currentUserUid) return;
         
         const userDocRef = doc(db, 'users', currentUserUid);
@@ -256,8 +246,9 @@ export default function App() {
     if (data.length > 0 && activeProjectId) {
        const timer = setTimeout(() => {
          const generalData = data.filter(d => !isExcludedFromGeneralStats(d));
-         const totalDocs = generalData.length;
-         const approved = generalData.filter(d => ['A', 'B', 'APP', 'APPROVED'].includes(d.status || '')).length;
+         const stats = calculateStats(generalData);
+         const totalDocs = stats.totalSubmittedSheets;
+         const approved = stats.approved;
          const overdue = generalData.filter(d => (d.delayDays || 0) > 0).length;
          
          const approvalRate = totalDocs > 0 ? (approved / totalDocs) * 100 : 0;
@@ -353,16 +344,16 @@ export default function App() {
 
       {/* SIDEBAR */}
       <aside className={`bg-[#0A192F] text-white flex flex-col transition-all duration-300 ease-in-out border-r border-slate-700 print:hidden ${sidebarOpen ? 'w-64' : 'w-20'} sticky top-0 h-screen z-30`}>
-        <div className="p-4 flex items-center justify-between border-b border-slate-700">
-            <div className={`flex items-center gap-3 overflow-hidden ${!sidebarOpen && 'justify-center w-full'}`}>
+        <div className="p-3.5 px-4 flex items-center justify-between border-b border-slate-700/80 min-h-[64px]">
+            <div className={`flex items-center gap-2.5 ${!sidebarOpen && 'justify-center w-full'}`}>
                 {sidebarOpen ? (
-                    <Logo variant="on-dark" className="h-8" showSubtitle={true} />
+                    <Logo variant="on-dark-compact" showSubtitle={true} subtitle="INTELLIGENCE PLATFORM" />
                 ) : (
                     <Logo variant="symbol" className="h-8" />
                 )}
             </div>
             {sidebarOpen && (
-                <button onClick={() => setSidebarOpen(false)} className="text-slate-400 hover:text-white transition-colors">
+                <button onClick={() => setSidebarOpen(false)} className="text-slate-400 hover:text-white transition-colors p-1 rounded hover:bg-slate-800 shrink-0">
                     <ChevronLeft className="w-5 h-5" />
                 </button>
             )}
@@ -530,18 +521,26 @@ export default function App() {
         
         {/* TOP HEADER */}
         <header className="bg-white text-[#1e293b] shadow-sm z-20 print:hidden border-b border-[#e2e8f0]">
-            <div className="px-6 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
+            <div className="px-6 py-3.5 flex flex-col md:flex-row justify-between items-center gap-4 min-h-[68px]">
             
-            <div className="flex items-center gap-4">
-                {activeProject?.logoUrl && (
-                    <img src={activeProject.logoUrl} alt="Company Logo" className="h-12 w-auto object-contain border border-[#e2e8f0] rounded p-1 bg-[#ffffff]" />
-                )}
-                <div className="flex flex-col">
-                    <Logo className="h-10" />
-                    <p className="text-xs text-[#64748b] font-medium tracking-widest uppercase mt-0.5">
-                        {activeProject ? `${activeProject.projectName} - ${activeProject.projectCode}` : 'No Project Configured'}
-                    </p>
+            <div className="flex items-center gap-4 shrink-0">
+                {/* StructuSight Persistent Application Identity */}
+                <div className="flex items-center gap-3 pr-5 border-r border-slate-200 py-1">
+                    <Logo showSubtitle={true} />
                 </div>
+
+                {/* Active Project Info */}
+                {activeProject && (
+                    <div className="flex items-center gap-3 py-1">
+                        {activeProject.logoUrl && (
+                            <img src={activeProject.logoUrl} alt="Company Logo" className="h-10 w-auto object-contain border border-[#e2e8f0] rounded p-1 bg-[#ffffff]" />
+                        )}
+                        <div className="flex flex-col">
+                            <span className="text-xs font-bold text-slate-800 tracking-wide">{activeProject.projectName}</span>
+                            <span className="text-[10px] text-slate-500 font-semibold tracking-wider uppercase">{activeProject.projectCode}</span>
+                        </div>
+                    </div>
+                )}
             </div>
 
             <div className={`flex items-center gap-3 ${isRtl ? 'mr-auto' : 'ml-auto'} text-sm`}>

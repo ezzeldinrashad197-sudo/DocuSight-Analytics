@@ -95,7 +95,7 @@ export default function Presentation({
     const overdueCount = s.overdue;
 
     return { 
-      total: s.totalUniqueDrawings || s.totalSubmittedSheets, 
+      total: s.totalSubmittedSheets || s.totalUniqueDrawings, 
       approved: s.approved, 
       rejectedOpen: s.rejectedOpen, 
       rejectedClosed: s.rejectedClosed, 
@@ -282,7 +282,10 @@ export default function Presentation({
       });
 
       const s = bt === 'NCR' ? calculateNCRStats(dData, false) : (bt === 'SOR' ? calculateSORStats(dData, false) : (bt === 'LTR' ? calculateLTRStats(dData, false) : calculateStats(dData, dataset)));
-      const uniqueItems = s.totalUniqueDrawings !== undefined ? s.totalUniqueDrawings : ((s.totalSheetsRev0 || 0) + (s.totalSheetsFurtherRev || 0));
+      const isMonthlyReport = !!monthlyStart;
+      const countForType = isMonthlyReport 
+        ? (s.totalSubmittedSheets ?? ((s.totalSheetsRev0 || 0) + (s.totalSheetsFurtherRev || 0)))
+        : (s.totalUniqueDrawings !== undefined ? s.totalUniqueDrawings : ((s.totalSheetsRev0 || 0) + (s.totalSheetsFurtherRev || 0)));
       return {
         discipline: disc,
         Rev00: s.totalSheetsRev0 || 0,
@@ -291,7 +294,7 @@ export default function Presentation({
         RejectedOpen: s.rejectedOpen,
         RejectedClosed: s.rejectedClosed,
         Pending: s.pending,
-        Total: uniqueItems,
+        Total: countForType,
         Closed: bt === 'NCR' || bt === 'SOR' ? s.approved : s.approved + s.rejectedClosed,
         Open: bt === 'NCR' || bt === 'SOR' ? s.rejectedOpen : s.rejectedOpen + s.pending,
       };

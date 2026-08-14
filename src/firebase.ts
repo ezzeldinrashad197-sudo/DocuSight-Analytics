@@ -148,153 +148,107 @@ export const resolveUserPermissions = async (
     email: string, 
     displayName?: string | null
 ): Promise<string> => {
+    if (!uid) {
+        throw new Error('Authenticated user UID is required for permission resolution.');
+    }
+
     const cleanedEmail = String(email || '').trim().toLowerCase();
-    
     const uidDocRef = doc(db, 'users', uid);
-    const emailDocRef = cleanedEmail ? doc(db, 'users', cleanedEmail) : null;
     
     console.log(`\n================== [Security Diagnostics] ==================`);
-    console.log(`Current UID: ${uid}`);
-    console.log(`Current Email: ${cleanedEmail}`);
+    console.log(`Authoritative Authenticated UID: ${uid}`);
+    console.log(`Authenticated Email: ${cleanedEmail}`);
     
-    let uidData: any = null;
-    let emailData: any = null;
-    let uidExists = false;
-    let emailExists = false;
-
-    // Reliable 8-second timeout wrapper to allow standard Firestore network reads
-    const fetchWithTimeout = async <T>(promise: Promise<T>, fallback: T, ms = 8000): Promise<T> => {
-        let timer: any;
-        const timeoutPromise = new Promise<T>((res) => {
-            timer = setTimeout(() => res(fallback), ms);
-        });
-        try {
-            const result = await Promise.race([promise, timeoutPromise]);
-            clearTimeout(timer);
-            return result;
-        } catch {
-            clearTimeout(timer);
-            return fallback;
-        }
-    };
-
-    // 1. Fetch UID profile document
+    // Fetch authoritative UID profile document from Firestore
+    let uidSnap: any = null;
     try {
-        const uidSnap = await fetchWithTimeout(getDoc(uidDocRef), null);
-        if (uidSnap && uidSnap.exists()) {
-            uidExists = true;
-            uidData = uidSnap.data();
+        uidSnap = await getDoc(uidDocRef);
+    } catch (err: any) {
+        console.warn('[Security Diagnostics] Direct getDoc on users/{uid} warning:', err?.message);
+    }
+    
+    if (!uidSnap || !uidSnap.exists()) {
+        console.warn(`[Identity Linking] Profile missing at /users/${uid}. Triggering server-side identity linking for: ${cleanedEmail}`);
+        
+        try {
+            const currentUser = auth.currentUser;
+            if (currentUser) {
+                const idToken = await currentUser.getIdToken();
+                const linkRes = await fetch('/api/link-identity', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ idToken })
+                });
+
+                if (linkRes.ok) {
+                    const linkData = await linkRes.json().catch(() => ({}));
+                    console.log(`[Identity Linking] Server-side identity linking succeeded:`, linkData);
+                    try {
+                        uidSnap = await getDoc(uidDocRef);
+                    } catch (e) {}
+
+                    if (linkData?.role) {
+                        return linkData.role;
+                    }
+                } else {
+                    const errData = await linkRes.json().catch(() => ({}));
+                    console.error(`[Identity Linking] Server-side identity linking failed:`, errData.error || linkRes.statusText);
+                    throw new Error(errData.error || `Authorization profile not found for UID (${uid}). Access denied (Fail Closed).`);
+                }
+            }
+        } catch (linkErr: any) {
+            console.error(`[Identity Linking Error]:`, linkErr.message);
+            throw linkErr;
         }
-    } catch (err) {
-        console.warn(`[Security Diagnostics] Non-blocking getDoc failed for UID ${uid}:`, err);
+
+        if (!uidSnap || !uidSnap.exists()) {
+            console.error(`[Security Alert] Authorization profile missing in Firestore for UID (${uid}) and Email (${cleanedEmail}). Access denied (Fail Closed).`);
+            throw new Error(`Authorization profile not found for UID (${uid}). Access denied (Fail Closed). Please contact system administrator.`);
+        }
     }
 
-    // 2. Fetch Email profile document
-    if (emailDocRef) {
-        try {
-            const emailSnap = await fetchWithTimeout(getDoc(emailDocRef), null);
-            if (emailSnap && emailSnap.exists()) {
-                emailExists = true;
-                emailData = emailSnap.data();
-            }
-        } catch (err) {
-            console.warn(`[Security Diagnostics] Non-blocking getDoc failed for Email ${cleanedEmail}:`, err);
+    const uidData = uidSnap.data();
+    const accountStatus = uidData?.accountStatus || 'active';
+    const accessLevel = uidData?.accessLevel || 'approved';
+
+    if (accountStatus === 'disabled' || accessLevel === 'revoked') {
+        console.error(`[Security Alert] Account ${uid} is disabled or access level revoked (status: ${accountStatus}, level: ${accessLevel}).`);
+        throw new Error('Account is disabled or access level is revoked.');
+    }
+
+    const rawRole = uidData?.role || uidData?.roles;
+    let resolvedRole = '';
+
+    if (rawRole) {
+        if (Array.isArray(rawRole)) {
+            resolvedRole = rawRole.map((x: any) => String(x).trim().toLowerCase()).filter(Boolean).join(',');
+        } else {
+            resolvedRole = String(rawRole).trim().toLowerCase();
         }
     }
 
-    // Helper to extract roles
-    const extractRoles = (data: any): string[] => {
-        if (!data) return [];
-        const r = data.role || data.roles;
-        if (!r) return [];
-        if (Array.isArray(r)) return r.map((x: any) => String(x).trim().toLowerCase());
-        return String(r).split(',').map((x: any) => x.trim().toLowerCase());
-    };
-    
-    const uidRoles = extractRoles(uidData);
-    const emailRoles = extractRoles(emailData);
-    
-    console.log(`UID Roles: ${JSON.stringify(uidRoles)}`);
-    console.log(`Email Roles: ${JSON.stringify(emailRoles)}`);
-    
-    // Core resolution logic
-    let finalRoles: string[] = [];
-    
-    // Merge all available roles from all profiles
-    const allRolesSet = new Set([...uidRoles, ...emailRoles]);
-    const allRoles = Array.from(allRolesSet).filter(r => r && r !== '');
-    
-    // Match user requirements: if a higher privilege role exists, filter out 'viewer' from active session
-    if (allRoles.length > 1) {
-        finalRoles = allRoles.filter(r => r !== 'viewer');
-    } else {
-        finalRoles = allRoles;
+    if (!resolvedRole) {
+        console.error(`[Security Alert] No authorization role assigned in Firestore profile for UID: ${uid}`);
+        throw new Error(`No authorization role assigned to UID (${uid}). Access denied (Fail Closed).`);
     }
-    
-    // If no roles specified at all or if owner email is initializing, set appropriate role
-    if (cleanedEmail === 'ezzeldinrashad197@gmail.com') {
-        if (finalRoles.length === 0 || (finalRoles.length === 1 && finalRoles[0] === 'viewer')) {
-            finalRoles = ['all'];
-        }
-    } else if (finalRoles.length === 0) {
-        finalRoles = ['viewer'];
-    }
-    
-    const resolvedRole = finalRoles.join(',');
-    console.log(`Merged Roles: ${JSON.stringify(finalRoles)}`);
-    console.log(`Final Resolved Role: ${resolvedRole}`);
-    
-    // Merge metadata
-    const baseName = displayName || uidData?.name || emailData?.name || (cleanedEmail ? cleanedEmail.split('@')[0] : '') || 'Team Member';
-    const baseCreatedAt = emailData?.createdAt || uidData?.createdAt || new Date().toISOString();
-    const accountStatus = uidData?.accountStatus || emailData?.accountStatus || 'active';
-    const accessLevel = uidData?.accessLevel || emailData?.accessLevel || 'approved';
-    
-    const mergedPayload = {
-        email: cleanedEmail,
-        name: baseName,
-        role: resolvedRole,
-        createdAt: baseCreatedAt,
-        accountStatus,
-        accessLevel,
-        updatedAt: new Date().toISOString()
-    };
-    
-    // Check if we need to write/sync
-    const uidNeedsSync = !uidExists || 
-        uidData?.role !== resolvedRole || 
-        uidData?.email !== cleanedEmail || 
-        uidData?.name !== baseName ||
-        uidData?.accountStatus !== accountStatus ||
-        uidData?.accessLevel !== accessLevel;
-        
-    const emailNeedsSync = emailDocRef && (!emailExists || 
-        emailData?.role !== resolvedRole || 
-        emailData?.name !== baseName ||
-        emailData?.accountStatus !== accountStatus ||
-        emailData?.accessLevel !== accessLevel);
-        
-    if (uidNeedsSync || emailNeedsSync) {
-        console.log(`Write Operation: Synchronizing UID (${uid}) and Email (${cleanedEmail}) profile documents`);
+
+    console.log(`Authoritative UID Role Resolved: ${resolvedRole}`);
+
+    // Update non-sensitive metadata (email / name) without writing authorization roles
+    const baseName = displayName || (cleanedEmail ? cleanedEmail.split('@')[0] : '') || 'Team Member';
+    if (cleanedEmail && (uidData?.email !== cleanedEmail || (displayName && uidData?.name !== displayName))) {
         try {
-            await setDoc(uidDocRef, mergedPayload, { merge: true });
-            console.log(`Write Operation: UID Profile Sync Completed Successfully.`);
-        } catch (uidSyncErr) {
-            console.warn(`[Security Diagnostics] Non-fatal UID profile sync warning:`, uidSyncErr);
+            await setDoc(uidDocRef, {
+                email: cleanedEmail,
+                name: uidData?.name || baseName,
+                updatedAt: new Date().toISOString()
+            }, { merge: true });
+        } catch (syncErr) {
+            console.warn(`[Security Diagnostics] Non-fatal UID metadata sync warning:`, syncErr);
         }
-        
-        if (emailDocRef && emailDocRef.id !== uid) {
-            try {
-                await setDoc(emailDocRef, mergedPayload, { merge: true });
-                console.log(`Write Operation: Email Profile Sync Completed Successfully.`);
-            } catch (emailSyncErr) {
-                console.warn(`[Security Diagnostics] Email profile sync skipped due to security policy (expected):`, emailSyncErr);
-            }
-        }
-    } else {
-        console.log(`Write Operation: None required. Documents are fully synchronized.`);
     }
-    
+
+    console.log(`Final Authoritative Role for UID ${uid}: ${resolvedRole}`);
     console.log(`============================================================\n`);
     return resolvedRole;
 };

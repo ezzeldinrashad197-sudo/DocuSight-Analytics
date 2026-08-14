@@ -1,4 +1,4 @@
-// DocuSight Analytics - Universal Register Discovery & Classification Engine
+// StructuSight Analytics - Universal Register Discovery & Classification Engine
 // Implements the official multi-evidence scoring system for Sprint 4.
 
 import { WorkflowFamily, WORKFLOW_FAMILIES_META, AliasMapping } from './workflowMapping';

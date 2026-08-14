@@ -33,9 +33,7 @@ export default function SettingsCenter({ projects, activeProjectId, onSaveProjec
 
     const loadUsers = async () => {
         const userRoles = activeRole.split(',').map(r => r.trim().toLowerCase());
-        const activeEmail = (localStorage.getItem('docuCtrl_activeEmail') || '').trim().toLowerCase();
-        const isOwner = activeEmail === 'ezzeldinrashad197@gmail.com';
-        const canManageUsers = isOwner || userRoles.includes('all') || userRoles.includes('executive') || userRoles.includes('pd') || userRoles.includes('pm') || userRoles.includes('dc');
+        const canManageUsers = userRoles.includes('all') || userRoles.includes('executive') || userRoles.includes('pd') || userRoles.includes('pm') || userRoles.includes('dc');
         
         if (!canManageUsers) return;
         setLoadingUsers(true);
@@ -170,6 +168,8 @@ export default function SettingsCenter({ projects, activeProjectId, onSaveProjec
                     email: cleanedEmail,
                     name: newUserName.trim() || cleanedEmail.split('@')[0],
                     role: newUserRole,
+                    accountStatus: 'active',
+                    accessLevel: 'approved',
                     createdAt: new Date().toISOString(),
                     updatedAt: new Date().toISOString()
                 }, { merge: true })
@@ -192,7 +192,8 @@ export default function SettingsCenter({ projects, activeProjectId, onSaveProjec
 
     const handleDeleteUser = async (usr: any) => {
         const email = typeof usr.email === 'string' ? usr.email.trim().toLowerCase() : '';
-        if (email === 'ezzeldinrashad197@gmail.com') {
+        const usrRoles = (usr.role || '').split(',').map((r: string) => r.trim().toLowerCase());
+        if (usrRoles.includes('all') && usr.isPrimaryAdmin) {
             alert(t('cannot_delete_primary_admin'));
             return;
         }
@@ -449,7 +450,7 @@ export default function SettingsCenter({ projects, activeProjectId, onSaveProjec
                                                 {usr.createdAt ? new Date(usr.createdAt).toLocaleDateString() : '-'}
                                             </td>
                                             <td className="px-6 py-4 text-center">
-                                                {usr.email !== 'ezzeldinrashad197@gmail.com' ? (
+                                                {!usr.isPrimaryAdmin ? (
                                                     <button 
                                                         onClick={() => handleDeleteUser(usr)}
                                                         className="p-1 px-2.5 text-xs text-red-400 border border-red-500/20 hover:border-red-500 hover:bg-red-500/10 rounded transition-colors text-center inline-flex items-center gap-1.5"

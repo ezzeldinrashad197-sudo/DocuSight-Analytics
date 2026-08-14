@@ -625,7 +625,7 @@ export function useExport({ data, activeTab, filterMonthly, filterCumulative, ac
                         }
                     },
                     jsPDF:        { unit: 'mm', format: options?.pageSize?.toLowerCase() || 'a3', orientation: options?.orientation?.toLowerCase() || (isLandscape ? 'landscape' : 'portrait') },
-                    pagebreak:    { mode: ['css', 'legacy'], avoid: ['tr', '.page-break-inside-avoid', '.chart-card', '.kpi-card', 'h1', 'h2', 'h3'], after: ['.page-break-after-always', '.chart-card'] }
+                    pagebreak:    { mode: ['css', 'legacy'], avoid: ['tr', 'tbody', 'table', '.page-break-inside-avoid', '.chart-card', '.kpi-card', '#report-charts-grid', '#report-bottleneck-spotlight', '#report-executive-summary', '#report-kpi-grid', '#report-main-table', '.recharts-wrapper', 'h1', 'h2', 'h3'], after: ['.page-break-after-always', '.chart-card'] }
                 };
 
                 await (html2pdf().set(opt).from(exportElement).toPdf().get('pdf').then((pdf: any) => {

@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect, useCallback } from 'react';
 import { SubmittalRow } from '../types';
 
 export interface FilterState {
@@ -10,6 +10,17 @@ export interface FilterState {
   status: string;
   area: string;
   tradeSystem: string;
+}
+
+export interface BackendMetricsResult {
+  totalRecords: number;
+  openRecords: number;
+  closedRecords: number;
+  approvedRecords: number;
+  rejectedOpenRecords: number;
+  rejectedClosedRecords: number;
+  pendingRecords: number;
+  qualityScore: number;
 }
 
 const defaultFilters: FilterState = {
@@ -26,6 +37,37 @@ const defaultFilters: FilterState = {
 export function useFilters(data: SubmittalRow[], startDate: string, endDate: string) {
   const [filters, setFilters] = useState<FilterState>(defaultFilters);
   const [pendingFilters, setPendingFilters] = useState<FilterState>(defaultFilters);
+  const [backendMetrics, setBackendMetrics] = useState<BackendMetricsResult | null>(null);
+  const [isCalculatingBackend, setIsCalculatingBackend] = useState<boolean>(false);
+
+  const calculateBackendMetrics = useCallback(async (activeFilters: FilterState, dataset: SubmittalRow[]) => {
+    if (!dataset || dataset.length === 0) {
+      setBackendMetrics(null);
+      return;
+    }
+    setIsCalculatingBackend(true);
+    try {
+      const res = await fetch('/api/metrics/calculate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ filters: activeFilters, dataset })
+      });
+      if (res.ok) {
+        const json = await res.json();
+        if (json.status === 'success' && json.metrics) {
+          setBackendMetrics(json.metrics);
+        }
+      }
+    } catch (err) {
+      console.warn('[Metrics Layer] Backend metrics delegation warning:', err);
+    } finally {
+      setIsCalculatingBackend(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    calculateBackendMetrics(filters, data);
+  }, [filters, data, calculateBackendMetrics]);
 
   const uniqueOpts = useMemo(() => {
      const getUniques = (key: keyof SubmittalRow) => {
@@ -66,11 +108,13 @@ export function useFilters(data: SubmittalRow[], startDate: string, endDate: str
 
   const applyFilters = () => {
      setFilters(pendingFilters);
+     calculateBackendMetrics(pendingFilters, data);
   };
 
   const resetFilters = () => {
      setFilters(defaultFilters);
      setPendingFilters(defaultFilters);
+     calculateBackendMetrics(defaultFilters, data);
   };
 
   const isDirty = useMemo(() => {
@@ -153,6 +197,8 @@ export function useFilters(data: SubmittalRow[], startDate: string, endDate: str
     uniqueOpts,
     matchesFilters,
     filterMonthly,
-    filterCumulative
+    filterCumulative,
+    backendMetrics,
+    isCalculatingBackend
   };
 }

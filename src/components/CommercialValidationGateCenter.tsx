@@ -447,7 +447,7 @@ export const CommercialValidationGateCenter: React.FC = () => {
               </div>
             </div>
             <p className="text-xs text-slate-300 max-w-3xl leading-relaxed">
-              Verify DocuSight commercial readiness against 100% blind contractor registers and adversarial test workbooks. 
+              Verify StructuSight commercial readiness against 100% blind contractor registers and adversarial test workbooks. 
               Core SSOT Architecture is <span className="text-amber-400 font-mono font-bold">FROZEN</span>. Verification is driven purely by measured evidence.
             </p>
           </div>
@@ -907,7 +907,7 @@ export const CommercialValidationGateCenter: React.FC = () => {
                   <span>READY FOR CONTROLLED COMMERCIAL PILOT</span>
                 </div>
                 <p className="text-[11px] text-emerald-800">
-                  The DocuSight Universal Register Engine has successfully passed all CVG-01 hard gates. The platform is certified for controlled enterprise customer pilots without schema modifications.
+                  The StructuSight Universal Register Engine has successfully passed all CVG-01 hard gates. The platform is certified for controlled enterprise customer pilots without schema modifications.
                 </p>
               </div>
             </div>

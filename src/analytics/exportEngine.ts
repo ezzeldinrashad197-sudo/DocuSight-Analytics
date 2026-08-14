@@ -278,7 +278,7 @@ export const generatePptxReport = async (
         // Project Info Divider + Content Slides
         if (isSectionSelected('info')) {
             addDividerSlide(pres, isArabic ? "أعضاء الفريق وبيانات العقد" : "Team Members & Project Details", isArabic ? "01 معلومات المشروع" : "01 PROJECT INFORMATION", projectInfo, logoUrl, options);
-            let infoSlide = pres.addSlide({ masterName: "DOCUSIGHT_MASTER" });
+            let infoSlide = pres.addSlide({ masterName: "STRUCTUSIGHT_MASTER" });
             addHeaderAndFooter(pres, infoSlide, isArabic ? "معلومات المشروع العامة" : "PROJECT INFORMATION", projectInfo, logoUrl, options);
             infoSlide.addShape(pres.ShapeType.rect, { x: 0.6, y: 1.5, w: 2.7, h: 1.5, fill: { color: "FFFFFF" }, line: { color: "CBD5E1", width: 1 } });
             infoSlide.addText(isArabic ? "صاحب العمل / المالك" : "Employer", { x: 0.6, y: 1.5, w: 2.7, h: 0.35, fontSize: 10, bold: true, color: "FFFFFF", fill: { color: primColor }, align: "center", fontFace: font });
@@ -370,7 +370,7 @@ export const generatePptxReport = async (
                 const periodLabel = isMonthlyPeriod ? "This Period" : "Cumulative";
                 
                 // Slide A: Table + Bar Chart
-                let slideA = pres.addSlide({ masterName: "DOCUSIGHT_MASTER" });
+                let slideA = pres.addSlide({ masterName: "STRUCTUSIGHT_MASTER" });
                 addHeaderAndFooter(pres, slideA, `${longName} (${bt}) ${periodLabel}`, projectInfo, logoUrl, options);
                 
                 // Add Table
@@ -415,7 +415,7 @@ export const generatePptxReport = async (
                 });
 
                 // Slide B: 3x2 Grid of Pie Charts
-                let slideB = pres.addSlide({ masterName: "DOCUSIGHT_MASTER" });
+                let slideB = pres.addSlide({ masterName: "STRUCTUSIGHT_MASTER" });
                 addHeaderAndFooter(pres, slideB, `${longName} (${bt}) ${periodLabel}`, projectInfo, logoUrl, options);
                 
                 // Centered Section Header inside slideB
@@ -513,13 +513,13 @@ export const generatePptxReport = async (
             addDividerSlide(pres, isArabic ? "الوثائق التي تتطلب إعادة تقديم" : "Items Requiring Resubmission", `${String(sectionNumRejected).padStart(2, '0')} REJECTED ITEMS`, projectInfo, logoUrl, options);
 
             if (rejectedPages.length === 0) {
-                let slide: any = pres.addSlide({ masterName: "DOCUSIGHT_MASTER" });
+                let slide: any = pres.addSlide({ masterName: "STRUCTUSIGHT_MASTER" });
                 addHeaderAndFooter(pres, slide, "REJECTED ITEMS", projectInfo, logoUrl, options);
                 slide.addText(isArabic ? "لا توجد وثائق مرفوضة متأخرة" : "No Rejected Items", { x: 1.0, y: 2.2, w: 8, h: 0.6, fontSize: 24, bold: true, color: "7A1515", align: "center", rtl: isArabic });
                 slide.addText(isArabic ? "كل المستندات المرفوضة تم الرد عليها أو إغلاقها." : "All rejected submittals are resolved or resubmitted.", { x: 1.0, y: 2.9, w: 8, h: 0.4, fontSize: 14, color: "666666", align: "center", rtl: isArabic });
             } else {
                 rejectedPages.forEach((pageData, pageIdx) => {
-                    let slide = pres.addSlide({ masterName: "DOCUSIGHT_MASTER" });
+                    let slide = pres.addSlide({ masterName: "STRUCTUSIGHT_MASTER" });
                     addHeaderAndFooter(pres, slide, "REJECTED ITEMS", projectInfo, logoUrl, options);
                     
                     // Slide title
@@ -579,13 +579,13 @@ export const generatePptxReport = async (
             addDividerSlide(pres, isArabic ? "الوثائق تحت المراجعة المتأخرة" : "Items Requiring Response", `${String(sectionNumPending).padStart(2, '0')} PENDING ITEMS`, projectInfo, logoUrl, options);
 
             if (pendingPages.length === 0) {
-                let slide: any = pres.addSlide({ masterName: "DOCUSIGHT_MASTER" });
+                let slide: any = pres.addSlide({ masterName: "STRUCTUSIGHT_MASTER" });
                 addHeaderAndFooter(pres, slide, "PENDING ITEMS", projectInfo, logoUrl, options);
                 slide.addText(isArabic ? "لا توجد معلقات متأخرة" : "No Pending Items", { x: 1.0, y: 2.2, w: 8, h: 0.6, fontSize: 24, bold: true, color: "0A192F", align: "center", rtl: isArabic });
                 slide.addText(isArabic ? "كل المستندات المعلقة مغلقة بالكامل." : "All pending documents are closed.", { x: 1.0, y: 2.9, w: 8, h: 0.4, fontSize: 14, color: "666666", align: "center", rtl: isArabic });
             } else {
                 pendingPages.forEach((pageData, pageIdx) => {
-                    let slide = pres.addSlide({ masterName: "DOCUSIGHT_MASTER" });
+                    let slide = pres.addSlide({ masterName: "STRUCTUSIGHT_MASTER" });
                     addHeaderAndFooter(pres, slide, "PENDING ITEMS", projectInfo, logoUrl, options);
                     
                     // Slide title
@@ -864,7 +864,10 @@ export const generatePptxReport = async (
                 });
                 
                 const s = bt === 'NCR' ? calculateNCRStats(dData, false) : (bt === 'SOR' ? calculateSORStats(dData, false) : (bt === 'LTR' ? calculateLTRStats(dData, false) : calculateStats(dData, data)));
-                const uniqueItems = s.totalUniqueDrawings !== undefined ? s.totalUniqueDrawings : ((s.totalSheetsRev0 || 0) + (s.totalSheetsFurtherRev || 0));
+                const isMonthly = mode === 'monthly' || timePeriodLabel.toLowerCase().includes('period');
+                const countForType = isMonthly
+                    ? (s.totalSubmittedSheets ?? ((s.totalSheetsRev0 || 0) + (s.totalSheetsFurtherRev || 0)))
+                    : (s.totalUniqueDrawings !== undefined ? s.totalUniqueDrawings : ((s.totalSheetsRev0 || 0) + (s.totalSheetsFurtherRev || 0)));
                 
                 return {
                     discipline: disc,
@@ -874,7 +877,7 @@ export const generatePptxReport = async (
                     RejectedOpen: s.rejectedOpen,
                     RejectedClosed: s.rejectedClosed,
                     Pending: s.pending,
-                    Total: uniqueItems,
+                    Total: countForType,
                     Closed: bt === 'NCR' || bt === 'SOR' || bt === 'RFI' ? s.approved : s.approved + s.rejectedClosed,
                     Open: bt === 'NCR' || bt === 'SOR' ? s.rejectedOpen : s.rejectedOpen + s.pending,
                 };

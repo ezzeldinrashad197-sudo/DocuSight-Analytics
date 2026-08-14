@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Shield, AlertCircle, ExternalLink, Globe, Mail, ArrowRight, Lock } from 'lucide-react';
 import Logo from './Logo';
 import { auth, googleAuthProvider, resolveUserPermissions } from './firebase';
-import { signInWithPopup, signInWithRedirect, getRedirectResult, onAuthStateChanged, signInAnonymously } from 'firebase/auth';
+import { signInWithPopup, signInWithRedirect, getRedirectResult, onAuthStateChanged } from 'firebase/auth';
 import { useLanguage } from './utils/i18n';
 
 interface LoginScreenProps {
@@ -25,20 +25,8 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
       setIsIframe(true);
     }
     const savedEmail = localStorage.getItem('docuCtrl_activeEmail');
-    const savedRole = localStorage.getItem('docuCtrl_activeRole');
     if (savedEmail) {
       setUserEmailInput(savedEmail);
-    }
-
-    // Auto-restore active enterprise session on redeploy/reload if previously authenticated
-    if (savedEmail && savedRole) {
-      const autoAuthTimer = setTimeout(() => {
-        if (!processedRef.current && !auth.currentUser) {
-          console.info('[Auth Protocol] Auto-restoring active session for:', savedEmail);
-          performFallbackAuth(savedEmail);
-        }
-      }, 600);
-      return () => clearTimeout(autoAuthTimer);
     }
   }, []);
 
@@ -56,11 +44,11 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
       } else if (isMounted) {
         setLoading(false);
       }
-    }).catch(async (redirectErr) => {
-      console.warn('[Auth Protocol] Redirect Auth Warning:', redirectErr);
+    }).catch((redirectErr: any) => {
+      console.warn('[Auth Protocol] Redirect Auth Error:', redirectErr);
       if (isMounted) {
-        // Attempt fallback authentication to ensure domain restrictions never lock out authorized personnel
-        await performFallbackAuth();
+        setLoading(false);
+        setError(redirectErr?.message || 'Redirect authentication failed. Please try signing in again.');
       }
     });
 
@@ -80,76 +68,32 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
     };
   }, []);
 
-  const processLoginResult = async (user: any, overrideEmail?: string) => {
-    // Prevent duplicate execution for the same user instance
+  const processLoginResult = async (user: any) => {
+    if (!user || !user.uid || user.isAnonymous) {
+      setLoading(false);
+      setError('Authenticated user account required. Anonymous sessions are prohibited.');
+      return;
+    }
+
     if (processedRef.current) return;
     processedRef.current = true;
 
-    let assignedRole: 'all' | 'executive' | 'pd' | 'pm' | 'em' | 'qaqc' | 'dc' | 'viewer' = 'viewer';
-    
     try {
-      let emailToResolve = overrideEmail || (typeof user?.email === 'string' ? user.email.trim().toLowerCase() : '');
-      if (!emailToResolve) {
-        emailToResolve = localStorage.getItem('docuCtrl_activeEmail') || '';
+      const userEmail = typeof user?.email === 'string' ? user.email.trim().toLowerCase() : '';
+      const resolvedRole = await resolveUserPermissions(user.uid, userEmail, user.displayName);
+
+      // Persist UI cache non-authoritatively
+      if (userEmail) {
+        localStorage.setItem('docuCtrl_activeEmail', userEmail);
       }
-      
-      const resolved = await resolveUserPermissions(user.uid || ('sso-' + Date.now()), emailToResolve, user.displayName);
-      assignedRole = resolved as any;
-      
-      // Persist credentials locally to accelerate opening speed on next loads.
-      if (emailToResolve) {
-        localStorage.setItem('docuCtrl_activeRole', assignedRole);
-        localStorage.setItem('docuCtrl_activeEmail', emailToResolve);
-      }
+      localStorage.setItem('docuCtrl_activeRole', resolvedRole);
+
+      onLogin(resolvedRole as any);
     } catch (firestoreError: any) {
-      console.warn('Firestore user fetch or write failed:', firestoreError);
-      let emailToResolve = overrideEmail || (typeof user?.email === 'string' ? user.email.trim().toLowerCase() : '');
-      assignedRole = 'viewer';
-      if (emailToResolve) {
-        localStorage.setItem('docuCtrl_activeRole', assignedRole);
-        localStorage.setItem('docuCtrl_activeEmail', emailToResolve);
-      }
-    }
-
-    onLogin(assignedRole);
-  };
-
-  const performFallbackAuth = async (specifiedEmail?: string) => {
-    try {
-      console.info('[Auth Protocol] Executing resilient authentication session...');
-      const targetEmail = (specifiedEmail || userEmailInput || localStorage.getItem('docuCtrl_activeEmail') || '').trim().toLowerCase();
-      
-      let currentUser = auth.currentUser;
-      if (!currentUser) {
-        try {
-          const anonResult = await signInAnonymously(auth);
-          currentUser = anonResult.user;
-        } catch (anonErr) {
-          console.warn('[Auth Protocol] Anonymous sign-in bypassed, proceeding with direct session:', anonErr);
-        }
-      }
-      
-      const userObj = {
-        uid: currentUser?.uid || ('sso-' + (targetEmail ? targetEmail.replace(/[^a-zA-Z0-9]/g, '_') : 'usr_' + Date.now())),
-        email: targetEmail || currentUser?.email || '',
-        displayName: currentUser?.displayName || (targetEmail ? targetEmail.split('@')[0] : 'Enterprise User')
-      };
-
-      await processLoginResult(userObj, targetEmail);
-      return true;
-    } catch (fallbackErr) {
-      console.warn('[Auth Protocol] Session initialization fallback warning:', fallbackErr);
-      const emergencyEmail = (specifiedEmail || userEmailInput || localStorage.getItem('docuCtrl_activeEmail') || 'ezzeldinrashad197@gmail.com').trim().toLowerCase();
-      try {
-        const resolvedRole = await resolveUserPermissions('sso-emergency-' + Date.now(), emergencyEmail, 'Enterprise User');
-        localStorage.setItem('docuCtrl_activeRole', resolvedRole);
-        localStorage.setItem('docuCtrl_activeEmail', emergencyEmail);
-        onLogin(resolvedRole as any);
-        return true;
-      } catch (err) {
-        onLogin('viewer');
-        return true;
-      }
+      console.warn('[Auth Protocol] Authorization permission resolution failed:', firestoreError);
+      processedRef.current = false;
+      setLoading(false);
+      setError(firestoreError?.message || 'Authentication failed: Unable to resolve authoritative user permissions.');
     }
   };
 
@@ -162,7 +106,12 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
     setLoading(true);
     setError(null);
     processedRef.current = false;
-    await performFallbackAuth(userEmailInput.trim().toLowerCase());
+
+    if (auth.currentUser && !auth.currentUser.isAnonymous) {
+      await processLoginResult(auth.currentUser);
+    } else {
+      await handleLogin(e, false);
+    }
   };
 
   const handleLogin = async (e?: React.FormEvent, forceRedirect = false) => {
@@ -170,6 +119,10 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
     setLoading(true);
     setError(null);
     processedRef.current = false;
+
+    if (userEmailInput && userEmailInput.includes('@')) {
+      googleAuthProvider.setCustomParameters({ login_hint: userEmailInput.trim() });
+    }
 
     // If running inside an iframe, open in new tab for standard OAuth flow
     if (isIframe) {
@@ -183,10 +136,8 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
         await signInWithRedirect(auth, googleAuthProvider);
       } catch (redirectErr: any) {
         console.warn('[Auth Protocol] REDIRECT AUTH ERROR:', redirectErr);
-        const fallbackOk = await performFallbackAuth();
-        if (!fallbackOk) {
-          setError(redirectErr?.message || 'Authentication failed. Please try again.');
-        }
+        setLoading(false);
+        setError(redirectErr?.message || 'Redirect authentication failed. Please try again.');
       }
       return;
     }
@@ -196,18 +147,27 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
       if (userCredential?.user) {
         await processLoginResult(userCredential.user);
       } else {
-        await performFallbackAuth();
+        setLoading(false);
+        setError('Authentication failed. No user credentials returned.');
       }
     } catch (err: any) {
       console.warn('[Auth Protocol] POPUP AUTH WARNING:', err);
-      // Fallback automatically so domain restrictions or popup blocks never prevent authorized access
-      const fallbackOk = await performFallbackAuth();
-      if (!fallbackOk) {
-        if (err.code === 'auth/unauthorized-domain') {
-          setError(`This domain (${window.location.host}) requires authorization in Firebase Console or use Enterprise SSO Email Access below.`);
-        } else {
-          setError(err.message || 'Authentication failed. Please try again or use Enterprise SSO Email Access.');
+      if (err.code === 'auth/popup-blocked') {
+        try {
+          await signInWithRedirect(auth, googleAuthProvider);
+          return;
+        } catch (redirectErr: any) {
+          console.warn('[Auth Protocol] FALLBACK REDIRECT AUTH ERROR:', redirectErr);
+          setLoading(false);
+          setError(redirectErr?.message || 'Redirect authentication failed. Please try again.');
+          return;
         }
+      }
+      setLoading(false);
+      if (err.code === 'auth/unauthorized-domain') {
+        setError(`This domain (${window.location.host}) requires authorization in Firebase Console or use Full Window Redirect below.`);
+      } else {
+        setError(err.message || 'Authentication failed. Please try again.');
       }
     }
   };

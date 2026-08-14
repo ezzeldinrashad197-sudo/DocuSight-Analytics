@@ -430,12 +430,12 @@ export default function ReportTable({ data, filterFn, title, projectInfo, rawDat
             <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200 transition-all hover:shadow relative overflow-hidden group">
                 <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">{language === 'ar' ? 'إجمالي المعاملات' : 'Total Submissions'}</h4>
                 <div className="flex items-baseline gap-2">
-                    <p className="text-2xl font-bold text-[#203864]">{globalStats.totalUniqueDrawings || (globalStats.totalDrawingsRev0 + globalStats.totalDrawingsFurtherRev)}</p>
+                    <p className="text-2xl font-bold text-[#203864]">{isMonthly ? globalStats.totalSubmittedSheets : (globalStats.totalUniqueDrawings || (globalStats.totalDrawingsRev0 + globalStats.totalDrawingsFurtherRev))}</p>
                     <span className={`text-[10px] font-bold ${trends.submissionsTrend >= 0 ? 'text-emerald-600' : 'text-rose-500'}`}>
                         {trends.submissionsTrend >= 0 ? `↑ +${trends.submissionsTrend}` : `↓ ${trends.submissionsTrend}`}
                     </span>
                 </div>
-                <span className="text-[10px] text-slate-400 font-semibold">{language === 'ar' ? 'تقديمات فريدة' : 'Unique item keys'}</span>
+                <span className="text-[10px] text-slate-400 font-semibold">{isMonthly ? (language === 'ar' ? 'معاملات الشهر' : 'Monthly transactions') : (language === 'ar' ? 'تقديمات فريدة' : 'Unique item keys')}</span>
             </div>
 
             {/* Total Sheets */}
@@ -641,7 +641,9 @@ export default function ReportTable({ data, filterFn, title, projectInfo, rawDat
           <div id="report-bottleneck-spotlight" className="bg-white p-6 rounded-xl shadow-sm border border-rose-200 bg-gradient-to-br from-rose-50/20 via-white to-white print:break-inside-avoid">
               <h3 className="text-sm font-bold text-rose-700 mb-4 flex items-center gap-2">
                   <AlertCircle className="w-5 h-5 text-rose-600 shrink-0" />
-                  {language === 'ar' ? 'أكبر 5 مستندات معلقة متأخرة والمسؤول عنها (بؤر التكدس الحرجة)' : 'Top 5 Critical Overdue Bottlenecks & Responsible Party'}
+                  {language === 'ar' 
+                    ? (topOverdueItems.length >= 5 ? 'أكبر 5 مستندات معلقة متأخرة والمسؤول عنها (بؤر التكدس الحرجة)' : `المستندات المعلقة المتأخرة والمسؤول عنها (${topOverdueItems.length})`) 
+                    : (topOverdueItems.length >= 5 ? 'Top 5 Critical Overdue Bottlenecks & Responsible Party' : `Critical Overdue Bottlenecks (${topOverdueItems.length} Item${topOverdueItems.length > 1 ? 's' : ''}) & Responsible Party`)}
               </h3>
               <div className="overflow-x-auto">
                   <table className="w-full text-left border-collapse">
@@ -704,7 +706,7 @@ export default function ReportTable({ data, filterFn, title, projectInfo, rawDat
                 <thead>
                   <tr className="bg-slate-100">
                     <th className={`${thClass} text-left font-extrabold text-[#203864]`}>{language === 'ar' ? 'نوع المعاملة / السجل' : 'Log Type (Tab)'}</th>
-                    <th className={thClass}>{language === 'ar' ? 'التقديمات الفريدة' : 'Total Unique Items'}</th>
+                    <th className={thClass}>{isMonthly ? (language === 'ar' ? 'إجمالي المعاملات' : 'Total Transactions') : (language === 'ar' ? 'التقديمات الفريدة' : 'Total Unique Items')}</th>
                     <th className={`${thClass} bg-slate-200/60 font-black`}>{language === 'ar' ? 'إجمالي الصفحات' : 'Total Sheets Submitted'}</th>
                     <th className={thClass}>{language === 'ar' ? 'مراجعة 00' : 'Items (Rev0)'}</th>
                     <th className={thClass}>{language === 'ar' ? 'مراجعات لاحقة' : 'Further Rev Items'}</th>
@@ -719,7 +721,7 @@ export default function ReportTable({ data, filterFn, title, projectInfo, rawDat
                   {byDocType.map((row, index) => (
                     <tr key={row.documentType} className="odd:bg-white even:bg-slate-50/50 hover:bg-[#f1f5f9]/50 transition-colors">
                       <td className="px-4 py-3 text-xs text-[#203864] font-extrabold text-left">{row.documentType}</td>
-                      <td className={tdClass}>{row.stats.totalUniqueDrawings || (row.stats.totalDrawingsRev0 + row.stats.totalDrawingsFurtherRev)}</td>
+                      <td className={tdClass}>{isMonthly ? row.stats.totalSubmittedSheets : (row.stats.totalUniqueDrawings || (row.stats.totalDrawingsRev0 + row.stats.totalDrawingsFurtherRev))}</td>
                       <td className={`${tdClass} bg-slate-100/30 font-bold text-slate-900`}>{row.stats.totalSubmittedSheets}</td>
                       <td className={tdClass}>{row.stats.totalSheetsRev0}</td>
                       <td className={tdClass}>{row.stats.totalSheetsFurtherRev}</td>
@@ -773,7 +775,7 @@ export default function ReportTable({ data, filterFn, title, projectInfo, rawDat
                   {/* Total Row */}
                   <tr className="bg-slate-200/70 border-t-2 border-slate-300 font-bold text-slate-900">
                     <td className="px-4 py-3.5 text-xs font-black text-left text-slate-800">GRAND TOTAL</td>
-                    <td className="px-4 py-3.5 text-xs text-center font-bold text-slate-800">{globalStats.totalUniqueDrawings || (globalStats.totalDrawingsRev0 + globalStats.totalDrawingsFurtherRev)}</td>
+                    <td className="px-4 py-3.5 text-xs text-center font-bold text-slate-800">{isMonthly ? globalStats.totalSubmittedSheets : (globalStats.totalUniqueDrawings || (globalStats.totalDrawingsRev0 + globalStats.totalDrawingsFurtherRev))}</td>
                     <td className="px-4 py-3.5 text-xs text-center font-black bg-slate-300/60 text-[#203864]">{globalStats.totalSubmittedSheets}</td>
                     <td className="px-4 py-3.5 text-xs text-center font-bold text-slate-700">{globalStats.totalSheetsRev0}</td>
                     <td className="px-4 py-3.5 text-xs text-center font-bold text-slate-700">{globalStats.totalSheetsFurtherRev}</td>

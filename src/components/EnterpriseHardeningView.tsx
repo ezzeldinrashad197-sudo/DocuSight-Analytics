@@ -567,7 +567,7 @@ export default function EnterpriseHardeningView({
           </div>
           <div>
             <h2 className="text-xl font-bold text-white flex items-center gap-2">
-              DocuSight Enterprise Trust Control Program
+              StructuSight Enterprise Trust Control Program
               <span className="text-xs bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded font-mono">
                 MIL-STD-105E Compliant
               </span>

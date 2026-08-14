@@ -256,7 +256,7 @@ export const CalculationAuditCenter: React.FC<CalculationAuditCenterProps> = ({
                 Auditable Decision Engine (مركز تدقيق الحسابات والمطابقة)
               </span>
               <h1 className="text-2xl font-black text-white font-sans tracking-tight">
-                DocuSight Calculation Audit Center
+                StructuSight Calculation Audit Center
               </h1>
             </div>
           </div>
@@ -609,7 +609,7 @@ export const CalculationAuditCenter: React.FC<CalculationAuditCenterProps> = ({
                   Classification Decision Tree Architecture
                 </h3>
                 <p className="text-xs text-slate-500 mt-0.5">
-                  Visualizes the exact multi-node logic executed by DocuSight Analytics to classify every uploaded row.
+                  Visualizes the exact multi-node logic executed by StructuSight Analytics to classify every uploaded row.
                 </p>
               </div>
             </div>
@@ -862,7 +862,7 @@ export const CalculationAuditCenter: React.FC<CalculationAuditCenterProps> = ({
               <div>
                 <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
                   <Code className="w-5 h-5 text-emerald-600" />
-                  DocuSight Specification Rules Reference
+                  StructuSight Specification Rules Reference
                 </h3>
                 <p className="text-xs text-slate-500 mt-0.5">
                   Formal specification standards governing calculation, revision resolution, and workflow classification.

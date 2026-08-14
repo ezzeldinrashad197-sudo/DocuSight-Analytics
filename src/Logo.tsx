@@ -2,34 +2,42 @@ import React from 'react';
 
 interface LogoProps {
   className?: string;
-  variant?: 'full' | 'compact' | 'symbol' | 'on-dark';
+  variant?: 'full' | 'compact' | 'symbol' | 'on-dark' | 'on-dark-compact';
   showSubtitle?: boolean;
   showTagline?: boolean;
+  subtitle?: string;
 }
 
 export default function Logo({
-  className = "h-12",
+  className = "",
   variant = 'full',
   showSubtitle = true,
-  showTagline = false
+  showTagline = false,
+  subtitle
 }: LogoProps) {
-  const isDark = variant === 'on-dark';
+  const isDark = variant === 'on-dark' || variant === 'on-dark-compact';
   const isSymbolOnly = variant === 'symbol';
-  const isCompact = variant === 'compact';
+  const isCompact = variant === 'compact' || variant === 'on-dark-compact';
 
   const textColorStructu = isDark ? "#FFFFFF" : "#0D1B2A";
   const textColorSight = "#2563EB";
   const subtitleColor = isDark ? "#94A3B8" : "#64748B";
 
+  const svgHeightClass = isSymbolOnly
+    ? "h-8 w-auto shrink-0 drop-shadow-sm"
+    : isCompact
+    ? "h-8 md:h-9 w-auto shrink-0 drop-shadow-sm"
+    : "h-10 md:h-11 w-auto shrink-0 drop-shadow-sm";
+
   return (
-    <div className={`inline-flex items-center gap-3 select-none ${className}`}>
+    <div className={`inline-flex items-center gap-2.5 select-none ${className}`}>
       {/* 3D Geometric Structural S-Mark SVG */}
       <svg
         viewBox="0 0 100 100"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
-        className="h-full w-auto shrink-0 drop-shadow-sm"
-        style={{ minWidth: '32px' }}
+        className={svgHeightClass}
+        style={{ minWidth: '28px' }}
       >
         {/* Outer Structural Hexagonal Framework */}
         {/* Top Roof & Left Spine */}
@@ -83,29 +91,57 @@ export default function Logo({
 
       {/* Typography Section */}
       {!isSymbolOnly && (
-        <div className="flex flex-col justify-center leading-none">
+        <div className="flex flex-col justify-center">
           <div className="flex items-baseline tracking-tight font-extrabold" style={{ fontFamily: 'Montserrat, sans-serif' }}>
-            <span className="text-xl md:text-2xl" style={{ color: textColorStructu, fontWeight: 800 }}>
+            <span className={isCompact ? "text-lg md:text-xl" : "text-xl md:text-2xl"} style={{ color: textColorStructu, fontWeight: 800, lineHeight: 1.15 }}>
               Structu
             </span>
-            <span className="text-xl md:text-2xl" style={{ color: textColorSight, fontWeight: 800 }}>
+            <span className={isCompact ? "text-lg md:text-xl" : "text-xl md:text-2xl"} style={{ color: textColorSight, fontWeight: 800, lineHeight: 1.15 }}>
               Sight
             </span>
           </div>
 
           {!isCompact && showSubtitle && (
+            <>
+              {subtitle ? (
+                <span
+                  className="text-[8.5px] md:text-[9px] font-bold tracking-[0.14em] uppercase mt-0.5"
+                  style={{ color: subtitleColor, fontFamily: 'Montserrat, sans-serif', lineHeight: 1.2 }}
+                >
+                  {subtitle}
+                </span>
+              ) : (
+                <div className="flex flex-col mt-0.5">
+                  <span
+                    className="text-[8.5px] md:text-[9px] font-bold tracking-[0.14em] uppercase"
+                    style={{ color: subtitleColor, fontFamily: 'Montserrat, sans-serif', lineHeight: 1.2 }}
+                  >
+                    PROJECT INFORMATION
+                  </span>
+                  <span
+                    className="text-[8.5px] md:text-[9px] font-bold tracking-[0.14em] uppercase"
+                    style={{ color: subtitleColor, fontFamily: 'Montserrat, sans-serif', lineHeight: 1.2 }}
+                  >
+                    INTELLIGENCE PLATFORM
+                  </span>
+                </div>
+              )}
+            </>
+          )}
+
+          {isCompact && showSubtitle && (
             <span
-              className="text-[9px] md:text-[10px] font-bold tracking-[0.2em] uppercase mt-1"
-              style={{ color: subtitleColor, fontFamily: 'Montserrat, sans-serif' }}
+              className="text-[8.5px] md:text-[9px] font-bold tracking-[0.14em] uppercase mt-0.5"
+              style={{ color: subtitleColor, fontFamily: 'Montserrat, sans-serif', lineHeight: 1.2 }}
             >
-              ENGINEERING INTELLIGENCE PLATFORM
+              {subtitle || "INTELLIGENCE PLATFORM"}
             </span>
           )}
 
           {!isCompact && showTagline && (
             <span
               className="text-[9px] font-extrabold tracking-wider uppercase mt-1 text-blue-600"
-              style={{ fontFamily: 'Montserrat, sans-serif' }}
+              style={{ fontFamily: 'Montserrat, sans-serif', lineHeight: 1.2 }}
             >
               SEE STRUCTURE. BUILD BETTER.
             </span>

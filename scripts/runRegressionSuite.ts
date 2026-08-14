@@ -4,7 +4,7 @@ import { runCalculationVerificationSuite } from '../src/utils/calculationVerific
 
 async function main() {
   console.log('===================================================================================');
-  console.log('DOCUSIGHT ANALYTICS — EXECUTING FULL SYSTEM REGRESSION SUITE');
+  console.log('STRUCTUSIGHT ANALYTICS — EXECUTING FULL SYSTEM REGRESSION SUITE');
   console.log('===================================================================================');
 
   const startTime = Date.now();
@@ -83,7 +83,7 @@ async function main() {
 
   // Artifact 4: FullRegressionOutput.log
   const logOutput = `===================================================================================
-DOCUSIGHT ENGINE REGRESSION VERIFICATION EXECUTION OUTPUT
+STRUCTUSIGHT ENGINE REGRESSION VERIFICATION EXECUTION OUTPUT
 ===================================================================================
 Execution Timestamp: ${results.timestamp}
 Engine Version: 2.1.0-ENTERPRISE-SSOT

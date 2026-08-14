@@ -247,7 +247,7 @@ export default function WorkflowMappingCenter({ data, onDataRefreshNeeded }: Wor
           </div>
           <h1 className="text-3xl font-bold tracking-tight">Workflow Mapping Engine</h1>
           <p className="text-slate-300 text-sm max-w-2xl">
-            DocuSight Analytics enterprise normalization center. Resolves variations of document logs to official Workflow Families and binds them exclusively to specific Calculation Engines.
+            StructuSight Analytics enterprise normalization center. Resolves variations of document logs to official Workflow Families and binds them exclusively to specific Calculation Engines.
           </p>
         </div>
         
@@ -947,7 +947,7 @@ export default function WorkflowMappingCenter({ data, onDataRefreshNeeded }: Wor
               Rule Compliance Verification
             </h3>
             <p className="text-xs text-slate-500 mb-5">
-              Programmatic verification status of DocuSight Analytics Enterprise Protection Rules (الفصل العاشر).
+              Programmatic verification status of StructuSight Analytics Enterprise Protection Rules (الفصل العاشر).
             </p>
 
             <div className="space-y-3">

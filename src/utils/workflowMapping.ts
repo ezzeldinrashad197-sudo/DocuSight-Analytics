@@ -1,4 +1,4 @@
-// DocuSight Analytics - Workflow Mapping Specification (SSOT)
+// StructuSight Analytics - Workflow Mapping Specification (SSOT)
 
 export type WorkflowFamily =
   | 'SDW'

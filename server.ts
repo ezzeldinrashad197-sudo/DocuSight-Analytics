@@ -100,7 +100,7 @@ async function startServer() {
   if (!process.env.GEMINI_API_KEY) {
      console.warn("\n\x1b[43m\x1b[30m%s\x1b[0m", "  CONFIGURATION WARNING  ");
      console.warn("\x1b[33m%s\x1b[0m", "=========================================================================================");
-     console.warn("\x1b[33m%s\x1b[0m", "DocuSight Platform startup: GEMINI_API_KEY environment variable is currently missing.");
+     console.warn("\x1b[33m%s\x1b[0m", "StructuSight Platform startup: GEMINI_API_KEY environment variable is currently missing.");
      console.warn("\x1b[33m%s\x1b[0m", "AI Insights Advice and Summarization capabilities will be disabled until configured.");
      console.warn("\x1b[33m%s\x1b[0m", "Please assign GEMINI_API_KEY under the App Settings or in an active .env context.");
      console.warn("\x1b[33m%s\x1b[0m", "=========================================================================================\n");
@@ -136,7 +136,16 @@ async function startServer() {
         upgradeInsecureRequests: isProd ? [] : null,
       }
     },
-    crossOriginEmbedderPolicy: false
+    crossOriginEmbedderPolicy: false,
+    // FIX: Helmet's default Cross-Origin-Opener-Policy is "same-origin", which
+    // isolates this page's browsing context group and blocks Firebase Auth's
+    // window.closed polling on popups it opens (signInWithPopup ->
+    // accounts.google.com / *.firebaseapp.com). That caused Firebase to
+    // falsely report `auth/popup-closed-by-user` even while the popup was
+    // open and authentication was succeeding. "same-origin-allow-popups"
+    // preserves normal COOP isolation from other origins while still
+    // allowing this page to communicate with popups it itself opened.
+    crossOriginOpenerPolicy: { policy: "same-origin-allow-popups" }
   }));
 
   // 2. CORS configuration with dynamic origin validation (Explicitly whitelists staging and development runtimes)
@@ -211,6 +220,186 @@ async function startServer() {
     });
   });
 
+  // --- TRUSTED SERVER-SIDE IDENTITY LINKING ENDPOINT ---
+  app.post("/api/link-identity", async (req, res) => {
+    try {
+      const { idToken } = req.body || {};
+      if (!idToken || typeof idToken !== 'string') {
+        return res.status(400).json({ error: "Missing or invalid idToken parameter." });
+      }
+
+      // 1. Validate ID token via Firebase Auth Identity Toolkit API
+      const firebaseConfig = (await import('./firebase-applet-config.json', { with: { type: 'json' } })).default;
+      const lookupUrl = `https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=${firebaseConfig.apiKey}`;
+      
+      const authRes = await fetch(lookupUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ idToken })
+      });
+
+      if (!authRes.ok) {
+        logSecurityEvent('AUTH_LINK_FAILED', 'WARN', 'Invalid or expired Firebase ID token during identity linking.');
+        return res.status(401).json({ error: "Invalid or expired authentication token." });
+      }
+
+      const authData = await authRes.json();
+      const userObj = authData.users?.[0];
+      if (!userObj || !userObj.localId) {
+        logSecurityEvent('AUTH_LINK_FAILED', 'WARN', 'No authenticated user identity returned from token verification.');
+        return res.status(401).json({ error: "Authenticated user identity not found." });
+      }
+
+      const uid = userObj.localId;
+      const email = String(userObj.email || '').trim().toLowerCase();
+
+      if (!email) {
+        logSecurityEvent('AUTH_LINK_FAILED', 'WARN', `User ${uid} lacks a verified email address.`);
+        return res.status(400).json({ error: "Verified email address is required for identity linking." });
+      }
+
+      if (userObj.emailVerified !== true) {
+        logSecurityEvent('AUTH_LINK_FAILED', 'WARN', `User ${uid} (${email}) email is not verified.`);
+        return res.status(401).json({ error: "Unverified email address. Enterprise access requires a verified email address." });
+      }
+
+      const isGoogleProvider = Array.isArray(userObj.providerUserInfo) &&
+        userObj.providerUserInfo.some((p: any) => p.providerId === 'google.com');
+
+      if (!isGoogleProvider) {
+        logSecurityEvent('AUTH_LINK_FAILED', 'WARN', `User ${uid} (${email}) authenticated with non-Google provider.`);
+        return res.status(401).json({ error: "Identity linking requires authenticating via Google SSO." });
+      }
+
+      const authHeaders = {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${idToken}`
+      };
+
+      const dbId = (firebaseConfig as any).firestoreDatabaseId || 'ai-studio-b1fedb55-c17f-4221-b883-f1ee17f1362f';
+      const firestoreBaseUrl = `https://firestore.googleapis.com/v1/projects/${firebaseConfig.projectId}/databases/${dbId}/documents/users`;
+
+      // Check if this is the known owner/admin account
+      const isKnownOwner = email === 'ezzeldinrashad197@gmail.com' || email.endsWith('@structusight.com');
+
+      // 2. Check if authoritative /users/{uid} document already exists
+      let uidDocRes: any = null;
+      try {
+        uidDocRes = await fetch(`${firestoreBaseUrl}/${uid}?key=${firebaseConfig.apiKey}`, { headers: authHeaders });
+      } catch (e) {}
+
+      if (uidDocRes && uidDocRes.ok) {
+        const uidDocJson = await uidDocRes.json();
+        const fields = uidDocJson.fields || {};
+        const role = fields.role?.stringValue || 'all';
+        return res.json({
+          success: true,
+          status: "existing_uid_profile",
+          uid,
+          email,
+          role,
+          message: "Authoritative UID profile already established."
+        });
+      }
+
+      // 3. Read pre-provisioned email document /users/{email}
+      let emailDocRes: any = null;
+      try {
+        emailDocRes = await fetch(`${firestoreBaseUrl}/${email}?key=${firebaseConfig.apiKey}`, { headers: authHeaders });
+      } catch (e) {}
+
+      let fields: Record<string, any> = {};
+
+      if (emailDocRes && emailDocRes.ok) {
+        const emailDocJson = await emailDocRes.json();
+        fields = emailDocJson.fields || {};
+      } else if (isKnownOwner) {
+        // Bootstrap authoritative owner profile if pre-provisioned doc is missing
+        fields = {
+          email: { stringValue: email },
+          role: { stringValue: 'all' },
+          accountStatus: { stringValue: 'active' },
+          accessLevel: { stringValue: 'approved' },
+          name: { stringValue: userObj.displayName || email.split('@')[0] }
+        };
+      } else {
+        logSecurityEvent('AUTH_LINK_REJECTED', 'WARN', `No pre-provisioned email document found at /users/${email} for UID ${uid}.`);
+        return res.status(404).json({
+          error: `No pre-provisioned authorization profile found for (${email}). Access denied (Fail Closed).`
+        });
+      }
+
+      const getString = (f: any) => f?.stringValue || '';
+      const getArray = (f: any) => f?.arrayValue?.values?.map((v: any) => v.stringValue).filter(Boolean) || [];
+
+      const accountStatus = getString(fields.accountStatus) || 'active';
+      const accessLevel = getString(fields.accessLevel) || 'approved';
+      
+      if (accountStatus === 'disabled' || accessLevel === 'revoked') {
+        logSecurityEvent('AUTH_LINK_REJECTED', 'CRITICAL', `Pre-provisioned account ${email} is disabled or revoked.`);
+        return res.status(403).json({ error: "Account is disabled or access level is revoked." });
+      }
+
+      const roleStr = getString(fields.role);
+      const rolesArr = getArray(fields.roles);
+      const resolvedRole = roleStr || (rolesArr.length > 0 ? rolesArr.join(',') : (isKnownOwner ? 'all' : ''));
+
+      if (!resolvedRole) {
+        logSecurityEvent('AUTH_LINK_REJECTED', 'CRITICAL', `Pre-provisioned profile ${email} exists but has no role assigned.`);
+        return res.status(403).json({ error: `No authorization role assigned to pre-provisioned profile (${email}). Access denied (Fail Closed).` });
+      }
+
+      // 4. Safely create authoritative /users/{uid} document via server REST call
+      const newFields: Record<string, any> = { ...fields };
+      newFields.uid = { stringValue: uid };
+      newFields.email = { stringValue: email };
+      newFields.role = { stringValue: resolvedRole };
+      newFields.linkedFromEmailDoc = { stringValue: email };
+      newFields.linkedAt = { stringValue: new Date().toISOString() };
+      newFields.updatedAt = { stringValue: new Date().toISOString() };
+
+      try {
+        await fetch(`${firestoreBaseUrl}/${uid}?key=${firebaseConfig.apiKey}`, {
+          method: 'PATCH',
+          headers: authHeaders,
+          body: JSON.stringify({ fields: newFields })
+        });
+      } catch (writeErr) {
+        console.warn("[Identity Linking] Non-fatal UID write attempt warning:", writeErr);
+      }
+
+      // 5. Update original /users/{email} with backlink
+      try {
+        const updatedEmailFields = {
+          ...fields,
+          linkedToUid: { stringValue: uid },
+          updatedAt: { stringValue: new Date().toISOString() }
+        };
+        await fetch(`${firestoreBaseUrl}/${email}?key=${firebaseConfig.apiKey}`, {
+          method: 'PATCH',
+          headers: authHeaders,
+          body: JSON.stringify({ fields: updatedEmailFields })
+        });
+      } catch (linkErr) {
+        console.warn("[Identity Linking] Non-fatal backlink update warning:", linkErr);
+      }
+
+      logSecurityEvent('AUTH_LINK_SUCCESS', 'INFO', `Successfully migrated pre-provisioned profile ${email} to authoritative UID ${uid}.`);
+      return res.json({
+        success: true,
+        status: "linked",
+        uid,
+        email,
+        role: resolvedRole,
+        message: `Successfully linked pre-provisioned profile (${email}) to authoritative UID (${uid}).`
+      });
+
+    } catch (err: any) {
+      logSecurityEvent('AUTH_LINK_CRASH', 'CRITICAL', `Identity linking endpoint crash: ${err.message}`);
+      res.status(500).json({ error: err.message });
+    }
+  });
+
   // --- OBSERVABILITY METRICS & TELEMETRY ACCESS ENDPOINTS (Issue #10) ---
   app.get("/api/metrics", (req, res) => {
     const memory = process.memoryUsage();
@@ -245,8 +434,30 @@ async function startServer() {
 
       const filtered = rawData.filter((row: any) => {
         if (filters?.documentType && filters.documentType !== 'All') {
-          const dt = (row.documentType || row.logType || '').toUpperCase();
-          if (!dt.includes(filters.documentType.toUpperCase())) return false;
+          const target = filters.documentType.toUpperCase().trim();
+          const wf = (row.workflowFamily || '').toUpperCase().trim();
+          let dt = (row.documentType || row.logType || "GENERAL").toUpperCase().trim();
+          const docNo = (row.docNo || '').toUpperCase().trim();
+          const prefix = dt.split('-')[0].trim();
+
+          const isRowABD = wf === 'ABD' || dt.startsWith('ABD') || dt.includes('AS-BUILT') || dt.includes('AS BUILT') || docNo.startsWith('ABD-');
+
+          if (target === 'ABD') {
+            if (!isRowABD) return false;
+          } else if (target === 'SDW' || target === 'SHD') {
+            if (isRowABD) return false;
+            const matchesWf = wf === 'SDW' || wf === 'SHD';
+            const matchesPrefix = prefix === 'SDW' || prefix === 'SHD' || docNo.startsWith('SDW-') || docNo.startsWith('SHD-');
+            const matchesDt = dt.includes('SDW') || dt.includes('SHD') || dt.includes('SHOP');
+            if (!matchesWf && !matchesPrefix && !matchesDt) return false;
+          } else {
+            const matchesWf = wf === target || (target === "LTR" && wf === "LETTER");
+            const matchesPrefix = prefix === target || docNo.startsWith(`${target}-`);
+            const matchesDt = dt.startsWith(target) || dt.includes(target);
+            const matchesKeywords = (target === 'LTR' && (dt.includes('CORRES') || dt.includes('LETTER')));
+
+            if (!matchesWf && !matchesPrefix && !matchesDt && !matchesKeywords) return false;
+          }
         }
         if (filters?.discipline && !filterOpt(row.discipline, filters.discipline)) return false;
         if (filters?.contractor && !filterOpt(row.contractor, filters.contractor)) return false;
@@ -339,7 +550,7 @@ async function startServer() {
       systemMetrics.selfTestsPassed += results.length;
       res.json({
         timestamp: new Date().toISOString(),
-        testSuite: "DocuSight Enterprise Security-Self-Test Suite v2.1",
+        testSuite: "StructuSight Enterprise Security-Self-Test Suite v2.1",
         overallPassed: true,
         summary: "Zero privilege escalations detected. System is in COMPLIANT state.",
         results

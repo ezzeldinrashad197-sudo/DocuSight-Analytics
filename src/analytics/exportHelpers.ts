@@ -131,7 +131,10 @@ export const compileStatsForBaseType = (dataset: SubmittalRow[], bt: string, mon
       });
       const s = bt === 'NCR' ? calculateNCRStats(dData, false) : (bt === 'SOR' ? calculateSORStats(dData, false) : (bt === 'LTR' ? calculateLTRStats(dData, false) : calculateStats(dData, fullDataset || dataset)));
       
-      const uniqueItems = s.totalUniqueDrawings !== undefined ? s.totalUniqueDrawings : ((s.totalSheetsRev0 || 0) + (s.totalSheetsFurtherRev || 0));
+      const isMonthlyReport = !!monthlyStart;
+      const countForType = isMonthlyReport
+        ? (s.totalSubmittedSheets ?? ((s.totalSheetsRev0 || 0) + (s.totalSheetsFurtherRev || 0)))
+        : (s.totalUniqueDrawings !== undefined ? s.totalUniqueDrawings : ((s.totalSheetsRev0 || 0) + (s.totalSheetsFurtherRev || 0)));
       return {
         discipline: disc,
         Rev00: s.totalSheetsRev0 || 0,
@@ -140,7 +143,7 @@ export const compileStatsForBaseType = (dataset: SubmittalRow[], bt: string, mon
         RejectedOpen: s.rejectedOpen,
         RejectedClosed: s.rejectedClosed,
         Pending: s.pending,
-        Total: uniqueItems,
+        Total: countForType,
         Closed: bt === 'NCR' || bt === 'SOR' ? s.approved : s.approved + s.rejectedClosed,
         Open: bt === 'NCR' || bt === 'SOR' ? s.rejectedOpen : s.rejectedOpen + s.pending,
       };
@@ -230,7 +233,7 @@ export const renderLuxeLogoBox = (
 };
 
 // Extracted Header and Footer helper with complete professional metadata and brand alignment
-export const defineDocusightSlideMaster = (
+export const defineStructusightSlideMaster = (
     pres: pptxgen,
     projectInfo: ProjectSettings | null,
     options?: any
@@ -340,7 +343,7 @@ export const defineDocusightSlideMaster = (
     }
 
     pres.defineSlideMaster({
-        title: "DOCUSIGHT_MASTER",
+        title: "STRUCTUSIGHT_MASTER",
         background: { color: "FFFFFF" },
         objects: objects,
         slideNumber: { 
@@ -350,6 +353,8 @@ export const defineDocusightSlideMaster = (
         }
     });
 };
+
+export const defineDocusightSlideMaster = defineStructusightSlideMaster;
 
 export const addHeaderAndFooter = (
     pres: pptxgen,
