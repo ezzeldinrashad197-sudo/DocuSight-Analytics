@@ -30,11 +30,18 @@ export function useUpload(
            setIsError(true);
            await logAuditContext("UPLOAD_FAILED", "log_file", { reason: "No matching data" });
        } else {
-           const dates = parsed.map(d => new Date(d.submissionDate).getTime()).filter(t => !isNaN(t));
-           if (dates.length > 0) {
-               const maxDate = new Date(Math.max(...dates));
-               setStartDate(format(startOfMonth(maxDate), 'yyyy-MM-dd'));
-               setEndDate(format(endOfMonth(maxDate), 'yyyy-MM-dd'));
+           const validSubmissionDates = parsed
+             .map(d => d.submissionDate)
+             .filter(Boolean)
+             .sort();
+           if (validSubmissionDates.length > 0) {
+             const latestDateStr = validSubmissionDates[validSubmissionDates.length - 1];
+             const parts = latestDateStr.split('-').map(Number);
+             if (parts.length >= 2 && !isNaN(parts[0]) && !isNaN(parts[1])) {
+               const localDate = new Date(parts[0], parts[1] - 1, parts[2] || 1);
+               setStartDate(format(startOfMonth(localDate), 'yyyy-MM-dd'));
+               setEndDate(format(endOfMonth(localDate), 'yyyy-MM-dd'));
+             }
            }
 
            setData(parsed);

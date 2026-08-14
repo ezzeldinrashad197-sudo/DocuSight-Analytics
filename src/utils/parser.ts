@@ -4,21 +4,76 @@ import { normalizeData } from "./calculations";
 import { classifyRegisterSheet, normalizeDiscipline } from "./classificationEngine";
 import { mapDocumentToWorkflow } from "./workflowMapping";
 
+const MONTH_NAME_MAP: Record<string, string> = {
+  jan: '01', january: '01',
+  feb: '02', february: '02',
+  mar: '03', march: '03',
+  apr: '04', april: '04',
+  may: '05',
+  jun: '06', june: '06',
+  jul: '07', july: '07',
+  aug: '08', august: '08',
+  sep: '09', sept: '09', september: '09',
+  oct: '10', october: '10',
+  nov: '11', november: '11',
+  dec: '12', december: '12'
+};
+
 export const formatDate = (raw: unknown): string => {
   if (!raw) return "";
   if (raw instanceof Date) {
-    return raw.toISOString().split("T")[0];
+    if (isNaN(raw.getTime())) return "";
+    const y = raw.getFullYear();
+    const m = String(raw.getMonth() + 1).padStart(2, '0');
+    const d = String(raw.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
   }
   if (typeof raw === "number") {
     const date = new Date(Math.round((raw - 25569) * 86400 * 1000));
-    if (!isNaN(date.getTime()))
-      return date.toISOString().split("T")[0];
+    if (!isNaN(date.getTime())) {
+      const y = date.getUTCFullYear();
+      const m = String(date.getUTCMonth() + 1).padStart(2, '0');
+      const d = String(date.getUTCDate()).padStart(2, '0');
+      return `${y}-${m}-${d}`;
+    }
   }
   if (typeof raw === "string") {
     const str = raw.trim();
     if (!str) return "";
 
-    // 1. Explicit DD/MM/YYYY or DD-MM-YYYY or DD.MM.YYYY
+    // 1. Explicit DD-MMM-YYYY or DD/MMM/YYYY or DD MMM YYYY (e.g. 1-Aug-2026, 01-August-2026, 2-Aug-26)
+    const dMmmYMatch = str.match(/^(\d{1,2})[\/\.\-\s]+([A-Za-z]+)[\/\.\-\s]+(\d{2,4})$/);
+    if (dMmmYMatch) {
+      const day = parseInt(dMmmYMatch[1], 10);
+      const monStr = dMmmYMatch[2].toLowerCase();
+      let year = parseInt(dMmmYMatch[3], 10);
+      if (dMmmYMatch[3].length === 2) {
+        year = year > 50 ? 1900 + year : 2000 + year;
+      }
+      const month = MONTH_NAME_MAP[monStr];
+      if (month && day >= 1 && day <= 31) {
+        const dStr = String(day).padStart(2, '0');
+        return `${year}-${month}-${dStr}`;
+      }
+    }
+
+    // 2. Explicit MMM-DD-YYYY or MMM DD, YYYY (e.g. Aug 1, 2026)
+    const mmmDYMatch = str.match(/^([A-Za-z]+)[\/\.\-\s]+(\d{1,2})[\/\.\-\s,]+(\d{2,4})$/);
+    if (mmmDYMatch) {
+      const monStr = mmmDYMatch[1].toLowerCase();
+      const day = parseInt(mmmDYMatch[2], 10);
+      let year = parseInt(mmmDYMatch[3], 10);
+      if (mmmDYMatch[3].length === 2) {
+        year = year > 50 ? 1900 + year : 2000 + year;
+      }
+      const month = MONTH_NAME_MAP[monStr];
+      if (month && day >= 1 && day <= 31) {
+        const dStr = String(day).padStart(2, '0');
+        return `${year}-${month}-${dStr}`;
+      }
+    }
+
+    // 3. Explicit DD/MM/YYYY or DD-MM-YYYY or DD.MM.YYYY
     const dmYMatch = str.match(/^(\d{1,2})[\/\.-](\d{1,2})[\/\.-](\d{4})$/);
     if (dmYMatch) {
       const p1 = parseInt(dmYMatch[1], 10);
@@ -33,7 +88,7 @@ export const formatDate = (raw: unknown): string => {
       }
     }
 
-    // 2. Explicit YYYY-MM-DD
+    // 4. Explicit YYYY-MM-DD
     const yMdMatch = str.match(/^(\d{4})[\/\.-](\d{1,2})[\/\.-](\d{1,2})$/);
     if (yMdMatch) {
       const year = parseInt(yMdMatch[1], 10);
@@ -46,10 +101,14 @@ export const formatDate = (raw: unknown): string => {
       }
     }
 
-    // 3. Fallback to JS Date parser
+    // 5. Fallback to JS Date parser without timezone shift
     const parsed = new Date(str);
-    if (!isNaN(parsed.getTime()))
-      return parsed.toISOString().split("T")[0];
+    if (!isNaN(parsed.getTime())) {
+      const y = parsed.getFullYear();
+      const m = String(parsed.getMonth() + 1).padStart(2, '0');
+      const d = String(parsed.getDate()).padStart(2, '0');
+      return `${y}-${m}-${d}`;
+    }
   }
   return "";
 };

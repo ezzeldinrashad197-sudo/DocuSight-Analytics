@@ -16,7 +16,7 @@ import {
   Clock,
   Play
 } from 'lucide-react';
-import { logAuditContext } from '../firebase';
+import { logAuditContext, auth } from '../firebase';
 
 export default function EnterpriseMonitoringDashboard() {
   const [metrics, setMetrics] = useState<any>(null);
@@ -40,11 +40,22 @@ export default function EnterpriseMonitoringDashboard() {
   const [runningExportTests, setRunningExportTests] = useState(false);
   const [exportTestResults, setExportTestResults] = useState<any[] | null>(null);
 
+  const getAuthHeaders = async () => {
+    const user = auth.currentUser;
+    if (!user) return { 'Content-Type': 'application/json' };
+    const token = await user.getIdToken();
+    return {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    };
+  };
+
   const triggerSecurityRegressionSuite = async () => {
     try {
       setRunningRegression(true);
       setRegressionReport(null);
-      const res = await fetch('/api/security-regression-tests');
+      const headers = await getAuthHeaders();
+      const res = await fetch('/api/security-regression-tests', { headers });
       if (!res.ok) throw new Error("Failed to execute security regression suite.");
       const data = await res.json();
       setRegressionReport(data);
@@ -65,7 +76,8 @@ export default function EnterpriseMonitoringDashboard() {
     try {
       setRunningStressTest(true);
       setStressReport(null);
-      const res = await fetch('/api/load-stress-tests');
+      const headers = await getAuthHeaders();
+      const res = await fetch('/api/load-stress-tests', { headers });
       if (!res.ok) throw new Error("Failed to execute production workload stress suite.");
       const data = await res.json();
       setStressReport(data);
@@ -85,7 +97,8 @@ export default function EnterpriseMonitoringDashboard() {
     try {
       setRunningExportTests(true);
       setExportTestResults(null);
-      const res = await fetch('/api/export-performance-tests');
+      const headers = await getAuthHeaders();
+      const res = await fetch('/api/export-performance-tests', { headers });
       if (!res.ok) throw new Error("Failed to run export engine performance tests.");
       const data = await res.json();
       setExportTestResults(data.testCases);
@@ -105,8 +118,9 @@ export default function EnterpriseMonitoringDashboard() {
     try {
       setLoading(true);
       setError(null);
-      const metricsRes = await fetch('/api/metrics');
-      const jobsRes = await fetch('/api/jobs');
+      const headers = await getAuthHeaders();
+      const metricsRes = await fetch('/api/metrics', { headers });
+      const jobsRes = await fetch('/api/jobs', { headers });
       
       if (!metricsRes.ok || !jobsRes.ok) {
         throw new Error("Failed to receive telemetry feedback from enterprise endpoint.");
@@ -134,8 +148,8 @@ export default function EnterpriseMonitoringDashboard() {
     try {
       setRunningSelfTest(true);
       setTestResult(null);
-      
-      const res = await fetch('/api/security-self-test');
+      const headers = await getAuthHeaders();
+      const res = await fetch('/api/security-self-test', { headers });
       if (!res.ok) {
         throw new Error("Failed to run remote test suite orchestration.");
       }

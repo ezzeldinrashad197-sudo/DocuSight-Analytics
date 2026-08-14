@@ -218,189 +218,189 @@
   },
   {
     "callerFile": "src/Presentation.tsx",
-    "line": 110,
+    "line": 113,
     "context": "calculateStats(cumulativeData, data)",
     "destination": "src/utils/calculations.ts::calculateStats",
     "functionName": "calculateStats"
   },
   {
     "callerFile": "src/Presentation.tsx",
-    "line": 164,
+    "line": 167,
     "context": "processNCRData(sourceData, monthlyStart)",
     "destination": "src/utils/calculations.ts::processNCRData",
     "functionName": "processNCRData"
   },
   {
     "callerFile": "src/Presentation.tsx",
-    "line": 260,
+    "line": 263,
     "context": "resolveRowDiscipline(d, bt)",
     "destination": "src/utils/calculations.ts::resolveRowDiscipline",
     "functionName": "resolveRowDiscipline"
   },
   {
     "callerFile": "src/Presentation.tsx",
-    "line": 280,
+    "line": 283,
     "context": "resolveRowDiscipline(d, bt)",
     "destination": "src/utils/calculations.ts::resolveRowDiscipline",
     "functionName": "resolveRowDiscipline"
   },
   {
     "callerFile": "src/Presentation.tsx",
-    "line": 284,
+    "line": 287,
     "context": "calculateNCRStats(dData, false)",
     "destination": "src/utils/calculations.ts::calculateNCRStats",
     "functionName": "calculateNCRStats"
   },
   {
     "callerFile": "src/Presentation.tsx",
-    "line": 284,
+    "line": 287,
     "context": "calculateSORStats(dData, false)",
     "destination": "src/utils/calculations.ts::calculateSORStats",
     "functionName": "calculateSORStats"
   },
   {
     "callerFile": "src/Presentation.tsx",
-    "line": 284,
+    "line": 287,
     "context": "calculateLTRStats(dData, false)",
     "destination": "src/utils/calculations.ts::calculateLTRStats",
     "functionName": "calculateLTRStats"
   },
   {
     "callerFile": "src/Presentation.tsx",
-    "line": 284,
+    "line": 287,
     "context": "calculateStats(dData, dataset)",
     "destination": "src/utils/calculations.ts::calculateStats",
     "functionName": "calculateStats"
   },
   {
     "callerFile": "src/Presentation.tsx",
-    "line": 351,
+    "line": 357,
     "context": "getColLabel(c.label, language)",
     "destination": "src/utils/calculations.ts::getColLabel",
     "functionName": "getColLabel"
   },
   {
     "callerFile": "src/Presentation.tsx",
-    "line": 360,
+    "line": 366,
     "context": "getDiscName(s.discipline, language)",
     "destination": "src/utils/calculations.ts::getDiscName",
     "functionName": "getDiscName"
   },
   {
     "callerFile": "src/Presentation.tsx",
-    "line": 370,
+    "line": 376,
     "context": "getDiscName(statsData.totalRow.discipline, language)",
     "destination": "src/utils/calculations.ts::getDiscName",
     "functionName": "getDiscName"
   },
   {
     "callerFile": "src/Presentation.tsx",
-    "line": 383,
+    "line": 389,
     "context": "getChartTitle(titleStr, language)",
     "destination": "src/utils/calculations.ts::getChartTitle",
     "functionName": "getChartTitle"
   },
   {
     "callerFile": "src/Presentation.tsx",
-    "line": 387,
+    "line": 393,
     "context": "getDiscName(d, language)",
     "destination": "src/utils/calculations.ts::getDiscName",
     "functionName": "getDiscName"
   },
   {
     "callerFile": "src/Presentation.tsx",
-    "line": 464,
+    "line": 470,
     "context": "getDiscName(s.discipline, language)",
     "destination": "src/utils/calculations.ts::getDiscName",
     "functionName": "getDiscName"
   },
   {
     "callerFile": "src/Presentation.tsx",
-    "line": 474,
+    "line": 480,
     "context": "getPieLabelTranslator(String(name), language)",
     "destination": "src/utils/calculations.ts::getPieLabelTranslator",
     "functionName": "getPieLabelTranslator"
   },
   {
     "callerFile": "src/Presentation.tsx",
-    "line": 482,
+    "line": 488,
     "context": "getPieLabelTranslator(p.name, language)",
     "destination": "src/utils/calculations.ts::getPieLabelTranslator",
     "functionName": "getPieLabelTranslator"
   },
   {
     "callerFile": "src/Presentation.tsx",
-    "line": 766,
+    "line": 772,
     "context": "getMonthlySummary(overallMonthlyStats, language)",
     "destination": "src/utils/calculations.ts::getMonthlySummary",
     "functionName": "getMonthlySummary"
   },
   {
     "callerFile": "src/Presentation.tsx",
-    "line": 911,
+    "line": 917,
     "context": "compileStatsForBaseType(monthlyData, bt, startDate, data)",
     "destination": "src/utils/calculations.ts::compileStatsForBaseType",
     "functionName": "compileStatsForBaseType"
   },
   {
     "callerFile": "src/Presentation.tsx",
-    "line": 982,
+    "line": 988,
     "context": "compileStatsForBaseType(monthlyData, bt, startDate, data)",
     "destination": "src/utils/calculations.ts::compileStatsForBaseType",
     "functionName": "compileStatsForBaseType"
   },
   {
     "callerFile": "src/Presentation.tsx",
-    "line": 1020,
+    "line": 1026,
     "context": "getMonthlyRecommendations(overallMonthlyStats, language)",
     "destination": "src/utils/calculations.ts::getMonthlyRecommendations",
     "functionName": "getMonthlyRecommendations"
   },
   {
     "callerFile": "src/Presentation.tsx",
-    "line": 1073,
+    "line": 1079,
     "context": "getCumulativeSummary(overallCumulativeStats, language)",
     "destination": "src/utils/calculations.ts::getCumulativeSummary",
     "functionName": "getCumulativeSummary"
   },
   {
     "callerFile": "src/Presentation.tsx",
-    "line": 1218,
+    "line": 1224,
     "context": "compileStatsForBaseType(cumulativeData, bt, undefined, data)",
     "destination": "src/utils/calculations.ts::compileStatsForBaseType",
     "functionName": "compileStatsForBaseType"
   },
   {
     "callerFile": "src/Presentation.tsx",
-    "line": 1272,
+    "line": 1278,
     "context": "compileStatsForBaseType(monthlyData, bt, startDate, data)",
     "destination": "src/utils/calculations.ts::compileStatsForBaseType",
     "functionName": "compileStatsForBaseType"
   },
   {
     "callerFile": "src/Presentation.tsx",
-    "line": 1273,
+    "line": 1279,
     "context": "compileStatsForBaseType(cumulativeData, bt, undefined, data)",
     "destination": "src/utils/calculations.ts::compileStatsForBaseType",
     "functionName": "compileStatsForBaseType"
   },
   {
     "callerFile": "src/Presentation.tsx",
-    "line": 1277,
+    "line": 1283,
     "context": "getDiscName(bt, 'ar')",
     "destination": "src/utils/calculations.ts::getDiscName",
     "functionName": "getDiscName"
   },
   {
     "callerFile": "src/Presentation.tsx",
-    "line": 1482,
+    "line": 1488,
     "context": "getDiscName(row.trade, language)",
     "destination": "src/utils/calculations.ts::getDiscName",
     "functionName": "getDiscName"
   },
   {
     "callerFile": "src/Presentation.tsx",
-    "line": 1541,
+    "line": 1547,
     "context": "getDiscName(row.trade, language)",
     "destination": "src/utils/calculations.ts::getDiscName",
     "functionName": "getDiscName"
@@ -449,14 +449,14 @@
   },
   {
     "callerFile": "src/ReportTable.tsx",
-    "line": 257,
+    "line": 263,
     "context": "calculateStats(firstHalf, rawDataset || data)",
     "destination": "src/utils/calculations.ts::calculateStats",
     "functionName": "calculateStats"
   },
   {
     "callerFile": "src/ReportTable.tsx",
-    "line": 258,
+    "line": 264,
     "context": "calculateStats(secondHalf, rawDataset || data)",
     "destination": "src/utils/calculations.ts::calculateStats",
     "functionName": "calculateStats"
@@ -1058,7 +1058,7 @@
   },
   {
     "callerFile": "src/analytics/exportHelpers.ts",
-    "line": 395,
+    "line": 398,
     "context": "renderLuxeLogoBox(pres, slide, 8.3, 0.4, 1.3, 0.8, projectInfo, options?.logoUrl || logoBase64)",
     "destination": "src/utils/calculations.ts::renderLuxeLogoBox",
     "functionName": "renderLuxeLogoBox"

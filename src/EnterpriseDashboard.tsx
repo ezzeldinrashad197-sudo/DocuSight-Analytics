@@ -63,31 +63,16 @@ export default function EnterpriseDashboard({ data }: EnterpriseDashboardProps) 
   // Audit Trails Persistence (Priority 3)
   const [auditLogs, setAuditLogs] = useState<AuditLogEntry[]>(() => {
     const saved = localStorage.getItem('docuCtrl_auditLogs');
-    if (saved) return JSON.parse(saved);
-    return [
-      {
-        id: '1',
-        who: 'Sherif El-Banna (DC Mgr)',
-        action: 'Configure Status Map',
-        timestamp: '2026-06-21 08:30',
-        oldValue: 'Legacy Matches',
-        newValue: 'Enabled exact matching configuration rules',
-        reason: 'Align reporting with PMC string matching guidelines',
-        appRef: 'PMC-MEM-2026',
-        source: 'Status Engine Settings'
-      },
-      {
-        id: '2',
-        who: 'System Database Guard',
-        action: 'Audit Revision Sequences',
-        timestamp: '2026-06-21 09:12',
-        oldValue: 'Numeric parser',
-        newValue: 'Enabled weight-based sequencer algorithm (Priority 4)',
-        reason: 'Solve alpha and compound revision string sorting mismatches',
-        appRef: 'SYS-AUD-772',
-        source: 'Calculations Engine'
-      }
-    ];
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) {
+          // Filter out legacy fabricated entries
+          return parsed.filter(p => !p.who?.includes('Sherif El-Banna') && !p.who?.includes('System Database Guard'));
+        }
+      } catch (e) {}
+    }
+    return [];
   });
 
   useEffect(() => {

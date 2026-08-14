@@ -210,7 +210,7 @@ async function startServer() {
     console.warn("[Production Security Check] WARNING: GEMINI_API_KEY is not defined. AI Insights generation is disabled.");
   }
 
-  // API Routes
+    // API Routes
   app.get("/api/health", (req, res) => {
     res.json({ 
       status: "ok", 
@@ -219,6 +219,109 @@ async function startServer() {
       activeQueueCount: activeJobs.size
     });
   });
+
+  // --- TOKEN VERIFICATION & RBAC MIDDLEWARE HELPERS ---
+  const verifyAuthAndRole = (allowedRoles?: string[]) => {
+    return async (req: express.Request, res: express.Response, next: express.NextFunction) => {
+      try {
+        const authHeader = req.headers.authorization;
+        if (!authHeader || !authHeader.startsWith('Bearer ')) {
+          logSecurityEvent('AUTH_REQUIRED', 'WARN', `Unauthorized access attempt to ${req.path}: Missing or malformed Authorization header.`);
+          return res.status(401).json({ error: "Authentication required. Bearer token missing." });
+        }
+
+        const idToken = authHeader.split('Bearer ')[1].trim();
+        if (!idToken) {
+          logSecurityEvent('AUTH_REQUIRED', 'WARN', `Unauthorized access attempt to ${req.path}: Empty Bearer token.`);
+          return res.status(401).json({ error: "Authentication required. Empty Bearer token." });
+        }
+
+        const firebaseConfig = (await import('./firebase-applet-config.json', { with: { type: 'json' } })).default;
+        const lookupUrl = `https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=${firebaseConfig.apiKey}`;
+
+        const authRes = await fetch(lookupUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ idToken })
+        });
+
+        if (!authRes.ok) {
+          logSecurityEvent('AUTH_INVALID_TOKEN', 'WARN', `Invalid or expired token attempting to access ${req.path}.`);
+          return res.status(401).json({ error: "Invalid or expired authentication token." });
+        }
+
+        const authData = await authRes.json();
+        const userObj = authData.users?.[0];
+        if (!userObj || !userObj.localId) {
+          logSecurityEvent('AUTH_NO_USER', 'WARN', `No authenticated user identity found for token at ${req.path}.`);
+          return res.status(401).json({ error: "Authenticated user identity not found." });
+        }
+
+        const uid = userObj.localId;
+        const email = String(userObj.email || '').trim().toLowerCase();
+
+        // Query authoritative /users/{uid} document in Firestore
+        const dbId = (firebaseConfig as any).firestoreDatabaseId || 'ai-studio-b1fedb55-c17f-4221-b883-f1ee17f1362f';
+        const firestoreBaseUrl = `https://firestore.googleapis.com/v1/projects/${firebaseConfig.projectId}/databases/${dbId}/documents/users`;
+
+        const authHeaders = {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${idToken}`
+        };
+
+        const uidDocRes = await fetch(`${firestoreBaseUrl}/${uid}?key=${firebaseConfig.apiKey}`, { headers: authHeaders });
+        if (!uidDocRes.ok) {
+          logSecurityEvent('AUTH_NO_PROFILE', 'WARN', `Authoritative Firestore profile not found for UID ${uid} (${email}) at ${req.path}.`);
+          return res.status(403).json({ error: "Forbidden: Authoritative user profile not established in database." });
+        }
+
+        const uidDocJson = await uidDocRes.json();
+        const fields = uidDocJson.fields || {};
+
+        const getString = (f: any) => f?.stringValue || '';
+        const getArray = (f: any) => f?.arrayValue?.values?.map((v: any) => v.stringValue).filter(Boolean) || [];
+
+        const accountStatus = getString(fields.accountStatus) || 'active';
+        const accessLevel = getString(fields.accessLevel) || 'approved';
+
+        if (accountStatus === 'disabled' || accessLevel === 'revoked') {
+          logSecurityEvent('AUTH_ACCOUNT_DISABLED', 'CRITICAL', `Disabled/revoked account ${email} attempted to access ${req.path}.`);
+          return res.status(403).json({ error: "Account is disabled or access level is revoked." });
+        }
+
+        const roleStr = getString(fields.role);
+        const rolesArr = getArray(fields.roles);
+        const userRoles = roleStr ? roleStr.split(',').map((r: string) => r.trim().toLowerCase()) : rolesArr.map((r: string) => r.toLowerCase());
+
+        if (userRoles.length === 0) {
+          logSecurityEvent('AUTH_NO_ROLE', 'CRITICAL', `User ${email} has no assigned roles.`);
+          return res.status(403).json({ error: "Forbidden: No authorization role assigned." });
+        }
+
+        // Check allowed roles if specified
+        if (allowedRoles && allowedRoles.length > 0) {
+          const isAuthorized = userRoles.includes('all') || userRoles.includes('admin') || userRoles.includes('executive') || allowedRoles.some(r => userRoles.includes(r.toLowerCase()));
+          if (!isAuthorized) {
+            logSecurityEvent('AUTH_FORBIDDEN_ROLE', 'WARN', `User ${email} with roles [${userRoles.join(', ')}] denied access to ${req.path}. Required: [${allowedRoles.join(', ')}].`);
+            return res.status(403).json({ error: `Forbidden: Insufficient privileges. Required role: ${allowedRoles.join(' or ')}.` });
+          }
+        }
+
+        // Attach authenticated user context
+        (req as any).user = {
+          uid,
+          email,
+          roles: userRoles,
+          displayName: userObj.displayName || email.split('@')[0]
+        };
+
+        next();
+      } catch (err: any) {
+        logSecurityEvent('AUTH_MIDDLEWARE_CRASH', 'CRITICAL', `Auth middleware crashed on ${req.path}: ${err.message}`);
+        return res.status(500).json({ error: "Internal authentication verification error." });
+      }
+    };
+  };
 
   // --- TRUSTED SERVER-SIDE IDENTITY LINKING ENDPOINT ---
   app.post("/api/link-identity", async (req, res) => {
@@ -279,19 +382,23 @@ async function startServer() {
       const dbId = (firebaseConfig as any).firestoreDatabaseId || 'ai-studio-b1fedb55-c17f-4221-b883-f1ee17f1362f';
       const firestoreBaseUrl = `https://firestore.googleapis.com/v1/projects/${firebaseConfig.projectId}/databases/${dbId}/documents/users`;
 
-      // Check if this is the known owner/admin account
-      const isKnownOwner = email === 'ezzeldinrashad197@gmail.com' || email.endsWith('@structusight.com');
-
       // 2. Check if authoritative /users/{uid} document already exists
-      let uidDocRes: any = null;
+      let uidDocRes: Response;
       try {
         uidDocRes = await fetch(`${firestoreBaseUrl}/${uid}?key=${firebaseConfig.apiKey}`, { headers: authHeaders });
-      } catch (e) {}
+      } catch (e: any) {
+        logSecurityEvent('AUTH_LINK_ERROR', 'CRITICAL', `Firestore lookup error for /users/${uid}: ${e.message}`);
+        return res.status(500).json({ error: "Failed to communicate with authorization database." });
+      }
 
-      if (uidDocRes && uidDocRes.ok) {
+      if (uidDocRes.ok) {
         const uidDocJson = await uidDocRes.json();
         const fields = uidDocJson.fields || {};
-        const role = fields.role?.stringValue || 'all';
+        const role = fields.role?.stringValue;
+        if (!role) {
+          logSecurityEvent('AUTH_LINK_REJECTED', 'CRITICAL', `Authoritative document /users/${uid} exists but contains no role.`);
+          return res.status(403).json({ error: `No authorization role assigned to UID (${uid}). Access denied (Fail Closed).` });
+        }
         return res.json({
           success: true,
           status: "existing_uid_profile",
@@ -303,31 +410,23 @@ async function startServer() {
       }
 
       // 3. Read pre-provisioned email document /users/{email}
-      let emailDocRes: any = null;
+      let emailDocRes: Response;
       try {
         emailDocRes = await fetch(`${firestoreBaseUrl}/${email}?key=${firebaseConfig.apiKey}`, { headers: authHeaders });
-      } catch (e) {}
+      } catch (e: any) {
+        logSecurityEvent('AUTH_LINK_ERROR', 'CRITICAL', `Firestore lookup error for /users/${email}: ${e.message}`);
+        return res.status(500).json({ error: "Failed to communicate with authorization database." });
+      }
 
-      let fields: Record<string, any> = {};
-
-      if (emailDocRes && emailDocRes.ok) {
-        const emailDocJson = await emailDocRes.json();
-        fields = emailDocJson.fields || {};
-      } else if (isKnownOwner) {
-        // Bootstrap authoritative owner profile if pre-provisioned doc is missing
-        fields = {
-          email: { stringValue: email },
-          role: { stringValue: 'all' },
-          accountStatus: { stringValue: 'active' },
-          accessLevel: { stringValue: 'approved' },
-          name: { stringValue: userObj.displayName || email.split('@')[0] }
-        };
-      } else {
-        logSecurityEvent('AUTH_LINK_REJECTED', 'WARN', `No pre-provisioned email document found at /users/${email} for UID ${uid}.`);
+      if (!emailDocRes.ok) {
+        logSecurityEvent('AUTH_LINK_REJECTED', 'WARN', `No pre-provisioned email document found at /users/${email} for UID ${uid}. HTTP status: ${emailDocRes.status}`);
         return res.status(404).json({
-          error: `No pre-provisioned authorization profile found for (${email}). Access denied (Fail Closed).`
+          error: `No pre-provisioned authorization profile found for (${email}). Access denied (Fail Closed). Please contact system administrator.`
         });
       }
+
+      const emailDocJson = await emailDocRes.json();
+      const fields: Record<string, any> = emailDocJson.fields || {};
 
       const getString = (f: any) => f?.stringValue || '';
       const getArray = (f: any) => f?.arrayValue?.values?.map((v: any) => v.stringValue).filter(Boolean) || [];
@@ -342,14 +441,14 @@ async function startServer() {
 
       const roleStr = getString(fields.role);
       const rolesArr = getArray(fields.roles);
-      const resolvedRole = roleStr || (rolesArr.length > 0 ? rolesArr.join(',') : (isKnownOwner ? 'all' : ''));
+      const resolvedRole = roleStr || (rolesArr.length > 0 ? rolesArr.join(',') : '');
 
       if (!resolvedRole) {
         logSecurityEvent('AUTH_LINK_REJECTED', 'CRITICAL', `Pre-provisioned profile ${email} exists but has no role assigned.`);
         return res.status(403).json({ error: `No authorization role assigned to pre-provisioned profile (${email}). Access denied (Fail Closed).` });
       }
 
-      // 4. Safely create authoritative /users/{uid} document via server REST call
+      // 4. Create authoritative /users/{uid} document via server REST call
       const newFields: Record<string, any> = { ...fields };
       newFields.uid = { stringValue: uid };
       newFields.email = { stringValue: email };
@@ -358,14 +457,24 @@ async function startServer() {
       newFields.linkedAt = { stringValue: new Date().toISOString() };
       newFields.updatedAt = { stringValue: new Date().toISOString() };
 
+      let writeRes: Response;
       try {
-        await fetch(`${firestoreBaseUrl}/${uid}?key=${firebaseConfig.apiKey}`, {
+        writeRes = await fetch(`${firestoreBaseUrl}/${uid}?key=${firebaseConfig.apiKey}`, {
           method: 'PATCH',
           headers: authHeaders,
           body: JSON.stringify({ fields: newFields })
         });
-      } catch (writeErr) {
-        console.warn("[Identity Linking] Non-fatal UID write attempt warning:", writeErr);
+      } catch (writeErr: any) {
+        logSecurityEvent('AUTH_LINK_WRITE_FAIL', 'CRITICAL', `UID write connection error for /users/${uid}: ${writeErr.message}`);
+        return res.status(500).json({ error: "Failed to establish authoritative user profile document in database." });
+      }
+
+      if (!writeRes.ok) {
+        const writeErrData = await writeRes.text().catch(() => '');
+        logSecurityEvent('AUTH_LINK_WRITE_REJECTED', 'CRITICAL', `Firestore rejected /users/${uid} write with status ${writeRes.status}: ${writeErrData}`);
+        return res.status(writeRes.status >= 500 ? 502 : 403).json({ 
+          error: `Database rejected user profile provisioning (HTTP ${writeRes.status}). Fail closed. Verify Firestore security rules.` 
+        });
       }
 
       // 5. Update original /users/{email} with backlink
@@ -401,7 +510,7 @@ async function startServer() {
   });
 
   // --- OBSERVABILITY METRICS & TELEMETRY ACCESS ENDPOINTS (Issue #10) ---
-  app.get("/api/metrics", (req, res) => {
+  app.get("/api/metrics", verifyAuthAndRole(["admin", "executive", "pd", "dc"]), (req, res) => {
     const memory = process.memoryUsage();
     res.json({
       uptime: Math.round((Date.now() - systemMetrics.startTime) / 1000),
@@ -497,7 +606,7 @@ async function startServer() {
   });
 
   // --- AUTOMATED REGRESSION & COMPLIANCE ENDPOINT ---
-  app.get("/api/security-regression-tests", async (req, res) => {
+  app.get("/api/security-regression-tests", verifyAuthAndRole(["admin", "executive", "pd", "dc"]), async (req, res) => {
     try {
       const { runSecurityRegressionSuite } = await import('./src/utils/securityRegressionSuite');
       const testReport = await runSecurityRegressionSuite();
@@ -512,7 +621,7 @@ async function startServer() {
   });
 
   // --- PRODUCTION LOAD & WORKLOAD CONCURRENCY TESTER ---
-  app.get("/api/load-stress-tests", async (req, res) => {
+  app.get("/api/load-stress-tests", verifyAuthAndRole(["admin", "executive", "pd", "dc"]), async (req, res) => {
     try {
       const { runLoadTestingSuite } = await import('./src/utils/loadTestingSuite');
       const loadReport = await runLoadTestingSuite();
@@ -526,7 +635,7 @@ async function startServer() {
     }
   });
 
-  app.get("/api/jobs", (req, res) => {
+  app.get("/api/jobs", verifyAuthAndRole(["admin", "executive", "pd", "dc"]), (req, res) => {
     res.json({
       activeJobs: Array.from(activeJobs.values()),
       history: completedJobsHistory
@@ -534,7 +643,7 @@ async function startServer() {
   });
 
   // --- AUTOMATED SECURITY RULES VALIDATION SUITE (Issue #2) ---
-  app.get("/api/security-self-test", (req, res) => {
+  app.get("/api/security-self-test", verifyAuthAndRole(["admin", "executive", "pd", "dc"]), (req, res) => {
     try {
       systemMetrics.selfTestsExecuted++;
       
@@ -562,7 +671,7 @@ async function startServer() {
   });
 
   // --- EXPORT TELEMETRY UNIT AND STRESS TEST ROUTE (Issue #6) ---
-  app.get("/api/export-performance-tests", async (req, res) => {
+  app.get("/api/export-performance-tests", verifyAuthAndRole(["admin", "executive", "pd", "dc"]), async (req, res) => {
     try {
       const { runExportTelemetrySuite } = await import('./src/analytics/exportTelemetryTestSuite');
       const testCases = await runExportTelemetrySuite();

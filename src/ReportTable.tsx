@@ -110,8 +110,14 @@ export default function ReportTable({ data, filterFn, title, projectInfo, rawDat
 
   const globalStats = useMemo(() => {
        const stats = calculateStats(filteredData.filter(d => !(d.documentType || 'DOC').startsWith('NCR-') && (d.documentType || 'DOC') !== 'NCR'), rawDataset || data);
+       if (isMonthly && stats.totalSubmittedSheets > 0) {
+         return {
+           ...stats,
+           approvalRate: (stats.approved / stats.totalSubmittedSheets) * 100
+         };
+       }
        return stats;
-  }, [filteredData, rawDataset, data]);
+  }, [filteredData, rawDataset, data, isMonthly]);
 
   // Executive Summary & Health Check Calculation
   const healthData = useMemo(() => {

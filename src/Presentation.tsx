@@ -94,8 +94,11 @@ export default function Presentation({
     const avgDelay = delayedItems.length > 0 ? (delayedItems.reduce((acc, curr) => acc + curr.delayDays, 0) / delayedItems.length).toFixed(1) : "0.0";
     const overdueCount = s.overdue;
 
+    const totalMonthlyVolume = s.totalSubmittedSheets !== undefined ? s.totalSubmittedSheets : monthlyData.length;
+
     return { 
-      total: s.totalSubmittedSheets || s.totalUniqueDrawings, 
+      total: totalMonthlyVolume, 
+      unique: s.totalUniqueDrawings || s.totalSubmittedSheets,
       approved: s.approved, 
       rejectedOpen: s.rejectedOpen, 
       rejectedClosed: s.rejectedClosed, 
