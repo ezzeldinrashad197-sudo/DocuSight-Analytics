@@ -98,36 +98,42 @@ export const CompanyLogo: React.FC<CompanyLogoProps> = ({
 };
 
 export function getMonthlySummary(stats: any, language: 'ar' | 'en') {
+  const approvalRateStr = typeof stats.approvalRate === 'number' ? `${stats.approvalRate.toFixed(1)}%` : '—';
+  const slaComplianceStr = typeof stats.slaCompliance === 'number' ? `${stats.slaCompliance.toFixed(1)}%` : (language === 'ar' ? 'لا توجد بيانات ردود' : 'N/A');
+
   if (language === 'ar') {
     return [
       `تمت معالجة ما مجموعه ${stats.total} معاملة تقديم مستندات خلال هذه الفترة الشهرية الحالية.`,
-      `بلغت نسبة الموافقة على جودة التقديمات معتمد/معتمد بملحوظات ${((stats.approved / (stats.total || 1)) * 100).toFixed(1)}% من إجمالي الردود المستلمة.`,
+      `بلغت نسبة الموافقة على جودة التقديمات معتمد/معتمد بملحوظات ${approvalRateStr} من إجمالي الردود المستلمة.`,
       `يوجد حالياً ${stats.pending} وثيقة معلقة تحت المراجعة من قبل الاستشاري، منها ${stats.overdueCount} معاملة متأخرة عن تاريخ الرد المحدد بالاتفاقية.`,
-      `بلغ معدل الالتزام باتفاقية مستوى الخدمة (SLA) للاستجابة بالردود ${stats.slaCompliance.toFixed(1)}% بمتوسط تأخير قدره ${stats.avgDelay} يوم للأعمال المتأخرة.`
+      `بلغ معدل الالتزام باتفاقية مستوى الخدمة (SLA) للاستجابة بالردود ${slaComplianceStr} بمتوسط تأخير قدره ${stats.avgDelay} يوم للأعمال المتأخرة.`
     ];
   }
   return [
     `A total of ${stats.total} processed submittals were reviewed and registered during this current monthly period.`,
-    `The quality approval rate (Status Code A & B) reached ${((stats.approved / (stats.total || 1)) * 100).toFixed(1)}% of all answered transactions.`,
+    `The quality approval rate (Status Code A & B) reached ${approvalRateStr} of all answered transactions.`,
     `There are currently ${stats.pending} pending items under consultant review, with ${stats.overdueCount} items currently flagged as overdue.`,
-    `The response SLA compliance rate stands at ${stats.slaCompliance.toFixed(1)}%, with an average response turnaround delay of ${stats.avgDelay} days.`
+    `The response SLA compliance rate stands at ${slaComplianceStr}, with an average response turnaround delay of ${stats.avgDelay} days.`
   ];
 }
 
 export function getCumulativeSummary(stats: any, language: 'ar' | 'en') {
+  const approvalRateStr = typeof stats.approvalRate === 'number' ? `${stats.approvalRate.toFixed(1)}%` : '—';
+  const slaComplianceStr = typeof stats.slaCompliance === 'number' ? `${stats.slaCompliance.toFixed(1)}%` : (language === 'ar' ? 'لا توجد بيانات ردود' : 'N/A');
+
   if (language === 'ar') {
     return [
       `بلغ إجمالي الوثائق المسجلة والتقديمات بالمشروع منذ التأسيس ${stats.total} وثيقة.`,
-      `نسبة الجودة والموافقات التراكمية للمشروع مستقرة عند ${((stats.approved / (stats.total || 1)) * 100).toFixed(1)}%، مما يعكس الامتثال لمعايير التصميم والمواصفات الفنية.`,
+      `نسبة الجودة والموافقات التراكمية للمشروع مستقرة عند ${approvalRateStr}، مما يعكس الامتثال لمعايير التصميم والمواصفات الفنية.`,
       `تم إغلاق وتسوية ما مجموعه ${stats.total - stats.pending} وثيقة بنجاح، مع بقاء ${stats.pending} وثيقة نشطة وقيد المتابعة حالياً.`,
-      `معدل التزام الاستشاري باتفاقية مستوى الخدمة التاريخي للمشروع هو ${stats.slaCompliance.toFixed(1)}% مع متوسط رد تاريخي قدره ${stats.avgDelay} يوم.`
+      `معدل التزام الاستشاري باتفاقية مستوى الخدمة التاريخي للمشروع هو ${slaComplianceStr} مع متوسط رد تاريخي قدره ${stats.avgDelay} يوم.`
     ];
   }
   return [
     `The overall cumulative project database contains a total of ${stats.total} registered submittals and document control records.`,
-    `The lifetime project approval quality index is stabilized at ${((stats.approved / (stats.total || 1)) * 100).toFixed(1)}%, ensuring compliance with standards.`,
+    `The lifetime project approval quality index is stabilized at ${approvalRateStr}, ensuring compliance with standards.`,
     `A total of ${stats.total - stats.pending} submittals have been resolved and closed successfully, with ${stats.pending} active documents remaining.`,
-    `The historical project SLA compliance rate is recorded at ${stats.slaCompliance.toFixed(1)}%, with a lifetime average response time of ${stats.avgDelay} days.`
+    `The historical project SLA compliance rate is recorded at ${slaComplianceStr}, with a lifetime average response time of ${stats.avgDelay} days.`
   ];
 }
 

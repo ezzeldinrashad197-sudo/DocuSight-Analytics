@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "generatedAt": "2026-08-14T08:33:11.380Z",
+    "generatedAt": "2026-08-14T09:25:13.976Z",
     "totalFilesScanned": 82,
     "architecturalViolations": 4,
     "complianceScore": 80,
@@ -1303,112 +1303,112 @@
     },
     {
       "callerFile": "src/EnterpriseDashboard.tsx",
-      "line": 134,
+      "line": 119,
       "context": "scanDataIntegrity(data, statusMap)",
       "destination": "src/utils/calculations.ts::scanDataIntegrity",
       "functionName": "scanDataIntegrity"
     },
     {
       "callerFile": "src/EnterpriseDashboard.tsx",
-      "line": 159,
+      "line": 144,
       "context": "calculateLogicalRegisterKPIs(data, startDate, endDate, statusMap)",
       "destination": "src/utils/calculations.ts::calculateLogicalRegisterKPIs",
       "functionName": "calculateLogicalRegisterKPIs"
     },
     {
       "callerFile": "src/EnterpriseDashboard.tsx",
-      "line": 163,
+      "line": 148,
       "context": "getRootCauseIntelligence(data)",
       "destination": "src/utils/calculations.ts::getRootCauseIntelligence",
       "functionName": "getRootCauseIntelligence"
     },
     {
       "callerFile": "src/EnterpriseDashboard.tsx",
-      "line": 182,
+      "line": 167,
       "context": "calculateContractorScorecards(data, statusMap)",
       "destination": "src/utils/calculations.ts::calculateContractorScorecards",
       "functionName": "calculateContractorScorecards"
     },
     {
       "callerFile": "src/EnterpriseDashboard.tsx",
-      "line": 185,
+      "line": 170,
       "context": "generateExecutiveIntelligence(data, statusMap)",
       "destination": "src/utils/calculations.ts::generateExecutiveIntelligence",
       "functionName": "generateExecutiveIntelligence"
     },
     {
       "callerFile": "src/EnterpriseDashboard.tsx",
-      "line": 188,
+      "line": 173,
       "context": "mapCrossRegisterRelationships(data)",
       "destination": "src/utils/calculations.ts::mapCrossRegisterRelationships",
       "functionName": "mapCrossRegisterRelationships"
     },
     {
       "callerFile": "src/EnterpriseDashboard.tsx",
-      "line": 191,
+      "line": 176,
       "context": "generatePredictiveForecast(data)",
       "destination": "src/utils/calculations.ts::generatePredictiveForecast",
       "functionName": "generatePredictiveForecast"
     },
     {
       "callerFile": "src/EnterpriseDashboard.tsx",
-      "line": 207,
+      "line": 192,
       "context": "getRevisionWeight(a.rev)",
       "destination": "src/utils/calculations.ts::getRevisionWeight",
       "functionName": "getRevisionWeight"
     },
     {
       "callerFile": "src/EnterpriseDashboard.tsx",
-      "line": 207,
+      "line": 192,
       "context": "getRevisionWeight(b.rev)",
       "destination": "src/utils/calculations.ts::getRevisionWeight",
       "functionName": "getRevisionWeight"
     },
     {
       "callerFile": "src/EnterpriseDashboard.tsx",
-      "line": 213,
+      "line": 198,
       "context": "calculateDocumentLifecycle(selectedDocNo, selectedDocRevisions, statusMap)",
       "destination": "src/utils/calculations.ts::calculateDocumentLifecycle",
       "functionName": "calculateDocumentLifecycle"
     },
     {
       "callerFile": "src/EnterpriseDashboard.tsx",
-      "line": 280,
+      "line": 265,
       "context": "checkIfOverdueDynamically(r)",
       "destination": "src/utils/calculations.ts::checkIfOverdueDynamically",
       "functionName": "checkIfOverdueDynamically"
     },
     {
       "callerFile": "src/EnterpriseDashboard.tsx",
-      "line": 298,
+      "line": 283,
       "context": "checkIfOverdueDynamically(d)",
       "destination": "src/utils/calculations.ts::checkIfOverdueDynamically",
       "functionName": "checkIfOverdueDynamically"
     },
     {
       "callerFile": "src/EnterpriseDashboard.tsx",
-      "line": 302,
+      "line": 287,
       "context": "getDocRegisterType(r)",
       "destination": "src/utils/calculations.ts::getDocRegisterType",
       "functionName": "getDocRegisterType"
     },
     {
       "callerFile": "src/EnterpriseDashboard.tsx",
-      "line": 302,
+      "line": 287,
       "context": "getStatusCategory(r.status, statusMap)",
       "destination": "src/utils/calculations.ts::getStatusCategory",
       "functionName": "getStatusCategory"
     },
     {
       "callerFile": "src/EnterpriseDashboard.tsx",
-      "line": 303,
+      "line": 288,
       "context": "getDocRegisterType(r)",
       "destination": "src/utils/calculations.ts::getDocRegisterType",
       "functionName": "getDocRegisterType"
     },
     {
       "callerFile": "src/EnterpriseDashboard.tsx",
-      "line": 894,
+      "line": 879,
       "context": "getRevisionWeight(rev.rev)",
       "destination": "src/utils/calculations.ts::getRevisionWeight",
       "functionName": "getRevisionWeight"
@@ -3011,28 +3011,28 @@
     },
     {
       "callerFile": "src/components/EnterpriseMonitoringDashboard.tsx",
-      "line": 52,
+      "line": 63,
       "context": "logAuditContext('SECURITY_REGRESSION_TEST_EXECUTION', 'enterprise-monitoring', {\n        passedCount: data.passedTests,\n        totalCount: data.totalTests,\n        version: data.version\n      })",
       "destination": "src/utils/calculations.ts::logAuditContext",
       "functionName": "logAuditContext"
     },
     {
       "callerFile": "src/components/EnterpriseMonitoringDashboard.tsx",
-      "line": 73,
+      "line": 85,
       "context": "logAuditContext('PRODUCTION_LOAD_STRESS_EXECUTION', 'enterprise-monitoring', {\n        executedSimulations: data.totalSimulationsExecuted,\n        heapUsageMb: data.heapAllocationsMegaBytes\n      })",
       "destination": "src/utils/calculations.ts::logAuditContext",
       "functionName": "logAuditContext"
     },
     {
       "callerFile": "src/components/EnterpriseMonitoringDashboard.tsx",
-      "line": 93,
+      "line": 106,
       "context": "logAuditContext('EXPORT_ENGINE_STRESS_TEST', 'enterprise-monitoring', {\n        testCaseCount: data.testCases?.length,\n        timestamp: data.timestamp\n      })",
       "destination": "src/utils/calculations.ts::logAuditContext",
       "functionName": "logAuditContext"
     },
     {
       "callerFile": "src/components/EnterpriseMonitoringDashboard.tsx",
-      "line": 145,
+      "line": 159,
       "context": "logAuditContext('SECURITY_SELF_TEST_EXECUTION', 'enterprise-monitoring', {\n         testSuite: data.testSuite,\n         passed: data.overallPassed,\n         timestamp: data.timestamp\n      })",
       "destination": "src/utils/calculations.ts::logAuditContext",
       "functionName": "logAuditContext"
@@ -3466,14 +3466,14 @@
     },
     {
       "callerFile": "src/hooks/useUpload.ts",
-      "line": 44,
+      "line": 51,
       "context": "logAuditContext(\"UPLOAD_SUCCESS\", \"log_file\", { rows: parsed.length, fileNames: Array.from(files).map(f => f.name) })",
       "destination": "src/utils/calculations.ts::logAuditContext",
       "functionName": "logAuditContext"
     },
     {
       "callerFile": "src/hooks/useUpload.ts",
-      "line": 49,
+      "line": 56,
       "context": "logAuditContext(\"UPLOAD_ERROR\", \"log_file\", { error: err.message })",
       "destination": "src/utils/calculations.ts::logAuditContext",
       "functionName": "logAuditContext"
@@ -4404,70 +4404,70 @@
     },
     {
       "callerFile": "src/utils/parser.ts",
-      "line": 111,
+      "line": 170,
       "context": "classifyRegisterSheet({\n            fileName: file.name,\n            sheetName: sheetName,\n            headers: headers.map(h => String(h || '')),\n            sampleRows: rows.slice(0, 20) as any[][],\n            projectId: activeProjectId\n          })",
       "destination": "src/utils/calculations.ts::classifyRegisterSheet",
       "functionName": "classifyRegisterSheet"
     },
     {
       "callerFile": "src/utils/parser.ts",
-      "line": 237,
+      "line": 296,
       "context": "formatDate(r[finalColDateSent])",
       "destination": "src/utils/calculations.ts::formatDate",
       "functionName": "formatDate"
     },
     {
       "callerFile": "src/utils/parser.ts",
-      "line": 238,
+      "line": 297,
       "context": "formatDate(\n              colResponseDate >= 0 ? r[colResponseDate] : \"\",\n            )",
       "destination": "src/utils/calculations.ts::formatDate",
       "functionName": "formatDate"
     },
     {
       "callerFile": "src/utils/parser.ts",
-      "line": 425,
+      "line": 484,
       "context": "normalizeDiscipline(disciplineVal, activeProjectId)",
       "destination": "src/utils/calculations.ts::normalizeDiscipline",
       "functionName": "normalizeDiscipline"
     },
     {
       "callerFile": "src/utils/parser.ts",
-      "line": 450,
+      "line": 509,
       "context": "formatDate(colDueDate >= 0 ? r[colDueDate] : \"\")",
       "destination": "src/utils/calculations.ts::formatDate",
       "functionName": "formatDate"
     },
     {
       "callerFile": "src/utils/parser.ts",
-      "line": 466,
+      "line": 525,
       "context": "formatDate(\n                colNcrSentDateCorrectiveAction >= 0\n                  ? r[colNcrSentDateCorrectiveAction]\n                  : \"\",\n              )",
       "destination": "src/utils/calculations.ts::formatDate",
       "functionName": "formatDate"
     },
     {
       "callerFile": "src/utils/parser.ts",
-      "line": 476,
+      "line": 535,
       "context": "formatDate(\n                colNcrSentDateCorrectiveAction >= 0\n                  ? r[colNcrSentDateCorrectiveAction]\n                  : \"\",\n              )",
       "destination": "src/utils/calculations.ts::formatDate",
       "functionName": "formatDate"
     },
     {
       "callerFile": "src/utils/parser.ts",
-      "line": 485,
+      "line": 544,
       "context": "formatDate(\n                colNcrSentDateCorrectiveAction >= 0\n                  ? r[colNcrSentDateCorrectiveAction]\n                  : \"\",\n              )",
       "destination": "src/utils/calculations.ts::formatDate",
       "functionName": "formatDate"
     },
     {
       "callerFile": "src/utils/parser.ts",
-      "line": 532,
+      "line": 591,
       "context": "mapDocumentToWorkflow(assignedType)",
       "destination": "src/utils/calculations.ts::mapDocumentToWorkflow",
       "functionName": "mapDocumentToWorkflow"
     },
     {
       "callerFile": "src/utils/parser.ts",
-      "line": 584,
+      "line": 643,
       "context": "normalizeData(parsed)",
       "destination": "src/utils/calculations.ts::normalizeData",
       "functionName": "normalizeData"

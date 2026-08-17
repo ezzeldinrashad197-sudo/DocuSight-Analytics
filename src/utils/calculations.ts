@@ -666,7 +666,7 @@ export const calculateSORStats = (data: SubmittalRow[], isMonthly: boolean): KPI
      }
   });
 
-  const totalDecided = approved + rejectedOpen;
+  const totalEligible = approved + rejectedOpen + pending;
   return {
     totalSubmittedSheets: totalUnique,
     totalSheetsRev0,
@@ -679,8 +679,8 @@ export const calculateSORStats = (data: SubmittalRow[], isMonthly: boolean): KPI
     pending,
     overdue: 0,
     avgResponseTime: 0,
-    approvalRate: totalDecided > 0 ? (approved / totalDecided) * 100 : 0,
-    rejectionOpenRate: totalDecided > 0 ? (rejectedOpen / totalDecided) * 100 : 0,
+    approvalRate: totalEligible > 0 ? (approved / totalEligible) * 100 : 0,
+    rejectionOpenRate: totalEligible > 0 ? (rejectedOpen / totalEligible) * 100 : 0,
     rejectionClosedRate: 0,
     delayRate: 0,
   };
@@ -737,7 +737,7 @@ export const calculateNCRStats = (data: SubmittalRow[], isMonthly: boolean): KPI
      }
   });
 
-  const totalDecided = approved + rejectedOpen + rejectedClosed;
+  const totalEligible = approved + rejectedOpen + rejectedClosed + pending;
   return {
     totalSubmittedSheets: totalUnique,
     totalSheetsRev0,
@@ -750,9 +750,9 @@ export const calculateNCRStats = (data: SubmittalRow[], isMonthly: boolean): KPI
     pending,
     overdue: 0,
     avgResponseTime: 0,
-    approvalRate: totalDecided > 0 ? (approved / totalDecided) * 100 : 0,
-    rejectionOpenRate: totalDecided > 0 ? (rejectedOpen / totalDecided) * 100 : 0,
-    rejectionClosedRate: totalDecided > 0 ? (rejectedClosed / totalDecided) * 100 : 0,
+    approvalRate: totalEligible > 0 ? (approved / totalEligible) * 100 : 0,
+    rejectionOpenRate: totalEligible > 0 ? (rejectedOpen / totalEligible) * 100 : 0,
+    rejectionClosedRate: totalEligible > 0 ? (rejectedClosed / totalEligible) * 100 : 0,
     delayRate: 0
   };
 };
@@ -878,7 +878,8 @@ export const calculateStats = (data: SubmittalRow[], fullDataset?: SubmittalRow[
     }
   });
 
-  const totalDecided = approved + rejectedOpen + rejectedClosed;
+  // SSOT INVARIANT: Approval Rate denominator MUST include all eligible unique population items (Approved + Rejected Open + Rejected Closed + Under Review / Pending)
+  const totalEligiblePopulation = approved + rejectedOpen + rejectedClosed + pending;
 
   return {
      totalSubmittedSheets,
@@ -896,9 +897,9 @@ export const calculateStats = (data: SubmittalRow[], fullDataset?: SubmittalRow[
      overdue,
      avgResponseTime: responseCount > 0 ? (totalResponseDays / responseCount) : 0,
 
-     approvalRate: totalDecided > 0 ? (approved / totalDecided) * 100 : 0,
-     rejectionOpenRate: totalDecided > 0 ? (rejectedOpen / totalDecided) * 100 : 0,
-     rejectionClosedRate: totalDecided > 0 ? (rejectedClosed / totalDecided) * 100 : 0,
+     approvalRate: totalEligiblePopulation > 0 ? (approved / totalEligiblePopulation) * 100 : 0,
+     rejectionOpenRate: totalEligiblePopulation > 0 ? (rejectedOpen / totalEligiblePopulation) * 100 : 0,
+     rejectionClosedRate: totalEligiblePopulation > 0 ? (rejectedClosed / totalEligiblePopulation) * 100 : 0,
      delayRate: totalSubmittedSheets > 0 ? (overdue / totalSubmittedSheets) * 100 : 0
   };
 };

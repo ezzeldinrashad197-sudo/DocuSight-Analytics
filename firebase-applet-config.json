@@ -3,7 +3,9 @@
   "appId": "1:1049716706802:web:21d2bb9872a66bbe38ef6b",
   "apiKey": "AIzaSyCj04nsQ64EMRGj-l4EbyF5WPEEaCmO8Nc",
   "authDomain": "hardy-synthesis-307pf.firebaseapp.com",
+  "firestoreDatabaseId": "ai-studio-b1fedb55-c17f-4221-b883-f1ee17f1362f",
   "storageBucket": "hardy-synthesis-307pf.firebasestorage.app",
   "messagingSenderId": "1049716706802",
-  "measurementId": ""
+  "measurementId": "",
+  "recaptchaSiteKey": ""
 }

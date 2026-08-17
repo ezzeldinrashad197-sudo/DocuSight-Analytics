@@ -637,6 +637,62 @@ const invariants: MutationFailsafeAssertion[] = [
 
       return (carryForwardPending + currentMonthPending) === totalPending;
     }
+  },
+  {
+    name: 'Invariant 6: Approval Rate Denominator = (Approved + RejectedOpen + RejectedClosed + Pending)',
+    test: () => {
+      // Golden Regression Test Case: Approved=4, RejectedOpen=0, RejectedClosed=0, Pending=2
+      const goldenCase = [
+        { id: '1', docNo: 'SDW-01', rev: '0', status: 'CODE A', submissionDate: '2026-08-01' },
+        { id: '2', docNo: 'SDW-02', rev: '0', status: 'CODE B', submissionDate: '2026-08-02' },
+        { id: '3', docNo: 'SDW-03', rev: '0', status: 'APPROVED', submissionDate: '2026-08-03' },
+        { id: '4', docNo: 'SDW-04', rev: '0', status: 'CODE A', submissionDate: '2026-08-04' },
+        { id: '5', docNo: 'SDW-05', rev: '0', status: 'PENDING', submissionDate: '2026-08-05' },
+        { id: '6', docNo: 'SDW-06', rev: '0', status: 'UNDER REVIEW', submissionDate: '2026-08-06' },
+      ];
+      const statsGolden = calculateStats(goldenCase as any);
+      const isApproved4 = statsGolden.approved === 4;
+      const isPending2 = statsGolden.pending === 2;
+      const isTotal6 = statsGolden.totalUniqueDrawings === 6;
+      const rateDiff = Math.abs(statsGolden.approvalRate - (4 / 6) * 100);
+      if (!isApproved4 || !isPending2 || !isTotal6 || rateDiff > 0.001) {
+        console.error(`Golden Test Failed: Approved=${statsGolden.approved}, Pending=${statsGolden.pending}, Rate=${statsGolden.approvalRate}`);
+        return false;
+      }
+
+      // Case B: 10 Approved, 0 Pending, 0 Rejected -> 100%
+      const caseB = Array.from({ length: 10 }).map((_, i) => ({ id: `B-${i}`, docNo: `B-${i}`, rev: '0', status: 'APPROVED' }));
+      const statsB = calculateStats(caseB as any);
+      if (Math.abs(statsB.approvalRate - 100) > 0.001) return false;
+
+      // Case C: 0 Approved, 10 Pending, 0 Rejected -> 0%
+      const caseC = Array.from({ length: 10 }).map((_, i) => ({ id: `C-${i}`, docNo: `C-${i}`, rev: '0', status: 'PENDING' }));
+      const statsC = calculateStats(caseC as any);
+      if (statsC.approvalRate !== 0) return false;
+
+      // Case D: 5 Approved, 5 Pending, 0 Rejected -> 50%
+      const caseD = [
+        ...Array.from({ length: 5 }).map((_, i) => ({ id: `D1-${i}`, docNo: `D1-${i}`, rev: '0', status: 'APPROVED' })),
+        ...Array.from({ length: 5 }).map((_, i) => ({ id: `D2-${i}`, docNo: `D2-${i}`, rev: '0', status: 'PENDING' }))
+      ];
+      const statsD = calculateStats(caseD as any);
+      if (Math.abs(statsD.approvalRate - 50) > 0.001) return false;
+
+      // Case E: 5 Approved, 0 Pending, 3 Rejected Open, 2 Rejected Closed -> 50% (5 / 10)
+      const caseE = [
+        ...Array.from({ length: 5 }).map((_, i) => ({ id: `E1-${i}`, docNo: `E1-${i}`, rev: '0', status: 'APPROVED' })),
+        ...Array.from({ length: 3 }).map((_, i) => ({ id: `E2-${i}`, docNo: `E2-${i}`, rev: '0', status: 'REJECTED_OPEN' })),
+        ...Array.from({ length: 2 }).map((_, i) => ({ id: `E3-${i}`, docNo: `E3-${i}`, rev: '0', status: 'C CLOSED' }))
+      ];
+      const statsE = calculateStats(caseE as any);
+      if (Math.abs(statsE.approvalRate - 50) > 0.001) return false;
+
+      // Case F: Empty Population -> 0% (No division by zero / NaN)
+      const statsF = calculateStats([]);
+      if (statsF.approvalRate !== 0 || isNaN(statsF.approvalRate)) return false;
+
+      return true;
+    }
   }
 ];
 

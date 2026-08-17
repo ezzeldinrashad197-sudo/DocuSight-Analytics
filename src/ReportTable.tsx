@@ -110,14 +110,8 @@ export default function ReportTable({ data, filterFn, title, projectInfo, rawDat
 
   const globalStats = useMemo(() => {
        const stats = calculateStats(filteredData.filter(d => !(d.documentType || 'DOC').startsWith('NCR-') && (d.documentType || 'DOC') !== 'NCR'), rawDataset || data);
-       if (isMonthly && stats.totalSubmittedSheets > 0) {
-         return {
-           ...stats,
-           approvalRate: (stats.approved / stats.totalSubmittedSheets) * 100
-         };
-       }
        return stats;
-  }, [filteredData, rawDataset, data, isMonthly]);
+  }, [filteredData, rawDataset, data]);
 
   // Executive Summary & Health Check Calculation
   const healthData = useMemo(() => {
@@ -712,7 +706,7 @@ export default function ReportTable({ data, filterFn, title, projectInfo, rawDat
                 <thead>
                   <tr className="bg-slate-100">
                     <th className={`${thClass} text-left font-extrabold text-[#203864]`}>{language === 'ar' ? 'نوع المعاملة / السجل' : 'Log Type (Tab)'}</th>
-                    <th className={thClass}>{isMonthly ? (language === 'ar' ? 'إجمالي المعاملات' : 'Total Transactions') : (language === 'ar' ? 'التقديمات الفريدة' : 'Total Unique Items')}</th>
+                    <th className={thClass}>{language === 'ar' ? 'التقديمات الفريدة' : 'Total Unique Items'}</th>
                     <th className={`${thClass} bg-slate-200/60 font-black`}>{language === 'ar' ? 'إجمالي الصفحات' : 'Total Sheets Submitted'}</th>
                     <th className={thClass}>{language === 'ar' ? 'مراجعة 00' : 'Items (Rev0)'}</th>
                     <th className={thClass}>{language === 'ar' ? 'مراجعات لاحقة' : 'Further Rev Items'}</th>
@@ -727,7 +721,7 @@ export default function ReportTable({ data, filterFn, title, projectInfo, rawDat
                   {byDocType.map((row, index) => (
                     <tr key={row.documentType} className="odd:bg-white even:bg-slate-50/50 hover:bg-[#f1f5f9]/50 transition-colors">
                       <td className="px-4 py-3 text-xs text-[#203864] font-extrabold text-left">{row.documentType}</td>
-                      <td className={tdClass}>{isMonthly ? row.stats.totalSubmittedSheets : (row.stats.totalUniqueDrawings || (row.stats.totalDrawingsRev0 + row.stats.totalDrawingsFurtherRev))}</td>
+                      <td className={tdClass}>{row.stats.totalUniqueDrawings}</td>
                       <td className={`${tdClass} bg-slate-100/30 font-bold text-slate-900`}>{row.stats.totalSubmittedSheets}</td>
                       <td className={tdClass}>{row.stats.totalSheetsRev0}</td>
                       <td className={tdClass}>{row.stats.totalSheetsFurtherRev}</td>
@@ -781,7 +775,7 @@ export default function ReportTable({ data, filterFn, title, projectInfo, rawDat
                   {/* Total Row */}
                   <tr className="bg-slate-200/70 border-t-2 border-slate-300 font-bold text-slate-900">
                     <td className="px-4 py-3.5 text-xs font-black text-left text-slate-800">GRAND TOTAL</td>
-                    <td className="px-4 py-3.5 text-xs text-center font-bold text-slate-800">{isMonthly ? globalStats.totalSubmittedSheets : (globalStats.totalUniqueDrawings || (globalStats.totalDrawingsRev0 + globalStats.totalDrawingsFurtherRev))}</td>
+                    <td className="px-4 py-3.5 text-xs text-center font-bold text-slate-800">{globalStats.totalUniqueDrawings}</td>
                     <td className="px-4 py-3.5 text-xs text-center font-black bg-slate-300/60 text-[#203864]">{globalStats.totalSubmittedSheets}</td>
                     <td className="px-4 py-3.5 text-xs text-center font-bold text-slate-700">{globalStats.totalSheetsRev0}</td>
                     <td className="px-4 py-3.5 text-xs text-center font-bold text-slate-700">{globalStats.totalSheetsFurtherRev}</td>

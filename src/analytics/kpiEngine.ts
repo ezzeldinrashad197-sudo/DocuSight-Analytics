@@ -58,8 +58,8 @@ const calculateStatsBatch = (items: AnyRecord[]): RegisterStats => {
         if (i.overdue) stats.overdue++;
     });
 
-    const totalResolved = stats.approved + stats.rejectedOpen + stats.rejectedClosed;
-    stats.approvalRate = totalResolved > 0 ? (stats.approved / totalResolved) * 100 : 0;
+    const totalEligible = stats.approved + stats.rejectedOpen + stats.rejectedClosed + stats.pending;
+    stats.approvalRate = totalEligible > 0 ? (stats.approved / totalEligible) * 100 : 0;
 
     return stats;
 };

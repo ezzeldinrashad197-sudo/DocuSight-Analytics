@@ -88,7 +88,7 @@ export default function Presentation({
     const s = calculateStats(monthlyData, data);
     const respondedItems = monthlyData.filter(d => d.responseDate && d.submissionDate);
     const slaMet = respondedItems.filter(d => d.delayDays <= 0).length;
-    const slaCompliance = respondedItems.length > 0 ? (slaMet / respondedItems.length) * 100 : 92.5;
+    const slaCompliance = respondedItems.length > 0 ? (slaMet / respondedItems.length) * 100 : null;
     
     const delayedItems = monthlyData.filter(d => d.delayDays > 0);
     const avgDelay = delayedItems.length > 0 ? (delayedItems.reduce((acc, curr) => acc + curr.delayDays, 0) / delayedItems.length).toFixed(1) : "0.0";
@@ -103,6 +103,7 @@ export default function Presentation({
       rejectedOpen: s.rejectedOpen, 
       rejectedClosed: s.rejectedClosed, 
       pending: s.pending, 
+      approvalRate: s.approvalRate,
       slaCompliance, 
       avgDelay, 
       overdueCount 
@@ -113,7 +114,7 @@ export default function Presentation({
     const s = calculateStats(cumulativeData, data);
     const respondedItems = cumulativeData.filter(d => d.responseDate && d.submissionDate);
     const slaMet = respondedItems.filter(d => d.delayDays <= 0).length;
-    const slaCompliance = respondedItems.length > 0 ? (slaMet / respondedItems.length) * 100 : 88.7;
+    const slaCompliance = respondedItems.length > 0 ? (slaMet / respondedItems.length) * 100 : null;
     
     const delayedItems = cumulativeData.filter(d => d.delayDays > 0);
     const avgDelay = delayedItems.length > 0 ? (delayedItems.reduce((acc, curr) => acc + curr.delayDays, 0) / delayedItems.length).toFixed(1) : "0.0";
@@ -125,11 +126,12 @@ export default function Presentation({
       rejectedOpen: s.rejectedOpen, 
       rejectedClosed: s.rejectedClosed, 
       pending: s.pending, 
+      approvalRate: s.approvalRate,
       slaCompliance, 
       avgDelay, 
       overdueCount 
     };
-  }, [cumulativeData]);
+  }, [cumulativeData, data]);
 
   // Column Configurations & Setting Management
   const [pendingPageSize, setPendingPageSize] = useState<number>(15);
@@ -810,7 +812,7 @@ export default function Presentation({
               </div>
               <div className="bg-[#e2f0d9] p-6 rounded-xl border border-emerald-200 flex flex-col justify-between h-36 shadow-sm">
                 <span className="text-xs font-bold text-emerald-800 tracking-wider uppercase">{language === 'ar' ? 'نسبة الموافقات' : 'Quality Approval'}</span>
-                <span className="text-4xl font-extrabold text-emerald-700">{((overallMonthlyStats.approved / (overallMonthlyStats.total || 1)) * 100).toFixed(1)}%</span>
+                <span className="text-4xl font-extrabold text-emerald-700">{overallMonthlyStats.approvalRate.toFixed(1)}%</span>
                 <span className="text-[10px] text-slate-500 font-medium">{language === 'ar' ? 'رمز الكود أ و ب' : 'Code A & B status'}</span>
               </div>
               <div className="bg-[#fce4d6] p-6 rounded-xl border border-red-200 flex flex-col justify-between h-36 shadow-sm">
@@ -820,7 +822,9 @@ export default function Presentation({
               </div>
               <div className="bg-[#fff2cc] p-6 rounded-xl border border-amber-200 flex flex-col justify-between h-36 shadow-sm">
                 <span className="text-xs font-bold text-amber-800 tracking-wider uppercase">{language === 'ar' ? 'الالتزام بـ SLA' : 'SLA Compliance'}</span>
-                <span className="text-4xl font-extrabold text-amber-700">{overallMonthlyStats.slaCompliance.toFixed(1)}%</span>
+                <span className="text-4xl font-extrabold text-amber-700">
+                  {overallMonthlyStats.slaCompliance !== null ? `${overallMonthlyStats.slaCompliance.toFixed(1)}%` : (language === 'ar' ? 'لا توجد بيانات' : 'N/A')}
+                </span>
                 <span className="text-[10px] text-slate-500 font-medium">{language === 'ar' ? 'في غضون المدة المحددة' : 'Responses met SLA'}</span>
               </div>
             </div>
@@ -1117,7 +1121,7 @@ export default function Presentation({
               </div>
               <div className="bg-[#e2f0d9] p-6 rounded-xl border border-emerald-200 flex flex-col justify-between h-36 shadow-sm">
                 <span className="text-xs font-bold text-emerald-800 tracking-wider uppercase">{language === 'ar' ? 'معدل الموافقات العام' : 'Lifetime Quality Index'}</span>
-                <span className="text-4xl font-extrabold text-emerald-700">{((overallCumulativeStats.approved / (overallCumulativeStats.total || 1)) * 100).toFixed(1)}%</span>
+                <span className="text-4xl font-extrabold text-emerald-700">{overallCumulativeStats.approvalRate.toFixed(1)}%</span>
                 <span className="text-[10px] text-slate-500 font-medium">{language === 'ar' ? 'رمز الكود أ و ب تراكمي' : 'Cumulative Code A/B ratio'}</span>
               </div>
               <div className="bg-[#fce4d6] p-6 rounded-xl border border-red-200 flex flex-col justify-between h-36 shadow-sm">
@@ -1127,7 +1131,9 @@ export default function Presentation({
               </div>
               <div className="bg-[#fff2cc] p-6 rounded-xl border border-amber-200 flex flex-col justify-between h-36 shadow-sm">
                 <span className="text-xs font-bold text-amber-800 tracking-wider uppercase">{language === 'ar' ? 'معدل الالتزام التراكمي' : 'Lifetime SLA Ratio'}</span>
-                <span className="text-4xl font-extrabold text-amber-700">{overallCumulativeStats.slaCompliance.toFixed(1)}%</span>
+                <span className="text-4xl font-extrabold text-amber-700">
+                  {overallCumulativeStats.slaCompliance !== null ? `${overallCumulativeStats.slaCompliance.toFixed(1)}%` : (language === 'ar' ? 'لا توجد بيانات' : 'N/A')}
+                </span>
                 <span className="text-[10px] text-slate-500 font-medium">{language === 'ar' ? 'في غضون الحدود المعتمدة' : 'Met response deadlines'}</span>
               </div>
             </div>
