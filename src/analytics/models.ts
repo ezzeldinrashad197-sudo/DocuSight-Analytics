@@ -1,4 +1,4 @@
-export type NormalizedStatus = 'APPROVED' | 'REJECTED_OPEN' | 'REJECTED_CLOSED' | 'PENDING' | 'CLOSED' | 'OPEN';
+export type NormalizedStatus = 'APPROVED' | 'REJECTED_OPEN' | 'REJECTED_CLOSED' | 'PENDING' | 'CLOSED' | 'OPEN' | 'UNCLASSIFIED';
 
 export interface BaseRecord {
     id: string;

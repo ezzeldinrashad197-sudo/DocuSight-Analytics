@@ -130,6 +130,26 @@ export const logAuditContext = async (actionType: string, resource: string, deta
 
 import { doc, getDoc, setDoc, runTransaction } from 'firebase/firestore';
 
+export interface ProjectScopeResolution {
+    projectIds: string[];
+    unrestricted: boolean;
+}
+
+export const getCurrentUserProjectScope = async (): Promise<ProjectScopeResolution> => {
+    const user = auth.currentUser;
+    if (!user) return { projectIds: [], unrestricted: false };
+    const snap = await getDoc(doc(db, 'users', user.uid));
+    if (!snap.exists()) return { projectIds: [], unrestricted: false };
+    const data = snap.data() as any;
+    const roleValues = Array.isArray(data?.role) ? data.role : String(data?.role || '').split(',');
+    const roles = roleValues.map((r: any) => String(r).trim().toLowerCase()).filter(Boolean);
+    const unrestricted = roles.some((r: string) => ['all', 'admin', 'executive'].includes(r));
+    const scope = data?.projectScope;
+    if (Array.isArray(scope)) return { projectIds: scope.map(String).map(s => s.trim()).filter(Boolean), unrestricted };
+    if (typeof scope === 'string' && scope.trim()) return { projectIds: [scope.trim()], unrestricted };
+    return { projectIds: [], unrestricted };
+};
+
 export const syncProjectStats = async (projectId: string, payload: any) => {
     try {
         if (!projectId) return;

@@ -88,7 +88,7 @@ export const validateDataset = (records: AnyRecord[]): ValidationIssue[] => {
         // 5. Unrecognized Status Code
         const statusVal = r.rawStatus || (r as any).status || '';
         const cat = getStatusCodeCategory(statusVal);
-        if (cat === 'UNKNOWN' && statusVal) {
+        if ((cat === 'UNCLASSIFIED' || (cat as string) === 'UNKNOWN') && statusVal) {
             issues.push({
                 id: `${r.id}-UNRECOGNIZED-STATUS`,
                 rowId: r.id,

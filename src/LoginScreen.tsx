@@ -196,7 +196,7 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
                 <Logo variant="on-dark" className="h-12 mb-4" showSubtitle={true} showTagline={true} />
                 <h1 className="text-xl font-bold tracking-tight text-white mb-2">{t('enterprise_access')}</h1>
                 <p className="text-xs text-slate-400 text-center px-4">
-                    {t('docusight_platform')}
+                    {t('structusight_platform')}
                     <br/>
                     {t('sso_required_message')}
                 </p>
@@ -350,4 +350,3 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
     </div>
   );
 }
-

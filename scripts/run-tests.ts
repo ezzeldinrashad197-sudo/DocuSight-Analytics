@@ -223,6 +223,8 @@ const {
   normalizeData
 } = await import(path.join(__dirname, '../src/utils/calculations.instrumented.js'));
 
+const { runCanonicalCalculationTests } = await import(path.join(__dirname, '../src/analytics/__tests__/canonicalCalculations.test.ts'));
+
 // Tracking overall suite execution
 let totalFailures = 0;
 
@@ -693,6 +695,32 @@ const invariants: MutationFailsafeAssertion[] = [
 
       return true;
     }
+  },
+  {
+    name: 'Invariant 7: Dual-Grain Separation (Row-Level Rejection Workload vs Unique Current Item)',
+    test: () => {
+      // 1 unique item submitted twice: Rev 00 (Rejected Open) then Rev 01 (Approved)
+      const mockData = [
+        { id: '1', docNo: 'SDW-DUAL-01', rev: '00', status: 'C', recordStatus: 'OPEN', submissionDate: '2026-08-01', logType: 'SDW' },
+        { id: '2', docNo: 'SDW-DUAL-01', rev: '01', status: 'A', recordStatus: 'CLOSED', submissionDate: '2026-08-05', logType: 'SDW' }
+      ];
+      const stats = calculateStats(mockData as any);
+      // Row grain: 2 submissions, 1 rejected row, 1 rejected open row
+      const rowGrainValid = stats.totalSubmittedSheets === 2 && stats.totalRejectedRows === 1 && stats.rejectedOpenRows === 1 && stats.rejectedClosedRows === 0;
+      // Item grain: 1 unique item, 1 approved item, 0 rejected items
+      const itemGrainValid = stats.totalUniqueDrawings === 1 && stats.approved === 1 && stats.rejectedOpen === 0 && stats.rejectedClosed === 0;
+      return rowGrainValid && itemGrainValid;
+    }
+  },
+  {
+    name: 'Invariant 8: Case-Insensitive Central Normalization (c vs C, closed vs CLOSED)',
+    test: () => {
+      const rowLower = { id: '1', docNo: 'SDW-CASE-01', rev: '00', status: 'c', recordStatus: 'open', logType: 'SDW' };
+      const rowUpper = { id: '2', docNo: 'SDW-CASE-02', rev: '00', status: 'C', recordStatus: 'OPEN', logType: 'SDW' };
+      const catLower = getStatusCodeCategory(rowLower as any);
+      const catUpper = getStatusCodeCategory(rowUpper as any);
+      return catLower === 'REJECTED_OPEN' && catUpper === 'REJECTED_OPEN';
+    }
   }
 ];
 
@@ -702,6 +730,20 @@ invariants.forEach(inv => {
     console.log(`  ${colors.green}✔ [INVARIANT] Passed: ${inv.name}${colors.reset}`);
   } else {
     console.error(`  ${colors.red}❌ [INVARIANT FAILURE] Broken Contract: ${inv.name}${colors.reset}`);
+    totalFailures++;
+  }
+});
+
+// ============================================================================
+// PHASE 3.5: CANONICAL CALCULATION ENTERPRISE REGRESSION SUITE (ER-001 - ER-014)
+// ============================================================================
+printHeader('PHASE 3.5: CANONICAL CALCULATION ENTERPRISE REGRESSION SUITE');
+const canonicalResults = runCanonicalCalculationTests();
+canonicalResults.forEach(r => {
+  if (r.passed) {
+    console.log(`  ${colors.green}✔ [CANONICAL TEST] Passed: ${r.name}${colors.reset}`);
+  } else {
+    console.error(`  ${colors.red}❌ [CANONICAL TEST FAILED] ${r.name}: ${r.error}${colors.reset}`);
     totalFailures++;
   }
 });

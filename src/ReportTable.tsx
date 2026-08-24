@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { SubmittalRow, ProjectSettings, KPIStats } from './types';
-import { calculateStats } from './utils/calculations';
+import { calculateStats, calculateProjectPerformanceHealth } from './utils/calculations';
 import { useLanguage } from './utils/i18n';
 import {
   BarChart,
@@ -62,9 +62,13 @@ export default function ReportTable({ data, filterFn, title, projectInfo, rawDat
             return !docType.startsWith('NCR-') && docType !== 'NCR';
          }) // Exclude NCRs from generic table based on actual documentType
          .map(typeLabel => {
+             const matchingRows = filteredData.filter(d => rowToLabel(d) === typeLabel);
+             const stats = calculateStats(matchingRows, rawDataset || data);
+             const criticalCount = matchingRows.filter(d => d.priority === 'CRITICAL' || (d.remarks || '').toUpperCase().includes('CRITICAL')).length;
              return {
                  documentType: typeLabel,
-                 stats: calculateStats(filteredData.filter(d => rowToLabel(d) === typeLabel), rawDataset || data)
+                 stats,
+                 criticalCount
              };
          })
          .sort((a,b) => {
@@ -92,7 +96,7 @@ export default function ReportTable({ data, filterFn, title, projectInfo, rawDat
                  if (baseCompare !== 0) return baseCompare;
              }
              
-             const discOrder = ['STR', 'ARC', 'ARCH', 'MEC', 'MECH', 'LND', 'LAND', 'INFRA', 'GEN', 'GENERAL', 'ELE', 'ELEC'];
+             const discOrder = ['STR', 'STRUCTURAL', 'ARC', 'ARCH', 'MEC', 'MECH', 'ELE', 'ELEC', 'INFRA', 'INF', 'LAND', 'LND', 'SUR', 'SURV', 'SURVEY', 'HSE', 'MEP', 'IRR', 'GEN', 'GENERAL'];
              const discIdxA = discOrder.indexOf(keyA.disc);
              const discIdxB = discOrder.indexOf(keyB.disc);
              
@@ -108,6 +112,10 @@ export default function ReportTable({ data, filterFn, title, projectInfo, rawDat
          });
   }, [filteredData, rawDataset, data]);
 
+  const globalCriticalCount = useMemo(() => {
+    return filteredData.filter(d => !(d.documentType || 'DOC').startsWith('NCR-') && (d.documentType || 'DOC') !== 'NCR' && (d.priority === 'CRITICAL' || (d.remarks || '').toUpperCase().includes('CRITICAL'))).length;
+  }, [filteredData]);
+
   const globalStats = useMemo(() => {
        const stats = calculateStats(filteredData.filter(d => !(d.documentType || 'DOC').startsWith('NCR-') && (d.documentType || 'DOC') !== 'NCR'), rawDataset || data);
        return stats;
@@ -115,75 +123,21 @@ export default function ReportTable({ data, filterFn, title, projectInfo, rawDat
 
   // Executive Summary & Health Check Calculation
   const healthData = useMemo(() => {
-      const appRate = globalStats.approvalRate;
-      const totalPending = globalStats.pending;
-      const totalOverdue = globalStats.overdue;
-      const totalSubmitted = globalStats.totalSubmittedSheets;
-
-      let score = 100;
-      // Penalty 1: Low approval rate (up to 35 points penalty)
-      const approvalPenalty = (100 - appRate) * 0.35;
-      score -= approvalPenalty;
-      
-      // Penalty 2: High percentage of overdue items among pending (up to 35 points penalty)
-      let pendingOverduePenalty = 0;
-      if (totalPending > 0) {
-          pendingOverduePenalty = (totalOverdue / totalPending) * 35;
-          score -= pendingOverduePenalty;
-      }
-      
-      // Penalty 3: Overdue density relative to total submissions (up to 30 points penalty)
-      let overdueDensityPenalty = 0;
-      if (totalSubmitted > 0) {
-          overdueDensityPenalty = Math.min((totalOverdue / totalSubmitted) * 100 * 0.3, 30);
-          score -= overdueDensityPenalty;
-      }
-
-      const finalScore = Math.max(0, Math.min(100, Math.round(score)));
-
-      let ratingEn = "STABLE / EXCELLENT";
-      let ratingAr = "مستقر وممتاز";
-      let colorClass = "bg-emerald-50 text-emerald-800 border-emerald-200";
-      let textClass = "text-emerald-600";
+      const health = calculateProjectPerformanceHealth(globalStats, language);
       let IconComponent = CheckCircle;
-
-      if (finalScore >= 80) {
-          ratingEn = "STABLE / EXCELLENT";
-          ratingAr = "مستقر وممتاز";
-          colorClass = "bg-emerald-50 text-emerald-800 border-emerald-200";
-          textClass = "text-emerald-600";
+      if (health.score >= 80) {
           IconComponent = CheckCircle;
-      } else if (finalScore >= 65) {
-          ratingEn = "GOOD / SATISFACTORY";
-          ratingAr = "جيد / أداء مقبول";
-          colorClass = "bg-blue-50 text-blue-800 border-blue-200";
-          textClass = "text-blue-600";
+      } else if (health.score >= 65) {
           IconComponent = TrendingUp;
-      } else if (finalScore >= 45) {
-          ratingEn = "UNDER OBSERVATION";
-          ratingAr = "تحت الملاحظة والمتابعة";
-          colorClass = "bg-amber-50 text-amber-800 border-amber-200";
-          textClass = "text-amber-600";
+      } else if (health.score >= 45) {
           IconComponent = AlertTriangle;
       } else {
-          ratingEn = "CRITICAL RISK / BOTTLENECK";
-          ratingAr = "مخاطر عالية / تكدس حرج";
-          colorClass = "bg-rose-50 text-rose-800 border-rose-200";
-          textClass = "text-rose-600";
           IconComponent = ShieldAlert;
       }
 
       return {
-          score: finalScore,
-          rating: language === 'ar' ? ratingAr : ratingEn,
-          colorClass,
-          textClass,
-          icon: IconComponent,
-          breakdown: {
-              approvalPenalty: Math.round(approvalPenalty),
-              pendingOverduePenalty: Math.round(pendingOverduePenalty),
-              overdueDensityPenalty: Math.round(overdueDensityPenalty)
-          }
+          ...health,
+          icon: IconComponent
       };
   }, [globalStats, language]);
 
@@ -194,12 +148,19 @@ export default function ReportTable({ data, filterFn, title, projectInfo, rawDat
       const totalPending = globalStats.pending;
       const score = healthData.score;
 
-      // Find the document type with the most pending overdue items
+      // Find the log type with the most overdue items, breaking ties with overdue percentage
       let worstDocType = '';
       let maxOverdue = 0;
+      let worstRate = 0;
+
       byDocType.forEach(row => {
-          if (row.stats.overdue > maxOverdue) {
-              maxOverdue = row.stats.overdue;
+          const rowOverdue = row.stats.overdue || 0;
+          const rowTotal = row.stats.totalUniqueDrawings || row.stats.totalSubmittedSheets || 1;
+          const rowOverdueRate = (rowOverdue / rowTotal) * 100;
+          
+          if (rowOverdue > maxOverdue || (rowOverdue === maxOverdue && rowOverdueRate > worstRate)) {
+              maxOverdue = rowOverdue;
+              worstRate = rowOverdueRate;
               worstDocType = row.documentType;
           }
       });
@@ -353,14 +314,13 @@ export default function ReportTable({ data, filterFn, title, projectInfo, rawDat
       return recs;
   }, [globalStats, byDocType]);
 
-  // Chart Data preparation
+  // Chart Data preparation - Exclusively partitions all canonical unique items
   const pieChartData = useMemo(() => {
       const dataSet = [
         { name: language === 'ar' ? 'معتمد' : 'Approved', value: globalStats.approved, color: '#10b981' },
         { name: language === 'ar' ? 'مرفوض مفتوح' : 'Rejected Open', value: globalStats.rejectedOpen, color: '#f43f5e' },
         { name: language === 'ar' ? 'مرفوض مغلق' : 'Rejected Closed', value: globalStats.rejectedClosed, color: '#b91c1c' },
-        { name: language === 'ar' ? 'قيد المراجعة' : 'Under Review', value: Math.max(0, globalStats.pending - globalStats.overdue), color: '#f59e0b' },
-        { name: language === 'ar' ? 'متجاوز للمدة' : 'Overdue Backlog', value: globalStats.overdue, color: '#e11d48' },
+        { name: language === 'ar' ? 'معلق قيد المراجعة' : 'Pending Review', value: globalStats.pending, color: '#f59e0b' },
       ].filter(item => item.value > 0);
 
       return dataSet.length > 0 ? dataSet : [{ name: 'No Data', value: 1, color: '#cbd5e1' }];
@@ -426,61 +386,68 @@ export default function ReportTable({ data, filterFn, title, projectInfo, rawDat
 
        {/* 2. EXECUTIVE CORE KPI METRIC CARDS */}
        <div id="report-kpi-grid" className="grid grid-cols-2 md:grid-cols-6 gap-4">
-            {/* Total Submissions */}
+            {/* Total Sheets (Workload Grain) */}
             <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200 transition-all hover:shadow relative overflow-hidden group">
-                <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">{language === 'ar' ? 'إجمالي المعاملات' : 'Total Submissions'}</h4>
+                <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">{language === 'ar' ? 'إجمالي الصفحات (حجم العمل)' : 'Total Sheets (Workload)'}</h4>
                 <div className="flex items-baseline gap-2">
-                    <p className="text-2xl font-bold text-[#203864]">{isMonthly ? globalStats.totalSubmittedSheets : (globalStats.totalUniqueDrawings || (globalStats.totalDrawingsRev0 + globalStats.totalDrawingsFurtherRev))}</p>
+                    <p className="text-2xl font-bold text-[#203864]">{globalStats.totalSubmittedSheets}</p>
                     <span className={`text-[10px] font-bold ${trends.submissionsTrend >= 0 ? 'text-emerald-600' : 'text-rose-500'}`}>
                         {trends.submissionsTrend >= 0 ? `↑ +${trends.submissionsTrend}` : `↓ ${trends.submissionsTrend}`}
                     </span>
                 </div>
-                <span className="text-[10px] text-slate-400 font-semibold">{isMonthly ? (language === 'ar' ? 'معاملات الشهر' : 'Monthly transactions') : (language === 'ar' ? 'تقديمات فريدة' : 'Unique item keys')}</span>
+                <span className="text-[10px] text-slate-400 font-semibold">
+                    {language === 'ar' ? `مراجعة 00: ${globalStats.totalSheetsRev0} | لاحقة: ${globalStats.totalSheetsFurtherRev}` : `Rev0: ${globalStats.totalSheetsRev0} | Further: ${globalStats.totalSheetsFurtherRev}`}
+                </span>
             </div>
 
-            {/* Total Sheets */}
+            {/* Total Unique Items (Current State Grain) */}
             <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200 transition-all hover:shadow relative overflow-hidden">
-                <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">{language === 'ar' ? 'إجمالي الصفحات' : 'Total Sheets'}</h4>
-                <p className="text-2xl font-bold text-[#203864]">{globalStats.totalSubmittedSheets}</p>
-                <span className="text-[10px] text-slate-400 font-semibold">{language === 'ar' ? 'شامل المراجعات' : 'Including revisions'}</span>
-            </div>
-
-            {/* Revisions > 0 */}
-            <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200 transition-all hover:shadow relative overflow-hidden">
-                <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">{language === 'ar' ? 'مراجعات لاحقة' : 'Revisions >0'}</h4>
-                <p className="text-2xl font-bold text-[#2f75b5]">{globalStats.totalSheetsFurtherRev}</p>
-                <span className="text-[10px] text-slate-400 font-semibold">{(globalStats.totalSubmittedSheets > 0 ? (globalStats.totalSheetsFurtherRev / globalStats.totalSubmittedSheets * 100) : 0).toFixed(0)}% {language === 'ar' ? 'إعادة تقديم' : 'rework ratio'}</span>
+                <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">{language === 'ar' ? 'البنود الفريدة (الحالة الحالية)' : 'Unique Items (Current State)'}</h4>
+                <p className="text-2xl font-bold text-[#2f75b5]">{globalStats.totalUniqueDrawings}</p>
+                <span className="text-[10px] text-slate-400 font-semibold">{language === 'ar' ? `معتمد: ${globalStats.approved} | نشط: ${globalStats.pending + globalStats.rejectedOpen}` : `Approved: ${globalStats.approved} | Active: ${globalStats.pending + globalStats.rejectedOpen}`}</span>
             </div>
 
             {/* Approval Rate */}
             <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200 transition-all hover:shadow relative overflow-hidden">
                 <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">{language === 'ar' ? 'نسبة الاعتماد' : 'Approval Rate'}</h4>
                 <div className="flex items-baseline gap-2">
-                    <p className="text-2xl font-bold text-emerald-600">{globalStats.approvalRate.toFixed(1)}%</p>
-                    <span className={`text-[10px] font-bold flex items-center ${trends.approvalTrend >= 0 ? 'text-emerald-600' : 'text-rose-500'}`}>
+                    <p className={`text-2xl font-bold ${globalStats.approvalRate >= 80 ? 'text-emerald-600' : 'text-amber-600'}`}>{globalStats.approvalRate.toFixed(1)}%</p>
+                    <span className={`text-[10px] font-bold flex items-center ${globalStats.approvalRate < 80 ? 'text-amber-600' : (trends.approvalTrend >= 0 ? 'text-emerald-600' : 'text-rose-500')}`}>
                         {trends.approvalTrend >= 0 ? `↑ +${trends.approvalTrend}%` : `↓ ${trends.approvalTrend}%`}
                     </span>
                 </div>
-                <span className="text-[10px] text-emerald-500 font-semibold">{language === 'ar' ? 'المستهدف: 80%+' : 'Target: 80%+'}</span>
+                <span className={`text-[10px] font-semibold ${globalStats.approvalRate >= 80 ? 'text-emerald-500' : 'text-amber-600'}`}>
+                    {globalStats.approvalRate >= 80 ? (language === 'ar' ? 'المستهدف: محقق (80%+)' : 'Target met: 80%+') : (language === 'ar' ? 'دون المستهدف (80%+)' : 'Below target (80%+)')}
+                </span>
             </div>
 
-            {/* Pending Items */}
+            {/* Active Items (Pending + Rejected Open) */}
             <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200 transition-all hover:shadow relative overflow-hidden">
-                <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">{language === 'ar' ? 'معلق حالياً' : 'Pending Items'}</h4>
-                <p className="text-2xl font-bold text-amber-500">{globalStats.pending}</p>
-                <span className="text-[10px] text-slate-400 font-semibold">{language === 'ar' ? 'قيد المراجعة والتدقيق' : 'Under active review'}</span>
+                <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">{language === 'ar' ? 'المعاملات النشطة (قيد العمل)' : 'Active Population'}</h4>
+                <p className="text-2xl font-bold text-amber-500">{globalStats.pending + globalStats.rejectedOpen}</p>
+                <span className="text-[10px] text-slate-400 font-semibold">{language === 'ar' ? `معلق: ${globalStats.pending} | مرفوض مفتوح: ${globalStats.rejectedOpen}` : `Pending: ${globalStats.pending} | Rej. Open: ${globalStats.rejectedOpen}`}</span>
             </div>
 
-            {/* Critical Delays */}
+            {/* Overdue Delays (Subset of Active) */}
             <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200 transition-all hover:shadow relative overflow-hidden">
-                <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">{language === 'ar' ? 'تأخيرات حرجة' : 'Critical Delays'}</h4>
+                <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">{language === 'ar' ? 'متأخرات من النشط (SLA)' : 'Overdue (of Active)'}</h4>
                 <div className="flex items-baseline gap-2">
                     <p className="text-2xl font-bold text-rose-600">{globalStats.overdue}</p>
+                    <span className="text-xs font-bold text-slate-400">/ {globalStats.pending + globalStats.rejectedOpen}</span>
                     <span className={`text-[10px] font-bold ${trends.overdueTrend <= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
                         {trends.overdueTrend > 0 ? `↑ +${trends.overdueTrend}` : `↓ ${trends.overdueTrend}`}
                     </span>
                 </div>
-                <span className="text-[10px] text-rose-500 font-semibold">{language === 'ar' ? 'تجاوزت الحد الأقصى' : 'Exceeded SLA limit'}</span>
+                <span className="text-[10px] text-rose-600 font-semibold">
+                    {((globalStats.pending + globalStats.rejectedOpen) > 0 ? ((globalStats.overdue / (globalStats.pending + globalStats.rejectedOpen)) * 100).toFixed(1) : '0.0')}% {language === 'ar' ? 'نسبة التأخير من النشط' : 'overdue rate on active'}
+                </span>
+            </div>
+
+            {/* Critical Priority Items */}
+            <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200 transition-all hover:shadow relative overflow-hidden">
+                <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">{language === 'ar' ? 'معاملات ذات أولوية حرجة' : 'Critical Priority'}</h4>
+                <p className={`text-2xl font-bold ${globalCriticalCount > 0 ? 'text-rose-700' : 'text-slate-700'}`}>{globalCriticalCount}</p>
+                <span className="text-[10px] text-slate-400 font-semibold">{language === 'ar' ? 'خاصية مشتقة / سمة أولوية' : 'Derived Priority Attribute'}</span>
             </div>
        </div>
 
@@ -541,24 +508,30 @@ export default function ReportTable({ data, filterFn, title, projectInfo, rawDat
                         <div className="w-2 h-2 rounded-full bg-indigo-500 mt-1.5 shrink-0"></div>
                         <p className="text-sm text-slate-600 leading-relaxed">
                             {language === 'ar' ? (
-                                <>معدل الاعتماد يبلغ حالياً <strong className="text-slate-800">{globalStats.approvalRate.toFixed(1)}%</strong>. {globalStats.approvalRate >= 80 ? 'هذا يتجاوز النسبة المستهدفة البالغة 80% ويعكس جودة جيدة في المخرجات الهندسية للمقاول.' : 'هذا يقل عن النسبة المستهدفة (80%)، مما يشير إلى ارتفاع معدلات إعادة التقديم والحاجة لمراجعة جودة التصميم قبل الإرسال لتجنب تكرار الرفض.'}</>
+                                <>معدل الاعتماد التراكمي الحالي يبلغ <strong className="text-slate-800">{globalStats.approvalRate.toFixed(1)}%</strong>. {globalStats.approvalRate >= 80 ? 'هذا يتجاوز النسبة المستهدفة البالغة 80% ويعكس نسبة تصفية وحسم متقدمة للمعاملات الهندسية (شاملة المراجعات المعتمدة لاحقاً).' : 'هذا يقل عن النسبة المستهدفة (80%)، مما يشير إلى الحاجة لتسريع معالجة المعاملات العالقة والمرفوضة.'}</>
                             ) : (
-                                <>Approval rate is currently <strong className="text-slate-800">{globalStats.approvalRate.toFixed(1)}%</strong>. {globalStats.approvalRate >= 80 ? 'This satisfies the target threshold of 80% and indicates high-standard initial submittals.' : 'This falls below the target threshold of 80%, signifying high design return loops and potential coordination deficiencies in initial packages.'}</>
+                                <>Current submittal approval rate is <strong className="text-slate-800">{globalStats.approvalRate.toFixed(1)}%</strong>. {globalStats.approvalRate >= 80 ? 'This satisfies the target threshold of 80% and indicates strong cumulative resolution performance across submittal packages (including resolved revisions).' : 'This falls below the target threshold of 80%, signifying high design return loops and potential coordination deficiencies in submittal packages.'}</>
                             )}
                         </p>
                     </div>
 
                     {/* Bullet 2: Overdue Backlog */}
-                    <div className="flex items-start gap-2.5">
-                        <div className="w-2 h-2 rounded-full bg-rose-500 mt-1.5 shrink-0"></div>
-                        <p className="text-sm text-slate-600 leading-relaxed">
-                            {language === 'ar' ? (
-                                <>إجمالي المعلقات الجاري مراجعتها هو <strong className="text-slate-800">{globalStats.pending}</strong> معاملة، منها <strong className="text-rose-600">{globalStats.overdue}</strong> معاملة متأخرة متجاوزة للمدة المحددة بالاتفاقية (<strong className="text-rose-700">{globalStats.pending > 0 ? ((globalStats.overdue / globalStats.pending) * 100).toFixed(0) : 0}%</strong> من المعلقات النشطة).</>
-                            ) : (
-                                <>Backlog Status: out of <strong className="text-slate-800">{globalStats.pending}</strong> pending evaluations, <strong className="text-rose-600">{globalStats.overdue}</strong> are critical delays that have exceeded contractual response periods (<strong className="text-rose-700">{globalStats.pending > 0 ? ((globalStats.overdue / globalStats.pending) * 100).toFixed(0) : 0}%</strong> of active backlog is overdue).</>
-                            )}
-                        </p>
-                    </div>
+                    {(() => {
+                        const activeCount = (globalStats.rejectedOpen || 0) + (globalStats.pending || 0);
+                        const overduePct = activeCount > 0 ? ((globalStats.overdue / activeCount) * 100).toFixed(1) : '0.0';
+                        return (
+                            <div className="flex items-start gap-2.5">
+                                <div className="w-2 h-2 rounded-full bg-rose-500 mt-1.5 shrink-0"></div>
+                                <p className="text-sm text-slate-600 leading-relaxed">
+                                    {language === 'ar' ? (
+                                        <>حالة الأعمال النشطة المتأخرة: <strong className="text-rose-600">{globalStats.overdue}</strong> من أصل <strong className="text-slate-800">{activeCount}</strong> معاملة نشطة متجاوزة للمدة المحددة بالاتفاقية (<strong className="text-rose-700">{overduePct}%</strong> من المعاملات النشطة تشمل {globalStats.rejectedOpen} مرفوض مفتوح و {globalStats.pending} قيد المراجعة).</>
+                                    ) : (
+                                        <>Active Backlog Status: <strong className="text-rose-600">{globalStats.overdue}</strong> of <strong className="text-slate-800">{activeCount}</strong> active items are overdue (<strong className="text-rose-700">{overduePct}%</strong> of active items comprising {globalStats.rejectedOpen} rejected open and {globalStats.pending} pending review).</>
+                                    )}
+                                </p>
+                            </div>
+                        );
+                    })()}
 
                     {/* Bullet 3: Revisions ratio */}
                     <div className="flex items-start gap-2.5">
@@ -575,23 +548,23 @@ export default function ReportTable({ data, filterFn, title, projectInfo, rawDat
             </div>
        </div>
 
-       {/* 4. VISUALIZATION AND CHARTS GRID */}
-       <div id="report-charts-grid" className="grid grid-cols-1 lg:grid-cols-2 gap-6 print:break-inside-avoid">
-            {/* Pie Chart: Approval Status (Optimized & Expanded Size) */}
-            <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 flex flex-col justify-between">
-                <h3 className="text-sm font-bold text-slate-700 mb-4 flex items-center gap-2">
+       {/* 4. VISUALIZATION AND CHARTS GRID (Side by side 2 columns in PDF) */}
+       <div id="report-charts-grid" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 print:grid-cols-2 print:gap-4 print:break-inside-avoid page-break-inside-avoid">
+            {/* Pie Chart: Approval Status (Optimized & Clean Dimensions) */}
+            <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex flex-col justify-between chart-card">
+                <h3 className="text-xs font-bold text-slate-700 mb-2 flex items-center gap-2 uppercase tracking-wider">
                     <span className="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
-                    {language === 'ar' ? 'تحليل توزيع حالة التقديمات والوثائق (موسّع)' : 'Submittals Status Distribution (Expanded)'}
+                    {language === 'ar' ? 'تحليل توزيع حالة التقديمات الفريدة (100% تطابق)' : 'Submittals Status Distribution (Unique Items SSOT)'}
                 </h3>
-                <div className="h-[340px] flex flex-col justify-center items-center relative">
+                <div className="h-[220px] flex flex-col justify-center items-center relative">
                     <ResponsiveContainer width="100%" height="100%">
                         <PieChart>
                             <Pie
                                 data={pieChartData}
                                 cx="50%"
                                 cy="50%"
-                                innerRadius={80}
-                                outerRadius={115}
+                                innerRadius={55}
+                                outerRadius={85}
                                 paddingAngle={3}
                                 dataKey="value"
                             >
@@ -599,14 +572,14 @@ export default function ReportTable({ data, filterFn, title, projectInfo, rawDat
                                     <Cell key={`cell-${index}`} fill={entry.color || '#cbd5e1'} />
                                 ))}
                             </Pie>
-                            <RechartsTooltip formatter={(value) => [`${value} sheets`, 'Count']} />
+                            <RechartsTooltip formatter={(value) => [`${value} items`, 'Count']} />
                         </PieChart>
                     </ResponsiveContainer>
                 </div>
-                <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2.5 mt-3 pt-3 border-t border-slate-100">
+                <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 mt-1 pt-1.5 border-t border-slate-100">
                     {pieChartData.map((item: any, i: number) => (
-                        <div key={i} className="flex items-center gap-1.5 text-xs font-semibold">
-                            <span className="w-3 h-3 rounded-md shrink-0" style={{ backgroundColor: item.color }}></span>
+                        <div key={i} className="flex items-center gap-1.5 text-[11px] font-semibold">
+                            <span className="w-2 h-2 rounded shrink-0" style={{ backgroundColor: item.color }}></span>
                             <span className="text-slate-500">{item.name}</span>
                             <span className="text-slate-800 font-bold">({item.value})</span>
                         </div>
@@ -614,20 +587,20 @@ export default function ReportTable({ data, filterFn, title, projectInfo, rawDat
                 </div>
             </div>
 
-            {/* Bar Chart: Stacked Register Breakdown (Optimized & Expanded Size) */}
-            <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 flex flex-col justify-between">
-                <h3 className="text-sm font-bold text-slate-700 mb-4 flex items-center gap-2">
+            {/* Bar Chart: Stacked Register Breakdown (Optimized & Clean Dimensions) */}
+            <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex flex-col justify-between chart-card">
+                <h3 className="text-xs font-bold text-slate-700 mb-2 flex items-center gap-2 uppercase tracking-wider">
                     <span className="w-2.5 h-2.5 rounded-full bg-indigo-500"></span>
                     {language === 'ar' ? 'حجم ومراجعات الوثائق حسب نوع السجل (أعلى 8 سجلات)' : 'Submission Load by Register Type (Top 8)'}
                 </h3>
-                <div className="h-[340px]">
+                <div className="h-[220px]">
                     <ResponsiveContainer width="100%" height="100%">
-                        <BarChart data={barChartData} margin={{ top: 15, right: 15, left: -10, bottom: 5 }}>
+                        <BarChart data={barChartData} margin={{ top: 10, right: 15, left: -10, bottom: 0 }}>
                             <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
-                            <XAxis dataKey="name" tick={{ fontSize: 10, fill: '#475569', fontWeight: 'bold' }} />
-                            <YAxis tick={{ fontSize: 10, fill: '#64748b' }} />
+                            <XAxis dataKey="name" tick={{ fontSize: 9.5, fill: '#475569', fontWeight: 'bold' }} />
+                            <YAxis tick={{ fontSize: 9.5, fill: '#64748b' }} />
                             <RechartsTooltip />
-                            <Legend wrapperStyle={{ fontSize: '11px', paddingTop: '10px' }} />
+                            <Legend wrapperStyle={{ fontSize: '10px', paddingTop: '2px' }} />
                             <Bar dataKey="Rev00" stackId="a" fill="#3b82f6" name={language === 'ar' ? 'مراجعة 00' : 'Rev 00'} />
                             <Bar dataKey="FurtherRev" stackId="a" fill="#93c5fd" name={language === 'ar' ? 'مراجعات لاحقة' : 'Further Revs'} />
                         </BarChart>
@@ -638,9 +611,9 @@ export default function ReportTable({ data, filterFn, title, projectInfo, rawDat
 
        {/* 5. CRITICAL DELAYS & BOTTLE-NECKS SPOTLIGHT with Action Owner */}
        {topOverdueItems.length > 0 && (
-          <div id="report-bottleneck-spotlight" className="bg-white p-6 rounded-xl shadow-sm border border-rose-200 bg-gradient-to-br from-rose-50/20 via-white to-white print:break-inside-avoid">
-              <h3 className="text-sm font-bold text-rose-700 mb-4 flex items-center gap-2">
-                  <AlertCircle className="w-5 h-5 text-rose-600 shrink-0" />
+          <div id="report-bottleneck-spotlight" className="bg-white p-4 rounded-xl shadow-sm border border-rose-200 bg-gradient-to-br from-rose-50/20 via-white to-white print:break-inside-avoid page-break-inside-avoid">
+              <h3 className="text-xs font-bold text-rose-700 mb-2 flex items-center gap-2">
+                  <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
                   {language === 'ar' 
                     ? (topOverdueItems.length >= 5 ? 'أكبر 5 مستندات معلقة متأخرة والمسؤول عنها (بؤر التكدس الحرجة)' : `المستندات المعلقة المتأخرة والمسؤول عنها (${topOverdueItems.length})`) 
                     : (topOverdueItems.length >= 5 ? 'Top 5 Critical Overdue Bottlenecks & Responsible Party' : `Critical Overdue Bottlenecks (${topOverdueItems.length} Item${topOverdueItems.length > 1 ? 's' : ''}) & Responsible Party`)}
@@ -649,13 +622,13 @@ export default function ReportTable({ data, filterFn, title, projectInfo, rawDat
                   <table className="w-full text-left border-collapse">
                       <thead>
                           <tr className="border-b border-rose-100 bg-rose-50/50">
-                              <th className="px-4 py-3 text-[11px] font-bold text-rose-800 uppercase tracking-wider text-center">{language === 'ar' ? 'مسلسل' : 'Rank'}</th>
-                              <th className="px-4 py-3 text-[11px] font-bold text-rose-800 uppercase tracking-wider">{language === 'ar' ? 'الرقم المرجعي للمستند' : 'Document reference'}</th>
-                              <th className="px-4 py-3 text-[11px] font-bold text-rose-800 uppercase tracking-wider text-center">{language === 'ar' ? 'نوع السجل' : 'Log Type'}</th>
-                              <th className="px-4 py-3 text-[11px] font-bold text-rose-800 uppercase tracking-wider text-center">{language === 'ar' ? 'التخصص الفني' : 'Discipline'}</th>
-                              <th className="px-4 py-3 text-[11px] font-bold text-rose-800 uppercase tracking-wider text-center">{language === 'ar' ? 'أيام التأخير' : 'Delay Days'}</th>
-                              <th className="px-4 py-3 text-[11px] font-bold text-rose-800 uppercase tracking-wider text-center">{language === 'ar' ? 'الجهة المسؤولة عن الإجراء' : 'Action Owner'}</th>
-                              <th className="px-4 py-3 text-[11px] font-bold text-rose-800 uppercase tracking-wider text-center">{language === 'ar' ? 'تاريخ التقديم' : 'Submission Date'}</th>
+                              <th className="px-3 py-1.5 text-[10px] font-bold text-rose-800 uppercase tracking-wider text-center">{language === 'ar' ? 'مسلسل' : 'Rank'}</th>
+                              <th className="px-3 py-1.5 text-[10px] font-bold text-rose-800 uppercase tracking-wider">{language === 'ar' ? 'الرقم المرجعي للمستند' : 'Document reference'}</th>
+                              <th className="px-3 py-1.5 text-[10px] font-bold text-rose-800 uppercase tracking-wider text-center">{language === 'ar' ? 'نوع السجل' : 'Log Type'}</th>
+                              <th className="px-3 py-1.5 text-[10px] font-bold text-rose-800 uppercase tracking-wider text-center">{language === 'ar' ? 'التخصص الفني' : 'Discipline'}</th>
+                              <th className="px-3 py-1.5 text-[10px] font-bold text-rose-800 uppercase tracking-wider text-center">{language === 'ar' ? 'أيام التأخير' : 'Delay Days'}</th>
+                              <th className="px-3 py-1.5 text-[10px] font-bold text-rose-800 uppercase tracking-wider text-center">{language === 'ar' ? 'الجهة المسؤولة عن الإجراء' : 'Action Owner'}</th>
+                              <th className="px-3 py-1.5 text-[10px] font-bold text-rose-800 uppercase tracking-wider text-center">{language === 'ar' ? 'تاريخ التقديم' : 'Submission Date'}</th>
                           </tr>
                       </thead>
                       <tbody>
@@ -664,22 +637,19 @@ export default function ReportTable({ data, filterFn, title, projectInfo, rawDat
                               const isConsultantResponsible = item.workflowStage === 'Pending';
                               return (
                                   <tr key={item.id} className="border-b border-slate-100 hover:bg-rose-50/10 transition-colors">
-                                      <td className="px-4 py-2 text-xs font-bold text-rose-700 text-center">#{index + 1}</td>
-                                      <td className="px-4 py-2 text-xs font-bold text-slate-800 font-mono truncate max-w-[280px]">{item.docNo}</td>
-                                      <td className="px-4 py-2 text-xs text-slate-600 text-center font-bold">{item.documentType}</td>
-                                      <td className="px-4 py-2 text-xs text-slate-600 text-center">{item.trade || item.discipline || 'General'}</td>
-                                      <td className="px-4 py-2 text-xs text-center">
-                                          <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-rose-100 text-rose-800 border border-rose-200">
-                                              {item.delayDays} {language === 'ar' ? 'يوم' : 'days'}
-                                          </span>
-                                      </td>
-                                      <td className="px-4 py-2 text-xs text-center">
-                                          <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-semibold ${isConsultantResponsible ? 'bg-amber-50 text-amber-800 border border-amber-200' : 'bg-blue-50 text-blue-800 border border-blue-200'}`}>
-                                              <UserCheck className="w-3.5 h-3.5 shrink-0" />
+                                      <td className="px-3 py-1.5 text-xs font-bold text-rose-700 text-center">#{index + 1}</td>
+                                      <td className="px-3 py-1.5 text-xs font-bold text-slate-800 font-mono truncate max-w-[280px]">{item.docNo}</td>
+                                      <td className="px-3 py-1.5 text-xs text-slate-600 text-center font-bold">{item.documentType}</td>
+                                      <td className="px-3 py-1.5 text-xs text-slate-600 text-center">{item.trade || item.discipline || 'General'}</td>
+                                      <td className="px-3 py-1.5 text-xs text-rose-700 font-bold text-center">+{item.delayDays || 0}d</td>
+                                      <td className="px-3 py-1.5 text-xs text-center">
+                                          <span className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold ${
+                                              isConsultantResponsible ? 'bg-amber-100 text-amber-800 border border-amber-200' : 'bg-blue-100 text-blue-800 border border-blue-200'
+                                          }`}>
                                               {responsible}
                                           </span>
                                       </td>
-                                      <td className="px-4 py-2 text-xs text-slate-500 text-center font-mono">{item.submissionDate || '-'}</td>
+                                      <td className="px-3 py-1.5 text-xs text-slate-600 text-center font-mono">{item.submissionDate || '-'}</td>
                                   </tr>
                               );
                           })}
@@ -689,139 +659,317 @@ export default function ReportTable({ data, filterFn, title, projectInfo, rawDat
           </div>
        )}
 
-       {/* 6. PRIMARY DETAIL TABULAR REGISTER BREAKDOWN with Shading & Conditional Badges */}
-       <div id="report-main-table" className="bg-[#ffffff] rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-           <div className="p-4 bg-[#203864] text-[#ffffff] flex justify-between items-center">
-             <h2 className="text-sm font-bold flex items-center gap-2">
-               <Layers className="w-4 h-4" />
-               {title}
-             </h2>
-             <div className="px-3 py-1 bg-white/10 rounded font-bold text-xs">
-                {language === 'ar' ? `إجمالي الصفحات: ${globalStats.totalSubmittedSheets}` : `Workload Sheets: ${globalStats.totalSubmittedSheets}`}
-             </div>
-           </div>
+       {/* 6. DETAILED BREAKDOWN TABLE */}
+       <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+           <div className="overflow-x-auto">
+               <table className="w-full text-left border-collapse">
+                   <thead>
+                   {/* Tier 1 Group Headers */}
+                   <tr className="bg-slate-100 border-b border-slate-200">
+                     <th rowSpan={2} className={`${thClass} text-left font-extrabold text-[#203864] border-r border-slate-200`}>
+                       {language === 'ar' ? 'نوع المعاملة / السجل' : 'Log Type (Register)'}
+                     </th>
+                     <th rowSpan={2} className={`${thClass} font-bold text-slate-700 border-r border-slate-200`}>
+                       {language === 'ar' ? 'سمة الأولوية' : 'Priority'}
+                     </th>
+                     <th colSpan={7} className="px-4 py-2 border-b border-r border-slate-300 bg-slate-200/90 text-slate-900 font-extrabold text-xs text-center uppercase tracking-wider">
+                       {language === 'ar' ? 'أ — عبء العمل وسجلات التقديم (HISTORICAL WORKLOAD / ROW GRAIN)' : 'A — HISTORICAL WORKLOAD / ROW GRAIN'}
+                     </th>
+                     <th colSpan={8} className="px-4 py-2 border-b border-r border-blue-200 bg-blue-50/90 text-[#203864] font-extrabold text-xs text-center uppercase tracking-wider">
+                       {language === 'ar' ? 'ب — الحالة الحالية للبند الفريد (CURRENT STATE / UNIQUE ITEM GRAIN)' : 'B — CURRENT STATE / UNIQUE ITEM GRAIN'}
+                     </th>
+                     <th colSpan={3} className="px-4 py-2 border-b border-rose-200 bg-rose-50/80 text-rose-900 font-extrabold text-xs text-center uppercase tracking-wider">
+                       {language === 'ar' ? 'مستوى الخدمة والمتأخرات (SLA Performance - Derived)' : 'SLA PERFORMANCE (DERIVED)'}
+                     </th>
+                   </tr>
+                   {/* Tier 2 Sub-Headers */}
+                   <tr className="bg-slate-50 border-b border-slate-200">
+                     {/* Historical Workload / Row Grain Subheaders */}
+                     <th className={`${thClass} bg-slate-200/70 font-black text-slate-900`}>{language === 'ar' ? 'إجمالي الصفحات' : 'Total Workload Rows'}</th>
+                     <th className={thClass}>{language === 'ar' ? 'مراجعة 00' : 'Rev 00'}</th>
+                     <th className={thClass}>{language === 'ar' ? 'مراجعات لاحقة' : 'Further Rev'}</th>
+                     <th className={`${thClass} bg-rose-100/50 text-rose-900 font-extrabold`}>{language === 'ar' ? 'إجمالي صفوف الرفض' : 'Total Rejected Rows'}</th>
+                     <th className={`${thClass} text-rose-700`}>{language === 'ar' ? 'صفوف رفض مفتوحة' : 'Rejected Open Rows'}</th>
+                     <th className={`${thClass} text-red-900`}>{language === 'ar' ? 'صفوف رفض مغلقة' : 'Rejected Closed Rows'}</th>
+                     <th className={`${thClass} border-r border-slate-300 bg-emerald-50/50 text-emerald-800`}>{language === 'ar' ? 'رفض مسوّى' : 'Resolved Rejections'}</th>
+                     
+                     {/* Current State / Unique Item Grain Subheaders */}
+                     <th className={`${thClass} bg-blue-50/70 font-black text-[#203864]`}>{language === 'ar' ? 'البنود الفريدة' : 'Total Unique Items'}</th>
+                     <th className={`${thClass} text-emerald-700 font-bold`}>{language === 'ar' ? 'معتمد حالي' : 'Current Approved'}</th>
+                     <th className={`${thClass} text-rose-600`}>{language === 'ar' ? 'مرفوض مفتوح حالي' : 'Current Rejected Open'}</th>
+                     <th className={`${thClass} text-red-900`}>{language === 'ar' ? 'مرفوض مغلق حالي' : 'Current Rejected Closed'}</th>
+                     <th className={`${thClass} bg-rose-50/80 text-rose-900 font-extrabold`}>{language === 'ar' ? 'إجمالي المرفوض الحالي' : 'Current Total Rejected Items'}</th>
+                     <th className={`${thClass} text-amber-700`}>{language === 'ar' ? 'معلق حالي' : 'Pending'}</th>
+                     <th className={`${thClass} bg-amber-50/60 font-bold text-amber-900`}>{language === 'ar' ? 'النشط حالياً' : 'Active Items'}</th>
+                     <th className={`${thClass} border-r border-blue-200 bg-emerald-100/60 text-emerald-900 font-extrabold`}>{language === 'ar' ? 'نسبة الاعتماد %' : 'Approval Rate %'}</th>
+                     
+                     {/* SLA Performance Subheaders */}
+                     <th className={`${thClass} bg-rose-50/50 text-rose-800 font-bold`}>{language === 'ar' ? 'متأخرات > SLA' : 'Overdue'}</th>
+                     <th className={`${thClass} bg-rose-50/50 text-rose-800 font-bold`}>{language === 'ar' ? 'نسبة التأخير %' : 'Overdue %'}</th>
+                     <th className={`${thClass} text-slate-600`}>{language === 'ar' ? 'متوسط الرد (يوم)' : 'Avg Days'}</th>
+                   </tr>
+                 </thead>
+                 <tbody className="divide-y divide-slate-100">
+                   {byDocType.map((row, index) => {
+                     const activeCount = row.stats.pending + row.stats.rejectedOpen;
+                     const overdueRate = activeCount > 0 ? ((row.stats.overdue / activeCount) * 100).toFixed(1) : '0.0';
+                     const resolvedCount = row.stats.resolvedRejections || 0;
+                     return (
+                     <tr key={row.documentType} className="odd:bg-white even:bg-slate-50/50 hover:bg-[#f1f5f9]/50 transition-colors">
+                       {/* Log Type: Pure Taxonomy String */}
+                       <td className="px-4 py-3 text-xs text-[#203864] font-extrabold text-left border-r border-slate-200">
+                         {row.documentType}
+                       </td>
 
-           <div className="overflow-x-auto overflow-y-visible" style={{ padding: '4px' }}>
-              <table className="w-full text-left border-collapse" style={{ margin: 0 }}>
-                <thead>
-                  <tr className="bg-slate-100">
-                    <th className={`${thClass} text-left font-extrabold text-[#203864]`}>{language === 'ar' ? 'نوع المعاملة / السجل' : 'Log Type (Tab)'}</th>
-                    <th className={thClass}>{language === 'ar' ? 'التقديمات الفريدة' : 'Total Unique Items'}</th>
-                    <th className={`${thClass} bg-slate-200/60 font-black`}>{language === 'ar' ? 'إجمالي الصفحات' : 'Total Sheets Submitted'}</th>
-                    <th className={thClass}>{language === 'ar' ? 'مراجعة 00' : 'Items (Rev0)'}</th>
-                    <th className={thClass}>{language === 'ar' ? 'مراجعات لاحقة' : 'Further Rev Items'}</th>
-                    <th className={thClass}>{language === 'ar' ? 'معتمد' : 'Approved'}</th>
-                    <th className={thClass}>{language === 'ar' ? 'مرفوض مفتوح' : 'Rejected Open'}</th>
-                    <th className={thClass}>{language === 'ar' ? 'مرفوض مغلق' : 'Rejected Closed'}</th>
-                    <th className={thClass}>{language === 'ar' ? 'معلق' : 'Pending'}</th>
-                    <th className={`${thClass} text-rose-800`}>{language === 'ar' ? 'متأخر متجاوز المدة' : 'Overdue Backlog'}</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100">
-                  {byDocType.map((row, index) => (
-                    <tr key={row.documentType} className="odd:bg-white even:bg-slate-50/50 hover:bg-[#f1f5f9]/50 transition-colors">
-                      <td className="px-4 py-3 text-xs text-[#203864] font-extrabold text-left">{row.documentType}</td>
-                      <td className={tdClass}>{row.stats.totalUniqueDrawings}</td>
-                      <td className={`${tdClass} bg-slate-100/30 font-bold text-slate-900`}>{row.stats.totalSubmittedSheets}</td>
-                      <td className={tdClass}>{row.stats.totalSheetsRev0}</td>
-                      <td className={tdClass}>{row.stats.totalSheetsFurtherRev}</td>
-                      
-                      {/* Conditional Formatting: Approved */}
-                      <td className={tdClass}>
-                        {row.stats.approved > 0 ? (
-                            <span className="inline-block px-2.5 py-1 rounded bg-emerald-50 text-emerald-700 border border-emerald-100 font-bold min-w-[40px]">
-                                {row.stats.approved}
-                            </span>
-                        ) : <span className="text-slate-400 font-normal">0</span>}
-                      </td>
+                       {/* Priority / Attribute Column */}
+                       <td className="px-4 py-3 text-xs text-center border-r border-slate-200">
+                         {row.criticalCount > 0 ? (
+                           <span className="inline-block px-2 py-0.5 rounded bg-rose-100 text-rose-800 font-bold text-[10px] border border-rose-200">
+                             CRITICAL ({row.criticalCount})
+                           </span>
+                         ) : (
+                           <span className="text-slate-400 font-normal">-</span>
+                         )}
+                       </td>
 
-                      {/* Conditional Formatting: Rejected Open */}
-                      <td className={tdClass}>
-                        {row.stats.rejectedOpen > 0 ? (
-                            <span className="inline-block px-2.5 py-1 rounded bg-rose-50 text-rose-600 border border-rose-100 font-semibold min-w-[40px]">
-                                {row.stats.rejectedOpen}
-                            </span>
-                        ) : <span className="text-slate-400 font-normal">0</span>}
-                      </td>
+                       {/* Section A: Historical Workload / Row Grain */}
+                       <td className={`${tdClass} bg-slate-100/60 font-bold text-slate-900`}>{row.stats.totalSubmittedSheets}</td>
+                       <td className={tdClass}>{row.stats.totalSheetsRev0}</td>
+                       <td className={tdClass}>{row.stats.totalSheetsFurtherRev}</td>
+                       
+                       {/* Total Rejected Rows */}
+                       <td className={`${tdClass} bg-rose-50/40`}>
+                         {row.stats.totalRejectedRows > 0 ? (
+                           <span className="inline-block px-2.5 py-1 rounded bg-rose-100/80 text-rose-800 font-extrabold min-w-[32px]">
+                             {row.stats.totalRejectedRows}
+                           </span>
+                         ) : <span className="text-slate-400 font-normal">0</span>}
+                       </td>
 
-                      {/* Conditional Formatting: Rejected Closed */}
-                      <td className={tdClass}>
-                        {row.stats.rejectedClosed > 0 ? (
-                            <span className="inline-block px-2.5 py-1 rounded bg-red-50 text-red-900 border border-red-100 font-medium min-w-[40px]">
-                                {row.stats.rejectedClosed}
-                            </span>
-                        ) : <span className="text-slate-400 font-normal">0</span>}
-                      </td>
+                       {/* Rejected Open Rows */}
+                       <td className={tdClass}>
+                         {row.stats.rejectedOpenRows > 0 ? (
+                           <span className="inline-block px-2 py-0.5 rounded bg-rose-50 text-rose-700 font-medium min-w-[28px]">
+                             {row.stats.rejectedOpenRows}
+                           </span>
+                         ) : <span className="text-slate-400 font-normal">0</span>}
+                       </td>
 
-                      {/* Conditional Formatting: Pending */}
-                      <td className={tdClass}>
-                        {row.stats.pending > 0 ? (
-                            <span className="inline-block px-2.5 py-1 rounded bg-amber-50 text-amber-700 border border-amber-100 font-medium min-w-[40px]">
-                                {row.stats.pending}
-                            </span>
-                        ) : <span className="text-slate-400 font-normal">0</span>}
-                      </td>
+                       {/* Rejected Closed Rows */}
+                       <td className={tdClass}>
+                         {row.stats.rejectedClosedRows > 0 ? (
+                           <span className="inline-block px-2 py-0.5 rounded bg-red-50 text-red-900 font-medium min-w-[28px]">
+                             {row.stats.rejectedClosedRows}
+                           </span>
+                         ) : <span className="text-slate-400 font-normal">0</span>}
+                       </td>
 
-                      {/* Conditional Formatting: Overdue */}
-                      <td className={tdClass}>
-                        {row.stats.overdue > 0 ? (
-                            <span className="inline-block px-2.5 py-1 rounded bg-rose-100 text-rose-800 border border-rose-200 font-extrabold min-w-[40px] animate-pulse">
-                                {row.stats.overdue}
-                            </span>
-                        ) : <span className="text-slate-400 font-normal">0</span>}
-                      </td>
-                    </tr>
-                  ))}
-                  {/* Total Row */}
-                  <tr className="bg-slate-200/70 border-t-2 border-slate-300 font-bold text-slate-900">
-                    <td className="px-4 py-3.5 text-xs font-black text-left text-slate-800">GRAND TOTAL</td>
-                    <td className="px-4 py-3.5 text-xs text-center font-bold text-slate-800">{globalStats.totalUniqueDrawings}</td>
-                    <td className="px-4 py-3.5 text-xs text-center font-black bg-slate-300/60 text-[#203864]">{globalStats.totalSubmittedSheets}</td>
-                    <td className="px-4 py-3.5 text-xs text-center font-bold text-slate-700">{globalStats.totalSheetsRev0}</td>
-                    <td className="px-4 py-3.5 text-xs text-center font-bold text-slate-700">{globalStats.totalSheetsFurtherRev}</td>
-                    
-                    {/* Total Approved */}
-                    <td className="px-4 py-3.5 text-xs text-center">
-                        <span className="inline-block px-3 py-1 rounded bg-emerald-100 text-emerald-800 font-bold border border-emerald-300">
-                            {globalStats.approved}
-                        </span>
-                    </td>
+                       {/* Resolved Rejections */}
+                       <td className={`${tdClass} border-r border-slate-300 bg-emerald-50/30`}>
+                         {resolvedCount > 0 ? (
+                           <span className="inline-block px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 font-bold min-w-[28px]">
+                             {resolvedCount}
+                           </span>
+                         ) : <span className="text-slate-400 font-normal">0</span>}
+                       </td>
+                       
+                       {/* Section B: Current State / Unique Item Grain */}
+                       <td className={`${tdClass} bg-blue-50/30 font-bold text-[#203864]`}>{row.stats.totalUniqueDrawings}</td>
+                       
+                       {/* Current Approved */}
+                       <td className={tdClass}>
+                         {row.stats.approved > 0 ? (
+                             <span className="inline-block px-2.5 py-1 rounded bg-emerald-50 text-emerald-700 border border-emerald-100 font-bold min-w-[36px]">
+                                 {row.stats.approved}
+                             </span>
+                         ) : <span className="text-slate-400 font-normal">0</span>}
+                       </td>
 
-                    {/* Total Rejected Open */}
-                    <td className="px-4 py-3.5 text-xs text-center">
-                        <span className="inline-block px-3 py-1 rounded bg-rose-100 text-rose-700 font-bold border border-rose-300">
-                            {globalStats.rejectedOpen}
-                        </span>
-                    </td>
+                       {/* Current Rejected Open */}
+                       <td className={tdClass}>
+                         {row.stats.rejectedOpen > 0 ? (
+                             <span className="inline-block px-2.5 py-1 rounded bg-rose-50 text-rose-600 border border-rose-100 font-semibold min-w-[36px]">
+                                 {row.stats.rejectedOpen}
+                             </span>
+                         ) : <span className="text-slate-400 font-normal">0</span>}
+                       </td>
 
-                    {/* Total Rejected Closed */}
-                    <td className="px-4 py-3.5 text-xs text-center">
-                        <span className="inline-block px-3 py-1 rounded bg-red-100 text-red-900 font-bold border border-red-300">
-                            {globalStats.rejectedClosed}
-                        </span>
-                    </td>
+                       {/* Current Rejected Closed */}
+                       <td className={tdClass}>
+                         {row.stats.rejectedClosed > 0 ? (
+                             <span className="inline-block px-2.5 py-1 rounded bg-red-50 text-red-900 border border-red-100 font-medium min-w-[36px]">
+                                 {row.stats.rejectedClosed}
+                             </span>
+                         ) : <span className="text-slate-400 font-normal">0</span>}
+                       </td>
 
-                    {/* Total Pending */}
-                    <td className="px-4 py-3.5 text-xs text-center">
-                        <span className="inline-block px-3 py-1 rounded bg-amber-100 text-amber-800 font-bold border border-amber-300">
-                            {globalStats.pending}
-                        </span>
-                    </td>
+                       {/* Current Total Rejected Items */}
+                       <td className={`${tdClass} bg-rose-50/30`}>
+                         {row.stats.currentRejected > 0 ? (
+                             <span className="inline-block px-2.5 py-1 rounded bg-rose-100 text-rose-800 border border-rose-200 font-bold min-w-[36px]">
+                                 {row.stats.currentRejected}
+                             </span>
+                         ) : <span className="text-slate-400 font-normal">0</span>}
+                       </td>
 
-                    {/* Total Overdue */}
-                    <td className="px-4 py-3.5 text-xs text-center">
-                        <span className="inline-block px-3 py-1 rounded bg-rose-600 text-white font-extrabold border border-rose-700 shadow-sm animate-pulse">
-                            {globalStats.overdue}
-                        </span>
-                    </td>
-                  </tr>
+                       {/* Pending */}
+                       <td className={tdClass}>
+                         {row.stats.pending > 0 ? (
+                             <span className="inline-block px-2.5 py-1 rounded bg-amber-50 text-amber-700 border border-amber-100 font-medium min-w-[36px]">
+                                 {row.stats.pending}
+                             </span>
+                         ) : <span className="text-slate-400 font-normal">0</span>}
+                       </td>
+
+                       {/* Active Items (Pending + Rejected Open) */}
+                       <td className={`${tdClass} bg-amber-50/30 font-bold text-amber-900`}>
+                         {activeCount > 0 ? (
+                             <span className="inline-block px-2.5 py-1 rounded bg-amber-100 text-amber-900 border border-amber-200 font-bold min-w-[36px]">
+                                 {activeCount}
+                             </span>
+                         ) : <span className="text-slate-400 font-normal">0</span>}
+                       </td>
+
+                       {/* Approval Rate % */}
+                       <td className={`${tdClass} border-r border-blue-200 bg-emerald-50/30 font-bold text-emerald-800`}>
+                         {row.stats.approvalRate.toFixed(1)}%
+                       </td>
+
+                       {/* SLA Overdue */}
+                       <td className={tdClass}>
+                         {row.stats.overdue > 0 ? (
+                             <span className="inline-block px-2.5 py-1 rounded bg-rose-100 text-rose-800 border border-rose-200 font-extrabold min-w-[36px]">
+                                 {row.stats.overdue}
+                             </span>
+                         ) : <span className="text-slate-400 font-normal">0</span>}
+                       </td>
+
+                       {/* Overdue Rate % of Active */}
+                       <td className={tdClass}>
+                         {activeCount > 0 ? (
+                           <span className={`font-bold ${row.stats.overdue > 0 ? 'text-rose-700' : 'text-slate-600'}`}>
+                             {overdueRate}%
+                           </span>
+                         ) : (
+                           <span className="text-slate-400">-</span>
+                         )}
+                       </td>
+
+                       {/* Avg Days */}
+                       <td className={tdClass}>
+                         {row.stats.avgResponseTime > 0 ? `${row.stats.avgResponseTime.toFixed(1)}d` : '-'}
+                       </td>
+                     </tr>
+                     );
+                   })}
+                   {/* Grand Total Row */}
+                   <tr className="bg-slate-200/90 border-t-2 border-slate-300 font-bold text-slate-900">
+                     <td className="px-4 py-3.5 text-xs font-black text-left text-slate-900 border-r border-slate-300">GRAND TOTAL</td>
+                     <td className="px-4 py-3.5 text-xs text-center border-r border-slate-300">
+                       {globalCriticalCount > 0 ? (
+                         <span className="inline-block px-2 py-0.5 rounded bg-rose-200 text-rose-900 font-bold text-[10px]">
+                           CRITICAL ({globalCriticalCount})
+                         </span>
+                       ) : (
+                         <span className="text-slate-500 font-normal">-</span>
+                       )}
+                     </td>
+                     
+                     {/* Historical Workload Totals */}
+                     <td className="px-4 py-3.5 text-xs text-center font-black bg-slate-300/70 text-[#203864]">{globalStats.totalSubmittedSheets}</td>
+                     <td className="px-4 py-3.5 text-xs text-center font-bold text-slate-700">{globalStats.totalSheetsRev0}</td>
+                     <td className="px-4 py-3.5 text-xs text-center font-bold text-slate-700">{globalStats.totalSheetsFurtherRev}</td>
+                     
+                     {/* Total Rejected Rows */}
+                     <td className="px-4 py-3.5 text-xs text-center font-extrabold bg-rose-100/70 text-rose-900">
+                       <span className="inline-block px-2.5 py-1 rounded bg-rose-200 text-rose-900 font-black border border-rose-300">
+                         {globalStats.totalRejectedRows}
+                       </span>
+                     </td>
+                     
+                     {/* Rejected Open Rows */}
+                     <td className="px-4 py-3.5 text-xs text-center font-bold text-rose-800">{globalStats.rejectedOpenRows}</td>
+                     
+                     {/* Rejected Closed Rows */}
+                     <td className="px-4 py-3.5 text-xs text-center font-bold text-red-900">{globalStats.rejectedClosedRows}</td>
+                     
+                     {/* Resolved Rejections */}
+                     <td className="px-4 py-3.5 text-xs text-center font-bold text-emerald-800 bg-emerald-100/50 border-r border-slate-300">{globalStats.resolvedRejections || 0}</td>
+                     
+                     {/* Current Unique Totals */}
+                     <td className="px-4 py-3.5 text-xs text-center font-bold text-slate-800 bg-blue-100/50">{globalStats.totalUniqueDrawings}</td>
+                     
+                     {/* Total Approved */}
+                     <td className="px-4 py-3.5 text-xs text-center">
+                         <span className="inline-block px-3 py-1 rounded bg-emerald-100 text-emerald-800 font-bold border border-emerald-300">
+                             {globalStats.approved}
+                         </span>
+                     </td>
+
+                     {/* Current Rejected Open */}
+                     <td className="px-4 py-3.5 text-xs text-center">
+                         <span className="inline-block px-3 py-1 rounded bg-rose-100 text-rose-700 font-bold border border-rose-300">
+                             {globalStats.rejectedOpen}
+                         </span>
+                     </td>
+
+                     {/* Current Rejected Closed */}
+                     <td className="px-4 py-3.5 text-xs text-center">
+                         <span className="inline-block px-3 py-1 rounded bg-red-100 text-red-900 font-bold border border-red-300">
+                             {globalStats.rejectedClosed}
+                         </span>
+                     </td>
+
+                     {/* Current Total Rejected Items */}
+                     <td className="px-4 py-3.5 text-xs text-center bg-rose-100/60">
+                         <span className="inline-block px-3 py-1 rounded bg-rose-200 text-rose-900 font-extrabold border border-rose-400">
+                             {globalStats.currentRejected}
+                         </span>
+                     </td>
+
+                     {/* Total Pending */}
+                     <td className="px-4 py-3.5 text-xs text-center">
+                         <span className="inline-block px-3 py-1 rounded bg-amber-100 text-amber-800 font-bold border border-amber-300">
+                             {globalStats.pending}
+                         </span>
+                     </td>
+
+                     {/* Total Active Items */}
+                     <td className="px-4 py-3.5 text-xs text-center bg-amber-100/60">
+                         <span className="inline-block px-3 py-1 rounded bg-amber-200 text-amber-900 font-bold border border-amber-300">
+                             {globalStats.pending + globalStats.rejectedOpen}
+                         </span>
+                     </td>
+
+                     {/* Grand Approval Rate */}
+                     <td className="px-4 py-3.5 text-xs text-center border-r border-blue-200 bg-emerald-100/60 font-black text-emerald-900">
+                         {globalStats.approvalRate.toFixed(1)}%
+                     </td>
+
+                     {/* Total Overdue */}
+                     <td className="px-4 py-3.5 text-xs text-center">
+                         <span className="inline-block px-3 py-1 rounded bg-rose-600 text-white font-extrabold border border-rose-700 shadow-sm">
+                             {globalStats.overdue}
+                         </span>
+                     </td>
+
+                     {/* Grand Total Overdue Rate % */}
+                     <td className="px-4 py-3.5 text-xs text-center font-bold text-rose-700">
+                         {((globalStats.pending + globalStats.rejectedOpen) > 0 ? ((globalStats.overdue / (globalStats.pending + globalStats.rejectedOpen)) * 100).toFixed(1) : '0.0')}%
+                     </td>
+
+                     {/* Grand Avg Days */}
+                     <td className="px-4 py-3.5 text-xs text-center text-slate-700">
+                         {globalStats.avgResponseTime > 0 ? `${globalStats.avgResponseTime.toFixed(1)}d` : '-'}
+                     </td>
+                   </tr>
                 </tbody>
               </table>
            </div>
        </div>
 
-       {/* 7. EXECUTIVE RECOMMENDATIONS (PRIORITY ACTIONS) PAGE/PANEL */}
-       <div id="report-recommendations-panel" className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 print:break-inside-avoid">
+       {/* 7. EXECUTIVE RECOMMENDATIONS (PRIORITY ACTIONS) PAGE/PANEL - LOCKED ON A SINGLE DEDICATED PAGE */}
+       <div id="report-recommendations-panel" className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 print:break-inside-avoid page-break-inside-avoid page-break-before-always break-before-page break-inside-avoid">
             <div className="flex items-center gap-2 mb-4 border-b border-slate-100 pb-3">
                 <div className="p-2 bg-indigo-50 text-indigo-700 rounded-lg">
                     <ListTodo className="w-5 h-5" />

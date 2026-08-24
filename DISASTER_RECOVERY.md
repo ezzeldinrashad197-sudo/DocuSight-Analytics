@@ -1,6 +1,6 @@
-# DocuSight Analytics Platform — Enterprise Disaster Recovery (DR) Plan
+# StructuSight Analytics Platform — Enterprise Disaster Recovery (DR) Plan
 
-This document establishes the official enterprise Disaster Recovery and Business Continuity guidelines for the DocuSight Analytics Platform under production conditions.
+This document establishes the official enterprise Disaster Recovery and Business Continuity guidelines for the StructuSight Analytics Platform under production conditions.
 
 ## 1. Executive Summary & Recovery Standards
 
@@ -28,13 +28,13 @@ In the event of an outage, the following team roles must be summoned immediately
 ### 3.1 Firestore Automated Backups
 Firestore backups must run automatically onto locked Cloud Storage buckets utilizing Object Lifecycle Management:
 *   **Schedule**: Automated Cron executes every 4 hours (`0 */4 * * *`).
-*   **Storage Directory**: `gs://docusight-production-backups-europe-west2`
+*   **Storage Directory**: `gs://structusight-production-backups-europe-west2`
 *   **Retention Period**: 30 days active history.
 
 ### 3.2 Manual Backup Trigger Procedure
 SRE logs can manually run backup actions using the Google Cloud CLI:
 ```bash
-gcloud firestore export gs://docusight-production-backups-europe-west2 --async
+gcloud firestore export gs://structusight-production-backups-europe-west2 --async
 ```
 
 ### 3.3 Database Point-in-Time Recovery (PITR) Execution
@@ -42,7 +42,7 @@ To rollback the database state to a specific second within the 7-day retention w
 1.  Ensure active user sessions are safely locked using Viewer Mode under Firestore security rules.
 2.  Restore the collections hierarchy to target destination:
     ```bash
-    gcloud firestore import gs://docusight-production-backups-europe-west2/2026-06-18T12:00:00_ad31/
+    gcloud firestore import gs://structusight-production-backups-europe-west2/2026-06-18T12:00:00_ad31/
     ```
 3.  Execute custom schema verification checks (`npx ts-node check-db.ts`) to validate relational constraint indexes before opening public traffic.
 
@@ -57,8 +57,8 @@ If the Cloud Run host suffers physical hardware/region loss:
 1.  **Configure Target Cloud Provider Region**: Shift ingress traffic dynamically from `europe-west2` to `europe-west1` (Secondary DR cluster).
 2.  **App deployment from compiled registry**:
     ```bash
-    gcloud run deploy docusight-analytics-dr \
-       --image=gcr.io/docusight-prod/applet:latest \
+    gcloud run deploy structusight-analytics-dr \
+       --image=gcr.io/structusight-prod/applet:latest \
        --platform=managed \
        --region=europe-west1 \
        --allow-unauthenticated
@@ -68,7 +68,7 @@ If the Cloud Run host suffers physical hardware/region loss:
 ### 4.2 Security Rules Version Check
 Ensure rules match the official production security policy:
 ```bash
-firebase deploy --only firestore:rules --project docusight-production-security
+firebase deploy --only firestore:rules --project structusight-production-security
 ```
 
 ---
@@ -92,8 +92,8 @@ Every production bundle registers a unique metadata stamp inside the platform me
 If an anomaly is detected post-deployment (e.g., high rate of circuit-breaker triggers or memory leaks):
 1.  Immediately revert the Cloud Run container instance back to the latest verified stable revision:
     ```bash
-    gcloud run services update-traffic docusight-analytics-platform \
-       --to-revisions=docusight-analytics-platform-v3-12-3=100
+    gcloud run services update-traffic structusight-analytics-platform \
+       --to-revisions=structusight-analytics-platform-v3-12-3=100
     ```
 2.  Restore firestore security rules to the previous stable state tag inside Git history.
 3.  Trigger the **Automated Security Regression Suite** (`/api/security-regression-tests`) and the **Production Load & Stress Testing Suite** (`/api/load-stress-tests`) on the active server instance to audit post-rollback stability.

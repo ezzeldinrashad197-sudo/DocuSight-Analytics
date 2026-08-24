@@ -381,7 +381,7 @@ export const CORE_MANDATORY_FIELDS: UniversalFieldDefinition[] = [
     description: 'Date action was fully closed or superseded',
     requiredForKPIs: ['Closed Rejection Aging', 'Lifecycle Completion Metric'],
     aliases: ['closeddate', 'dateclosed', 'finaldate', 'completiondate', 'closuredate'],
-    exampleValue: '2026-04-01'
+    exampleValue: 'YYYY-MM-DD'
   }
 ];
 

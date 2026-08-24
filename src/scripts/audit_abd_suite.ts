@@ -1,6 +1,6 @@
 import { runCalculationVerificationSuite, generateExpandedGoldenDataset } from '../utils/calculationVerificationEngine';
 import { calculateStats } from '../utils/calculations';
-import { getRevisionWeight } from '../utils/enterpriseUpgradeEngine';
+import { getRevisionWeight } from '../analytics/revisionResolver';
 import { buildCanonicalDataset, getBusinessEntityKey } from '../analytics/calculationFoundation';
 import fs from 'fs';
 

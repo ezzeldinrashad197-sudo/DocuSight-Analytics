@@ -478,7 +478,7 @@ export const MASTER_28_FINDINGS: MasterFinding[] = [
 
 function generateArtifacts() {
   console.log('===================================================================================');
-  console.log('DOCUSIGHT — EXECUTING L99 AUDIT RECONCILIATION ARTIFACT GENERATION');
+  console.log('STRUCTUSIGHT — EXECUTING L99 AUDIT RECONCILIATION ARTIFACT GENERATION');
   console.log('===================================================================================');
 
   // 1. Artifact 1: L99_MASTER_FINDING_REGISTER.json

@@ -1,4 +1,4 @@
-# DocuSight Analytics – Sprint 1 Integration Verification Report
+# StructuSight Analytics – Sprint 1 Integration Verification Report
 
 ## 1. Executive Summary & Architectural Clarification
 

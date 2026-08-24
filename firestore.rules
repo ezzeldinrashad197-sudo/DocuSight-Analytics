@@ -43,6 +43,30 @@ service cloud.firestore {
       return id.size() <= 128 && id.matches('^[a-zA-Z0-9_@.+-]+$');
     }
 
+    function isAdminOrProjectMember(projectId) {
+      return isSignedIn() && (
+        isAdmin() ||
+        (
+          getUserData().projectScope is list && projectId in getUserData().projectScope
+        ) ||
+        (
+          getUserData().projectScope is string && getUserData().projectScope == projectId
+        )
+      );
+    }
+
+    function isEditorForProject(projectId) {
+      return isSignedIn() && isEditor() && isAdminOrProjectMember(projectId);
+    }
+
+    function hasResourceProjectAccess() {
+      return isSignedIn() && resource.data.projectId is string && isAdminOrProjectMember(resource.data.projectId);
+    }
+
+    function hasRequestProjectAccess() {
+      return isSignedIn() && request.resource.data.projectId is string && isAdminOrProjectMember(request.resource.data.projectId);
+    }
+
     // Default Lockout (Enterprise Least-Privilege Baseline)
     match /{document=**} {
       allow read, write: if false;
@@ -72,40 +96,43 @@ service cloud.firestore {
 
     // --- COLLECTION: project_stats ---
     match /project_stats/{projectId} {
-      allow read: if isSignedIn();
-      allow write: if isEditor();
+      allow read: if isAdminOrProjectMember(projectId);
+      allow create, update, delete: if isEditorForProject(projectId);
     }
 
     // --- COLLECTION: audit_logs ---
     // Append-only audit logs. Normal users cannot modify or delete logs, and must write their own uid.
     match /audit_logs/{logId} {
-      allow read: if isSignedIn();
+      allow read: if isSignedIn() && (isAdmin() || resource.data.userId == request.auth.uid);
       allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
       allow update, delete: if false;
     }
 
     // --- COLLECTION: projects ---
     match /projects/{projectId} {
-      allow read: if isSignedIn();
-      allow write: if isEditor();
+      allow read: if isAdminOrProjectMember(projectId);
+      allow create, update, delete: if isEditorForProject(projectId);
     }
 
     // --- COLLECTION: analytics ---
     match /analytics/{analyticsId} {
-      allow read: if isSignedIn();
-      allow write: if isEditor();
+      allow read: if hasResourceProjectAccess();
+      allow create: if isEditor() && hasRequestProjectAccess();
+      allow update: if isEditor() && hasResourceProjectAccess() && hasRequestProjectAccess();
+      allow delete: if isEditor() && hasResourceProjectAccess();
     }
 
     // --- COLLECTION: settings ---
     match /settings/{settingsId} {
-      allow read: if isSignedIn();
-      allow write: if isAdmin();
+      allow read, write: if isAdmin();
     }
 
     // --- COLLECTION: reports ---
     match /reports/{reportId} {
-      allow read: if isSignedIn();
-      allow write: if isEditor();
+      allow read: if hasResourceProjectAccess();
+      allow create: if isEditor() && hasRequestProjectAccess();
+      allow update: if isEditor() && hasResourceProjectAccess() && hasRequestProjectAccess();
+      allow delete: if isEditor() && hasResourceProjectAccess();
     }
   }
 }

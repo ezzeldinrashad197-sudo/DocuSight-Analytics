@@ -1,7 +1,27 @@
-import { SubmittalRow } from '../types';
-import { compareRevisions, getNormalizedStatusCore, isValidRevision } from './analyticsCore';
-import { getRevisionWeight } from '../utils/enterpriseUpgradeEngine';
-import { getStatusCodeCategory } from '../utils/calculations';
+import { SubmittalRow, KPIStats } from '../types';
+import { compareRevisions, isValidRevision } from './analyticsCore';
+import { getRevisionWeight } from './revisionResolver';
+import { getStatusCodeCategory, classifyNcrStatus, normalizeCanonicalString } from './statusResolver';
+
+export { getStatusCodeCategory, classifyNcrStatus, normalizeCanonicalString };
+
+export interface DataQualityIssue {
+  id: string;
+  businessEntityKey: string;
+  issueType: 'MISSING_DATE' | 'BLANK_STATUS' | 'FUTURE_DATE' | 'DUPLICATE_REVISION' | 'INVALID_REVISION';
+  description: string;
+  row: SubmittalRow;
+}
+
+export interface DataQualityLedger {
+  issues: DataQualityIssue[];
+  missingDatesCount: number;
+  blankStatusCount: number;
+  futureDatesCount: number;
+  duplicateKeysCount: number;
+  invalidRevisionsCount: number;
+  totalIssuesCount: number;
+}
 
 export interface CanonicalRecord {
   id: string;
@@ -12,27 +32,19 @@ export interface CanonicalRecord {
   submissionDate: string;
   responseDate: string;
   status: string;
-  resolvedStatus: string;
+  resolvedStatus: 'APPROVED' | 'REJECTED_OPEN' | 'REJECTED_CLOSED' | 'PENDING' | 'UNCLASSIFIED';
   isLatestRevision: boolean;
   isRev0: boolean;
   isHistoricalRev0: boolean;
+  hadRejectionHistory: boolean;
+  isResolvedRejection: boolean;
   firstSubmissionDate: string;
   includeInSubmission: boolean;
   includeInPerformance: boolean;
 }
 
-export interface SubmissionLayerResult {
-  totalSubmitted: number;
-  rev00: number;
-  furtherRevisions: number;
-}
-
-export interface PerformanceLayerResult {
-  totalUniqueItems: number;
-  approved: number;
-  rejectedOpen: number;
-  rejectedClosed: number;
-  pending: number;
+export interface CanonicalKPIResult extends KPIStats {
+  dataQuality: DataQualityLedger;
 }
 
 /**
@@ -47,9 +59,9 @@ export function parseDateTimestamp(dateStr?: string): number {
 /**
  * 1. Business Entity Resolver
  * Explicitly resolved by register type without generic fallback chains.
+ * Guarantees that Survey (SUR) is NEVER merged with Architectural (ARC).
  */
 export function getBusinessEntityKey(row: SubmittalRow): string {
-  // Use Workflow Family primarily (الفصل الثاني) with legacy documentType/logType fallbacks for 100% backward compatibility
   const family = (row.workflowFamily || '').toUpperCase().trim();
   const type = (row.documentType || row.logType || 'DOC').toUpperCase().trim();
   const r = row as Record<string, any>;
@@ -68,15 +80,25 @@ export function getBusinessEntityKey(row: SubmittalRow): string {
   const upperLog = (row.logType || '').toUpperCase();
   const upperSrc = ((row as any).sourceFile || '').toUpperCase();
 
-  // Explicit ABD detection to ensure 100% key symmetry across raw and normalized datasets
   const isABD = family === 'ABD' ||
                 type.startsWith('ABD') || type.includes('AS-BUILT') || type.includes('AS BUILT') || type.includes('ASBUILT') ||
                 upperDocNo.startsWith('ABD-') || upperDocNo.includes('AS-BUILT') || upperDocNo.includes('AS BUILT') || upperDocNo.includes('ASBUILT') ||
                 upperLog.includes('ABD') || upperLog.includes('AS-BUILT') || upperLog.includes('AS BUILT') || upperLog.includes('ASBUILT') ||
                 upperSrc.includes('ABD') || upperSrc.includes('AS-BUILT') || upperSrc.includes('AS BUILT') || upperSrc.includes('ASBUILT');
 
+  const rawRev = (row.rev || (row as any).revision || (row as any).revNo || '').trim();
+  let baseRef = commonRef;
+  if (rawRev && baseRef) {
+    const revPattern = new RegExp(`[-_/\\s]+(?:REV\\.?)?\\s*${rawRev}$`, 'i');
+    if (revPattern.test(baseRef)) {
+      baseRef = baseRef.replace(revPattern, '').trim();
+    }
+  }
+  // Strip trailing revision indicators if preceded by REV or R (e.g. -REV01, _R0)
+  baseRef = baseRef.replace(/[-_/\\s]+(?:REV|R)\.?\s*([0-9]{1,2}|[A-Z])$/i, '').trim() || commonRef;
+
   if (isABD) {
-    return `ABD:${commonRef.toUpperCase()}`;
+    return `ABD:${baseRef.toUpperCase()}`;
   }
 
   if (family === 'NCR' || type.includes('NCR') || type === 'NCR') {
@@ -104,7 +126,7 @@ export function getBusinessEntityKey(row: SubmittalRow): string {
     return `LTR:${ref.toUpperCase()}`;
   }
   if (family === 'SDW' || type.includes('SDW') || type.includes('SHD') || type.includes('SHOP') || upperDocNo.startsWith('SDW-') || upperDocNo.startsWith('SHD-')) {
-    return `SDW:${commonRef.toUpperCase()}`;
+    return `SDW:${baseRef.toUpperCase()}`;
   }
   if (family === 'MAR' || type.includes('MAR') || type.includes('MATERIAL') || type === 'MAR') {
     const ref = extractRef('materialRef', 'marRef', 'docNo', 'docNumber', 'id');
@@ -117,25 +139,21 @@ export function getBusinessEntityKey(row: SubmittalRow): string {
 
   const disc = (r.discipline || '').trim().toUpperCase();
   const prefix = type.includes('-') ? type : (disc ? `${type}-${disc}` : type);
-  return `${prefix}:${commonRef.toUpperCase()}`;
+  return `${prefix}:${baseRef.toUpperCase()}`;
 }
 
 /**
- * 3. Revision Engine
- * Groups by BusinessEntityKey, sorts chronologically by Submission Date 
- * (with compareRevisions as tie-breaker), detects latest revision, 
- * and marks IsLatestRevision and IsRev0 based on historical submission order.
+ * 3. Revision & History Engine
  */
-export function processRevisionEngine(rows: SubmittalRow[], cutoffDate?: string): Map<string, { latest: SubmittalRow, all: SubmittalRow[] }> {
+export function processRevisionEngine(rows: SubmittalRow[], asOfDate?: string): Map<string, { latest: SubmittalRow; all: SubmittalRow[]; hasRejection: boolean; isResolved: boolean }> {
   const groups = new Map<string, SubmittalRow[]>();
-  const cutoffTime = parseDateTimestamp(cutoffDate);
+  const cutoffTime = parseDateTimestamp(asOfDate);
 
   rows.forEach(row => {
-    // Cut-off date comparison using timestamp
     if (cutoffTime > 0 && row.submissionDate) {
       const subTime = parseDateTimestamp(row.submissionDate);
       if (subTime > cutoffTime) {
-        return;
+        return; // Exclude future-dated rows from historical snapshot
       }
     }
     const key = getBusinessEntityKey(row);
@@ -145,95 +163,399 @@ export function processRevisionEngine(rows: SubmittalRow[], cutoffDate?: string)
     groups.get(key)!.push(row);
   });
 
-  const result = new Map<string, { latest: SubmittalRow, all: SubmittalRow[] }>();
+  const result = new Map<string, { latest: SubmittalRow; all: SubmittalRow[]; hasRejection: boolean; isResolved: boolean }>();
 
   groups.forEach((groupRows, key) => {
-    // Sort chronologically by Submission Date first, then compareRevisions if dates equal
+    // Sort primarily by revision sequence (Rev 00 < Rev 01 < Rev 02), tie-broken by submission date
     const sorted = [...groupRows].sort((a, b) => {
+      const revDiff = compareRevisions(a.rev, b.rev);
+      if (revDiff !== 0) return revDiff;
       const timeA = parseDateTimestamp(a.submissionDate);
       const timeB = parseDateTimestamp(b.submissionDate);
-      if (timeA !== timeB) {
-        return timeA - timeB;
-      }
-      return compareRevisions(a.rev, b.rev);
+      if (timeA !== timeB) return timeA - timeB;
+      return (a.id || '').localeCompare(b.id || '');
     });
+
     const latest = sorted[sorted.length - 1];
-    result.set(key, { latest, all: sorted });
+
+    let hasRejection = false;
+    sorted.forEach(r => {
+      const cat = getStatusCodeCategory(r);
+      if (cat === 'REJECTED_OPEN' || cat === 'REJECTED_CLOSED') {
+        hasRejection = true;
+      }
+    });
+
+    const latestCat = getStatusCodeCategory(latest);
+    const isResolved = hasRejection && latestCat === 'APPROVED';
+
+    result.set(key, { latest, all: sorted, hasRejection, isResolved });
   });
 
   return result;
 }
 
 /**
- * 2. Canonical Dataset Builder
- * Single Source of Truth builder.
+ * 4. Master Canonical KPI Calculation Engine
+ * Implements the Dual Dimension:
+ * Dimension 1 (Workload / Events): Count of physical rows
+ * Dimension 2 (Current State): Count of unique items at latest valid revision
+ * Dimension 3 (Rejection Events & Resolutions): Historical row events vs resolved entities
+ */
+export function calculateCanonicalKPIs(
+  data: SubmittalRow[],
+  fullDataset?: SubmittalRow[],
+  asOfDate?: string
+): CanonicalKPIResult {
+  const rowsToUse = data || [];
+  const cutoffTime = parseDateTimestamp(asOfDate);
+
+  // Data Quality Ledger Collection
+  const issues: DataQualityIssue[] = [];
+  let missingDatesCount = 0;
+  let blankStatusCount = 0;
+  let futureDatesCount = 0;
+  let duplicateKeysCount = 0;
+  let invalidRevisionsCount = 0;
+
+  const validRows: SubmittalRow[] = [];
+  const seenKeyRevs = new Set<string>();
+
+  rowsToUse.forEach(r => {
+    const key = getBusinessEntityKey(r);
+    const rev = (r.rev || '').trim();
+    const keyRev = `${key}__REV__${rev}`;
+
+    if (!r.submissionDate) {
+      missingDatesCount++;
+      issues.push({ id: r.id, businessEntityKey: key, issueType: 'MISSING_DATE', description: 'Missing Submission Date', row: r });
+    }
+
+    if (!r.status && !r.recordStatus && !r.workflowStage && !(r as any).ncrStatus && !(r as any).sorStatus) {
+      blankStatusCount++;
+      issues.push({ id: r.id, businessEntityKey: key, issueType: 'BLANK_STATUS', description: 'Blank Status Code and Workflow Stage', row: r });
+    }
+
+    if (cutoffTime > 0 && r.submissionDate) {
+      const subTime = parseDateTimestamp(r.submissionDate);
+      if (subTime > cutoffTime) {
+        futureDatesCount++;
+        issues.push({ id: r.id, businessEntityKey: key, issueType: 'FUTURE_DATE', description: `Submission date (${r.submissionDate}) exceeds snapshot date (${asOfDate})`, row: r });
+        return; // Exclude from snapshot calculation
+      }
+    }
+
+    if (seenKeyRevs.has(keyRev)) {
+      duplicateKeysCount++;
+      issues.push({ id: r.id, businessEntityKey: key, issueType: 'DUPLICATE_REVISION', description: `Duplicate submission for Key: ${key} Rev: ${rev}`, row: r });
+    } else {
+      seenKeyRevs.add(keyRev);
+    }
+
+    if (rev && !isValidRevision(rev)) {
+      invalidRevisionsCount++;
+      issues.push({ id: r.id, businessEntityKey: key, issueType: 'INVALID_REVISION', description: `Invalid revision format: ${rev}`, row: r });
+    }
+
+    validRows.push(r);
+  });
+
+  const dataQuality: DataQualityLedger = {
+    issues,
+    missingDatesCount,
+    blankStatusCount,
+    futureDatesCount,
+    duplicateKeysCount,
+    invalidRevisionsCount,
+    totalIssuesCount: issues.length,
+  };
+
+  if (validRows.length === 0) {
+    return {
+      totalSubmittedSheets: 0,
+      totalSheetsRev0: 0,
+      totalSheetsFurtherRev: 0,
+      totalDrawingsRev0: 0,
+      totalDrawingsFurtherRev: 0,
+      totalRejectedRows: 0,
+      rejectedOpenRows: 0,
+      rejectedClosedRows: 0,
+      totalUniqueDrawings: 0,
+      currentApproved: 0,
+      currentRejectedOpen: 0,
+      currentRejectedClosed: 0,
+      currentRejected: 0,
+      currentPending: 0,
+      currentOpen: 0,
+      currentClosed: 0,
+      approved: 0,
+      rejectedOpen: 0,
+      rejectedClosed: 0,
+      totalRejected: 0,
+      pending: 0,
+      unclassified: 0,
+      rejectionEvents: 0,
+      rejectionEventsOpen: 0,
+      rejectionEventsClosed: 0,
+      resolvedRejections: 0,
+      rejectionResolutionRate: 0,
+      overdue: 0,
+      avgResponseTime: 0,
+      approvalRate: 0,
+      rejectionOpenRate: 0,
+      rejectionClosedRate: 0,
+      delayRate: 0,
+      isWorkloadReconciled: true,
+      isCurrentStateReconciled: true,
+      reconciliationPassed: true,
+      dataQuality,
+    };
+  }
+
+  // 1. WORKLOAD / SUBMISSION LAYER (Physical Source Rows - Record Grain)
+  const totalSubmittedSheets = validRows.length;
+  let totalSheetsRev0 = 0;
+  let totalSheetsFurtherRev = 0;
+  let totalRejectedRows = 0;
+  let rejectedOpenRows = 0;
+  let rejectedClosedRows = 0;
+
+  validRows.forEach(r => {
+    const revVal = normalizeCanonicalString(r.rev || (r as any).revision || (r as any).revNo);
+    const w = getRevisionWeight(revVal);
+    const isRev0 = (w === 0 && revVal !== 'AS-BUILT' && revVal !== 'IFC') || (r.isRev0 && w === 0);
+
+    if (isRev0) {
+      totalSheetsRev0++;
+    } else {
+      totalSheetsFurtherRev++;
+    }
+
+    // Historical Rejection Events (Row / Record Grain)
+    const rowStatusCat = getStatusCodeCategory(r);
+    if (rowStatusCat === 'REJECTED_OPEN') {
+      totalRejectedRows++;
+      rejectedOpenRows++;
+    } else if (rowStatusCat === 'REJECTED_CLOSED') {
+      totalRejectedRows++;
+      rejectedClosedRows++;
+    }
+  });
+
+  // 2. CURRENT STATE LAYER (Unique SUB Ref at Latest Valid Revision)
+  const baseForRevisions = fullDataset && fullDataset.length > 0 ? fullDataset : validRows;
+  const revisionMap = processRevisionEngine(baseForRevisions, asOfDate);
+
+  // Filter revision map to entities present in the current dataset
+  const targetEntityKeys = new Set(validRows.map(r => getBusinessEntityKey(r)));
+  
+  let approvedCurrent = 0;
+  let rejectedOpenCurrent = 0;
+  let rejectedClosedCurrent = 0;
+  let pendingCurrent = 0;
+  let unclassifiedCurrent = 0;
+  let resolvedRejections = 0;
+  let totalEntitiesWithRejectionHistory = 0;
+  let overdueCurrent = 0;
+  let slaEligibleActiveCount = 0;
+  let totalResponseDays = 0;
+  let responseCount = 0;
+
+  targetEntityKeys.forEach(entityKey => {
+    const groupInfo = revisionMap.get(entityKey);
+    if (!groupInfo) return;
+
+    if (groupInfo.hasRejection) {
+      totalEntitiesWithRejectionHistory++;
+      if (groupInfo.isResolved) {
+        resolvedRejections++;
+      }
+    }
+
+    const latest = groupInfo.latest;
+    const cat = getStatusCodeCategory(latest);
+
+    switch (cat) {
+      case 'APPROVED':
+        approvedCurrent++;
+        break;
+      case 'REJECTED_OPEN':
+        rejectedOpenCurrent++;
+        break;
+      case 'REJECTED_CLOSED':
+        rejectedClosedCurrent++;
+        break;
+      case 'PENDING':
+        pendingCurrent++;
+        break;
+      case 'UNCLASSIFIED':
+      default:
+        unclassifiedCurrent++;
+        break;
+    }
+
+    // SLA & Overdue: Only evaluate current active items (Pending or Rejected Open)
+    const isActive = cat === 'PENDING' || cat === 'REJECTED_OPEN';
+    if (isActive) {
+      const nowTime = cutoffTime > 0 ? cutoffTime : Date.now();
+      let isItemOverdue = false;
+      if (latest.overdue !== undefined) {
+        isItemOverdue = Boolean(latest.overdue);
+      } else if (latest.dueDate) {
+        slaEligibleActiveCount++;
+        const dueTime = parseDateTimestamp(latest.dueDate);
+        if (dueTime > 0 && nowTime > dueTime) {
+          isItemOverdue = true;
+        }
+      } else if (latest.submissionDate) {
+        const subTime = parseDateTimestamp(latest.submissionDate);
+        if (subTime > 0) {
+          const diffDays = (nowTime - subTime) / (1000 * 3600 * 24);
+          if (diffDays > 14) {
+            isItemOverdue = true;
+          }
+        }
+      }
+      if (isItemOverdue) {
+        overdueCurrent++;
+      }
+    }
+
+    // Turnaround time calculation for closed items
+    if (latest.submissionDate && latest.responseDate) {
+      const start = parseDateTimestamp(latest.submissionDate);
+      const end = parseDateTimestamp(latest.responseDate);
+      if (end >= start) {
+        const days = Math.round((end - start) / (1000 * 3600 * 24));
+        totalResponseDays += days;
+        responseCount++;
+      }
+    }
+  });
+
+  const totalUniqueDrawings = targetEntityKeys.size;
+  const totalEligible = approvedCurrent + rejectedOpenCurrent + rejectedClosedCurrent + pendingCurrent + unclassifiedCurrent;
+  const activeCurrentItems = pendingCurrent + rejectedOpenCurrent;
+  const overdueFinal = Math.min(overdueCurrent, activeCurrentItems);
+  const overdueRateOnActive = activeCurrentItems > 0 ? Number(((overdueFinal / activeCurrentItems) * 100).toFixed(1)) : 0;
+
+  const approvalRate = totalEligible > 0 ? (approvedCurrent / totalEligible) * 100 : 0;
+  const rejectionOpenRate = totalEligible > 0 ? (rejectedOpenCurrent / totalEligible) * 100 : 0;
+  const rejectionClosedRate = totalEligible > 0 ? (rejectedClosedCurrent / totalEligible) * 100 : 0;
+  const delayRate = totalEligible > 0 ? (overdueFinal / totalEligible) * 100 : 0;
+  const rejectionResolutionRate = totalEntitiesWithRejectionHistory > 0 ? (resolvedRejections / totalEntitiesWithRejectionHistory) * 100 : 0;
+  const avgResponseTime = responseCount > 0 ? Number((totalResponseDays / responseCount).toFixed(1)) : 0;
+
+  // Invariant & Reconciliation Checks
+  const isWorkloadReconciled = totalSubmittedSheets === (totalSheetsRev0 + totalSheetsFurtherRev);
+  const isCurrentStateReconciled = totalUniqueDrawings === totalEligible;
+  const isOverdueValidSubset = overdueFinal <= activeCurrentItems;
+  const reconciliationPassed = isWorkloadReconciled && isCurrentStateReconciled && isOverdueValidSubset;
+
+  return {
+    // 1. Workload / Physical Row Grain
+    totalSubmittedSheets,
+    totalSheetsRev0,
+    totalSheetsFurtherRev,
+    totalDrawingsRev0: totalSheetsRev0,
+    totalDrawingsFurtherRev: totalSheetsFurtherRev,
+    totalRejectedRows,
+    rejectedOpenRows,
+    rejectedClosedRows,
+
+    // Historical Aliases
+    rejectionEvents: totalRejectedRows,
+    rejectionEventsOpen: rejectedOpenRows,
+    rejectionEventsClosed: rejectedClosedRows,
+    resolvedRejections,
+    rejectionResolutionRate,
+
+    // 2. Current Unique Item Grain (Latest Valid Revision)
+    totalUniqueDrawings,
+    currentApproved: approvedCurrent,
+    currentRejectedOpen: rejectedOpenCurrent,
+    currentRejectedClosed: rejectedClosedCurrent,
+    currentRejected: rejectedOpenCurrent + rejectedClosedCurrent,
+    currentPending: pendingCurrent,
+    currentOpen: pendingCurrent + rejectedOpenCurrent,
+    currentClosed: approvedCurrent + rejectedClosedCurrent,
+
+    // Standard & Backwards Compatible Aliases
+    approved: approvedCurrent,
+    rejectedOpen: rejectedOpenCurrent,
+    rejectedClosed: rejectedClosedCurrent,
+    totalRejected: rejectedOpenCurrent + rejectedClosedCurrent,
+    pending: pendingCurrent,
+    unclassified: unclassifiedCurrent,
+
+    // 3. Overdue & Performance Metrics
+    activeItems: activeCurrentItems,
+    activeCurrentItems,
+    slaEligibleActiveItems: slaEligibleActiveCount,
+    overdue: overdueFinal,
+    overdueRateOnActive,
+    avgResponseTime,
+    approvalRate,
+    rejectionOpenRate,
+    rejectionClosedRate,
+    delayRate,
+
+    // 4. Mathematical Invariants & Reconciliation
+    isWorkloadReconciled,
+    isCurrentStateReconciled,
+    reconciliationPassed,
+    dataQuality,
+  };
+}
+
+/**
+ * 5. Canonical calculateStats wrapper (Backwards Compatible SSOT)
+ */
+export function calculateStats(data: SubmittalRow[], fullDataset?: SubmittalRow[]): KPIStats & { totalUniqueDrawings: number } {
+  return calculateCanonicalKPIs(data, fullDataset);
+}
+
+/**
+ * 6. Canonical Dataset Builder
  */
 export function buildCanonicalDataset(rows: SubmittalRow[], fullCumulativeRows?: SubmittalRow[], cutoffDate?: string): CanonicalRecord[] {
   const baseRows = fullCumulativeRows && fullCumulativeRows.length > 0 ? fullCumulativeRows : rows;
   const revisionMap = processRevisionEngine(baseRows, cutoffDate);
-  
-  const isRev0Map = new Map<string, boolean>();
-  const firstSubDateMap = new Map<string, string>();
-  const isLatestMap = new Map<string, boolean>();
 
-  revisionMap.forEach((groupInfo) => {
-    groupInfo.all.forEach((row, index) => {
-      const isRowRev0 = isValidRevision(row.rev) && getRevisionWeight(row.rev) === 0;
-      isRev0Map.set(row.id, isRowRev0);
-      if (index === 0) {
-        firstSubDateMap.set(row.id, row.submissionDate || '');
-      }
-      isLatestMap.set(row.id, groupInfo.latest.id === row.id);
-    });
-  });
-
-  const cutoffTime = parseDateTimestamp(cutoffDate);
   const canonicalRecords: CanonicalRecord[] = [];
+  const cutoffTime = parseDateTimestamp(cutoffDate);
 
   rows.forEach(row => {
     if (cutoffTime > 0 && row.submissionDate) {
       const subTime = parseDateTimestamp(row.submissionDate);
-      if (subTime > cutoffTime) {
-        return;
-      }
+      if (subTime > cutoffTime) return;
     }
 
     const businessEntityKey = getBusinessEntityKey(row);
-    const isHistoricalRev0 = isRev0Map.get(row.id) ?? (compareRevisions(row.rev, '0') === 0 || row.rev === '0' || row.rev === '00');
-    const firstSubDate = firstSubDateMap.get(row.id) || row.submissionDate || '';
-    const isLatest = isLatestMap.get(row.id) ?? true;
+    const groupInfo = revisionMap.get(businessEntityKey);
+    const isLatest = groupInfo ? groupInfo.latest.id === row.id : true;
+    const revVal = (row.rev || '').trim();
+    const isRev0 = isValidRevision(revVal) && getRevisionWeight(revVal) === 0;
 
     const registerType = (row.documentType || row.logType || 'DOC').toUpperCase().trim();
-    let resolvedStatus = getResolvedStatusCategory(row);
-    const revStr = (row.rev || '').trim();
-
-    // Document Control workflow rule:
-    // Latest submission with pending status must be PENDING,
-    // overriding any historical consultant decisions from earlier revisions.
-    if (isLatest) {
-      const rawStatus = row.status || row.recordStatus || (row as any).ncrStatus || (row as any).sorStatus || '';
-      const cat = getStatusCodeCategory(rawStatus);
-      const statusStr = rawStatus.toUpperCase().trim();
-      const isPendingStatus = !statusStr || statusStr === 'W' || statusStr.includes('PEND') || statusStr.includes('WAIT') || statusStr.includes('AWAI') || cat === 'PENDING';
-      if (isPendingStatus) {
-        resolvedStatus = 'PENDING';
-      }
-    }
+    const resolvedStatus = getStatusCodeCategory(row);
 
     canonicalRecords.push({
       id: row.id,
       originalRow: row,
       registerType,
       businessEntityKey,
-      revision: revStr,
+      revision: revVal,
       submissionDate: row.submissionDate || '',
       responseDate: row.responseDate || '',
       status: row.status || '',
       resolvedStatus,
       isLatestRevision: isLatest,
-      isRev0: isHistoricalRev0,
-      isHistoricalRev0,
-      firstSubmissionDate: firstSubDate,
+      isRev0,
+      isHistoricalRev0: isRev0,
+      hadRejectionHistory: groupInfo ? groupInfo.hasRejection : false,
+      isResolvedRejection: groupInfo ? groupInfo.isResolved : false,
+      firstSubmissionDate: groupInfo && groupInfo.all.length > 0 ? groupInfo.all[0].submissionDate : (row.submissionDate || ''),
       includeInSubmission: true,
       includeInPerformance: isLatest,
     });
@@ -242,35 +564,26 @@ export function buildCanonicalDataset(rows: SubmittalRow[], fullCumulativeRows?:
   return canonicalRecords;
 }
 
-function getResolvedStatusCategory(row: SubmittalRow): 'APPROVED' | 'REJECTED_OPEN' | 'REJECTED_CLOSED' | 'PENDING' {
-  const cat = getStatusCodeCategory(row);
-  if (cat === 'APPROVED') return 'APPROVED';
-  if (cat === 'REJECTED_OPEN') return 'REJECTED_OPEN';
-  if (cat === 'REJECTED_CLOSED') return 'REJECTED_CLOSED';
-
-  const rawStatus = row.status || row.recordStatus || (row as any).ncrStatus || (row as any).sorStatus || '';
-  const statusStr = rawStatus.toUpperCase().trim();
-  const workflow = (row.workflowStage || '').toUpperCase().trim();
-  
-  if (statusStr === 'D' || statusStr === 'CODE D' || statusStr.includes('CODE D') || statusStr.includes('DISAPPROVED')) {
-    return 'REJECTED_CLOSED';
-  }
-
-  if (['APPROVED', 'ACCEPTED', 'CODE A', 'CODE B', 'A', 'B'].includes(statusStr) || workflow.includes('APPROV')) {
-    return 'APPROVED';
-  }
-  if (['REJECTED', 'CODE C', 'C', 'REJECT'].includes(statusStr) || workflow.includes('REJECT')) {
-    if (statusStr.includes('CLOSE') || row.recordStatus?.toUpperCase() === 'CLOSED') {
-      return 'REJECTED_CLOSED';
-    }
-    return 'REJECTED_OPEN';
-  }
-  return 'PENDING';
+export function evaluateSubmissionLayer(canonicalRecords: CanonicalRecord[], fullCumulativeRows?: SubmittalRow[]) {
+  const kpi = calculateCanonicalKPIs(canonicalRecords.map(r => r.originalRow), fullCumulativeRows);
+  return {
+    totalSubmitted: kpi.totalSubmittedSheets,
+    rev00: kpi.totalSheetsRev0,
+    furtherRevisions: kpi.totalSheetsFurtherRev,
+  };
 }
 
-/**
- * 4. Submission & Engineering Item Layer Calculations
- */
+export function evaluatePerformanceLayer(canonicalRecords: CanonicalRecord[]) {
+  const kpi = calculateCanonicalKPIs(canonicalRecords.map(r => r.originalRow));
+  return {
+    totalUniqueItems: kpi.totalUniqueDrawings || 0,
+    approved: kpi.approved,
+    rejectedOpen: kpi.rejectedOpen,
+    rejectedClosed: kpi.rejectedClosed,
+    pending: kpi.pending,
+  };
+}
+
 export interface EngineeringItemClassification {
   businessEntityKey: string;
   trade: string;
@@ -361,118 +674,6 @@ export function evaluateEngineeringItemClassification(rows: SubmittalRow[]): Eng
   return results;
 }
 
-export function evaluateSubmissionLayer(canonicalRecords: CanonicalRecord[], fullCumulativeRows?: SubmittalRow[]): SubmissionLayerResult {
-  const baseRows = fullCumulativeRows && fullCumulativeRows.length > 0 ? fullCumulativeRows : canonicalRecords.map(r => r.originalRow);
-  const items = evaluateEngineeringItemClassification(baseRows);
-
-  const canonicalKeys = new Set(canonicalRecords.map(r => r.businessEntityKey));
-  const filteredItems = items.filter(i => canonicalKeys.has(i.businessEntityKey));
-
-  let rev00 = 0;
-  let furtherRevisions = 0;
-
-  filteredItems.forEach(item => {
-    if (item.classification === 'Rev00') {
-      rev00++;
-    } else {
-      furtherRevisions++;
-    }
-  });
-
-  const totalUniqueItems = filteredItems.length;
-  if (rev00 + furtherRevisions !== totalUniqueItems) {
-    throw new Error(`Engineering Item Validation Error: Invariant violated (Rev00: ${rev00} + Further: ${furtherRevisions} !== TotalUnique: ${totalUniqueItems})`);
-  }
-
-  return {
-    totalSubmitted: canonicalRecords.filter(r => r.includeInSubmission).length,
-    rev00,
-    furtherRevisions,
-  };
-}
-
-/**
- * 5. Performance Layer Calculations
- */
-export function evaluatePerformanceLayer(canonicalRecords: CanonicalRecord[]): PerformanceLayerResult {
-  const entityMap = new Map<string, CanonicalRecord[]>();
-  canonicalRecords.forEach(r => {
-    if (!entityMap.has(r.businessEntityKey)) {
-      entityMap.set(r.businessEntityKey, []);
-    }
-    entityMap.get(r.businessEntityKey)!.push(r);
-  });
-
-  const performanceRows: CanonicalRecord[] = [];
-  entityMap.forEach((records) => {
-    const sorted = [...records].sort((a, b) => {
-      const timeA = parseDateTimestamp(a.submissionDate);
-      const timeB = parseDateTimestamp(b.submissionDate);
-      if (timeA !== timeB) return timeA - timeB;
-      return compareRevisions(a.revision, b.revision);
-    });
-    const latest = sorted[sorted.length - 1];
-    const latestRevision = latest.revision;
-    // Iterate through every physical drawing row belonging to the latest submission workflow
-    const latestWorkflowRows = sorted.filter(r => r.revision === latestRevision);
-
-    latestWorkflowRows.forEach(row => {
-      let resolved = row.resolvedStatus;
-      const rawStatus = row.status || (row.originalRow ? row.originalRow.recordStatus || (row.originalRow as any).ncrStatus || (row.originalRow as any).sorStatus : '') || '';
-      const cat = getStatusCodeCategory(rawStatus);
-      const statusStr = rawStatus.toUpperCase().trim();
-      const isPendingStatus = !statusStr || statusStr === 'W' || statusStr.includes('PEND') || statusStr.includes('WAIT') || statusStr.includes('AWAI') || cat === 'PENDING';
-      if (isPendingStatus) {
-        resolved = 'PENDING';
-      }
-
-      performanceRows.push({
-        ...row,
-        resolvedStatus: resolved
-      });
-    });
-  });
-
-  const totalUniqueItems = performanceRows.length;
-
-  let approved = 0;
-  let rejectedOpen = 0;
-  let rejectedClosed = 0;
-  let pending = 0;
-
-  performanceRows.forEach(r => {
-    switch (r.resolvedStatus) {
-      case 'APPROVED':
-        approved++;
-        break;
-      case 'REJECTED_OPEN':
-        rejectedOpen++;
-        break;
-      case 'REJECTED_CLOSED':
-        rejectedClosed++;
-        break;
-      case 'PENDING':
-      default:
-        pending++;
-        break;
-    }
-  });
-
-  // 6. Mathematical Invariants: Performance
-  const sumPerformance = approved + rejectedOpen + rejectedClosed + pending;
-  if (sumPerformance !== totalUniqueItems) {
-    throw new Error(`Calculation Exception: Performance invariant violated (Approved: ${approved} + RejOpen: ${rejectedOpen} + RejClosed: ${rejectedClosed} + Pending: ${pending} !== TotalUnique: ${totalUniqueItems})`);
-  }
-
-  return {
-    totalUniqueItems,
-    approved,
-    rejectedOpen,
-    rejectedClosed,
-    pending,
-  };
-}
-
 export interface PerformanceValidationRow {
   businessEntityKey: string;
   latestRevision: string;
@@ -482,9 +683,6 @@ export interface PerformanceValidationRow {
   includedInPerformance: boolean;
 }
 
-/**
- * Get Performance Validation Rows for UI preview and CSV export
- */
 export function getPerformanceValidationRows(rows: SubmittalRow[]): PerformanceValidationRow[] {
   const canonical = buildCanonicalDataset(rows, rows);
   const entityMap = new Map<string, CanonicalRecord[]>();
@@ -518,9 +716,236 @@ export function getPerformanceValidationRows(rows: SubmittalRow[]): PerformanceV
   return result;
 }
 
-/**
- * Export Performance Validation CSV
- */
+export interface CanonicalTradeResolution {
+  trade: string;
+  tradeShort: string;
+  presentationDisc: string;
+}
+
+export function resolveCanonicalTrade(row: SubmittalRow): CanonicalTradeResolution {
+  if (!row) {
+    return { trade: 'General', tradeShort: '', presentationDisc: 'GENERAL' };
+  }
+
+  const checkText = (text?: string): CanonicalTradeResolution | null => {
+    if (!text) return null;
+    const clean = text.trim().toUpperCase();
+    if (!clean || ["YES", "NO", "N/A", "-", "NONE", "NULL", "UNCLASSIFIED", "GENERAL", "GEN"].includes(clean)) {
+      return null;
+    }
+
+    if (clean.includes('STR/SUR') || clean.includes('STR-SUR')) {
+      return { trade: 'Structural / Survey', tradeShort: 'STR', presentationDisc: 'STR/SUR' };
+    }
+
+    // Infrastructure (checked before Structural to avoid 'STRUCT' substring in INFRASTRUCTURE)
+    if (
+      clean === 'INF' || clean === 'INFRA' || clean.startsWith('INFRA') || clean === 'INFR' ||
+      clean.includes('INFRASTRUCTURE') || clean.includes('UTILITIES') ||
+      clean.includes('بنية تحتية') || clean.includes('طرق') || clean.includes('مرافق')
+    ) {
+      return { trade: 'Infrastructure', tradeShort: 'INFRA', presentationDisc: 'Infra' };
+    }
+
+    // Structural
+    if (
+      clean === 'STR' || clean === 'STRUCT' || clean.startsWith('STRUCTUR') ||
+      clean === 'CIVIL' || clean === 'CVL' || clean.startsWith('CIVIL') ||
+      clean.includes('إنشائي') || clean.includes('انشائي') || clean.includes('مدني') || clean.includes('مدنى')
+    ) {
+      return { trade: 'Structural', tradeShort: 'STR', presentationDisc: 'STR' };
+    }
+
+    // Architectural
+    if (
+      clean === 'ARC' || clean === 'ARCH' || clean.startsWith('ARCHITECT') ||
+      clean.includes('معماري') || clean.includes('معمارى')
+    ) {
+      return { trade: 'Architectural', tradeShort: 'ARC', presentationDisc: 'Arch' };
+    }
+
+    // Mechanical
+    if (
+      clean === 'MEC' || clean === 'MECH' || clean.startsWith('MECHANIC') || clean === 'HVAC' ||
+      clean.includes('ميكانيك') || clean.includes('ميكانيكا') || clean.includes('تكييف')
+    ) {
+      return { trade: 'Mechanical', tradeShort: 'MEC', presentationDisc: 'Mech' };
+    }
+
+    // Electrical
+    if (
+      clean === 'ELE' || clean === 'ELEC' || clean.startsWith('ELECTR') ||
+      clean.includes('كهرباء') || clean.includes('كهربائي') || clean.includes('كهربائى')
+    ) {
+      return { trade: 'Electrical', tradeShort: 'ELE', presentationDisc: 'Elec' };
+    }
+
+    // MEP
+    if (
+      clean === 'MEP' || clean === 'M.E.P' ||
+      clean.includes('كهروميكانيك') || clean.includes('اليكتروميكانيك') || clean.includes('الكتروميكانيك')
+    ) {
+      return { trade: 'MEP', tradeShort: 'MEP', presentationDisc: 'MEP' };
+    }
+
+    // Landscape
+    if (
+      clean === 'LAND' || clean === 'LND' || clean.startsWith('LANDSCAP') || clean === 'LNDSCP' ||
+      clean.includes('لاندسكيب') || clean.includes('تنسيق مواقع') || clean.includes('تنسيق الموقع') ||
+      clean.includes('حدائق') || clean.includes('زراعة')
+    ) {
+      return { trade: 'Landscape', tradeShort: 'LAND', presentationDisc: 'Landscape' };
+    }
+
+    // Survey
+    if (
+      clean === 'SUR' || clean === 'SURV' || clean.startsWith('SURVEY') ||
+      clean.includes('مساحة') || clean.includes('مساحه')
+    ) {
+      return { trade: 'Survey', tradeShort: 'SUR', presentationDisc: 'SURVEY' };
+    }
+
+    // HSE / Safety
+    if (
+      clean === 'HSE' || clean === 'SAFETY' || clean === 'HEALTH' || clean === 'ENV' ||
+      clean.includes('سلامة') || clean.includes('سلامه') || clean.includes('بيئة') || clean.includes('بيئه')
+    ) {
+      return { trade: 'HSE', tradeShort: 'HSE', presentationDisc: 'HSE' };
+    }
+
+    // Irrigation
+    if (
+      clean === 'IRR' || clean.startsWith('IRRIGAT') || clean.includes('ري') || clean.includes('رى')
+    ) {
+      return { trade: 'Irrigation', tradeShort: 'IRR', presentationDisc: 'IRR' };
+    }
+
+    return null;
+  };
+
+  // 1. Priority: Explicit discipline from raw row
+  const fromDisc = checkText(row.discipline);
+  if (fromDisc) return fromDisc;
+
+  // 2. Priority: Explicit trade from raw row
+  const fromTrade = checkText(row.trade);
+  if (fromTrade) return fromTrade;
+
+  // 3. Priority: contextDiscipline or compositeIdentity
+  const fromContext = checkText((row as any).contextDiscipline) || checkText((row as any).compositeIdentity?.discipline);
+  if (fromContext) return fromContext;
+
+  // 4. Priority: tradeShort from previous step
+  const fromTradeShort = checkText((row as any).tradeShort);
+  if (fromTradeShort) return fromTradeShort;
+
+  // 5. Priority: documentType suffix (e.g. SDW-STR -> STR)
+  if (row.documentType) {
+    const parts = row.documentType.split(/[-_/ ]+/);
+    if (parts.length > 1) {
+      const suffix = parts[parts.length - 1];
+      const fromDocType = checkText(suffix);
+      if (fromDocType) return fromDocType;
+    }
+  }
+
+  // 6. Priority: Strict Token match in docNo (ONLY isolated token like "-STR-", "-ARC-", never substring)
+  if (row.docNo) {
+    let tokens = row.docNo.split(/[-_ \/(),&.]+/).filter(Boolean);
+    // If docNo starts with contractor-consultant prefix INN-ARC or INN-ACE, strip it so partner prefix does not contaminate discipline
+    if (tokens.length > 2 && tokens[0].toUpperCase() === 'INN' && (tokens[1].toUpperCase() === 'ARC' || tokens[1].toUpperCase() === 'ACE')) {
+      tokens = tokens.slice(2);
+    }
+    for (const t of tokens) {
+      const fromToken = checkText(t);
+      if (fromToken) return fromToken;
+    }
+  }
+
+  const rawD = (row.discipline || row.trade || '').trim();
+  return {
+    trade: rawD || 'General',
+    tradeShort: '',
+    presentationDisc: rawD || 'GENERAL'
+  };
+}
+
+export function resolveRowDiscipline(row: SubmittalRow, baseType?: string): string {
+  if (!row) return 'GENERAL';
+  const resolved = resolveCanonicalTrade(row);
+  return resolved.presentationDisc;
+}
+
+export function calculateNCRStats(data: SubmittalRow[], fullDataset?: SubmittalRow[] | boolean): any {
+  const dataset = Array.isArray(fullDataset) ? fullDataset : undefined;
+  const kpi = calculateCanonicalKPIs(data, dataset);
+  return {
+    ...kpi,
+    discipline: '',
+    totalUnique: kpi.totalUniqueDrawings,
+    notSent: 0,
+    underReview: kpi.pending,
+    rejectedOpen: kpi.rejectedOpen,
+    approvedClosed: kpi.approved,
+    open: kpi.pending + kpi.rejectedOpen,
+    closed: kpi.approved + kpi.rejectedClosed,
+    approved: kpi.approved,
+    rejected: kpi.rejectedOpen,
+    waiting: kpi.pending,
+  };
+}
+
+export function calculateSORStats(data: SubmittalRow[], fullDataset?: SubmittalRow[] | boolean): any {
+  const dataset = Array.isArray(fullDataset) ? fullDataset : undefined;
+  const kpi = calculateCanonicalKPIs(data, dataset);
+  return {
+    ...kpi,
+    discipline: '',
+    totalUnique: kpi.totalUniqueDrawings,
+    notSent: 0,
+    underReview: kpi.pending,
+    rejectedOpen: kpi.rejectedOpen,
+    approvedClosed: kpi.approved,
+    open: kpi.pending + kpi.rejectedOpen,
+    closed: kpi.approved + kpi.rejectedClosed,
+    approved: kpi.approved,
+    rejected: kpi.rejectedOpen,
+    waiting: kpi.pending,
+  };
+}
+
+export function calculateLTRStats(data: SubmittalRow[], fullDataset?: SubmittalRow[] | boolean): any {
+  const dataset = Array.isArray(fullDataset) ? fullDataset : undefined;
+  const kpi = calculateCanonicalKPIs(data, dataset);
+  let inCount = 0;
+  let outCount = 0;
+  (data || []).forEach(r => {
+    const dir = ((r as any).direction || (r as any).letterDirection || '').toUpperCase();
+    if (dir === 'IN' || (r as any).direction === 'IN') {
+      inCount++;
+    } else if (dir === 'OUT' || (r as any).direction === 'OUT') {
+      outCount++;
+    } else {
+      inCount++;
+    }
+  });
+  return {
+    ...kpi,
+    totalDrawingsRev0: inCount,
+    totalDrawingsFurtherRev: outCount,
+    totalSheetsRev0: inCount,
+    totalSheetsFurtherRev: outCount,
+    stakeholder: '',
+    totalUnique: kpi.totalUniqueDrawings,
+    open: kpi.pending + kpi.rejectedOpen,
+    closed: kpi.approved + kpi.rejectedClosed,
+    approved: kpi.approved,
+    rejected: kpi.rejectedOpen,
+    pending: kpi.pending,
+    overdue: kpi.overdue,
+  };
+}
+
 export function exportPerformanceValidationCsv(rows: SubmittalRow[]): string {
   const perfRows = getPerformanceValidationRows(rows);
   let csv = 'BusinessEntityKey,Latest Revision,Latest Submission Date,Latest Status,Resolved Status,Included In Performance\n';

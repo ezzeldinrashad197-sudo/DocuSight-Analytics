@@ -1,6 +1,6 @@
 import { AnyRecord } from './models';
 import { compareRevisions, isValidRevision } from './analyticsCore';
-import { getRevisionWeight } from '../utils/enterpriseUpgradeEngine';
+import { getRevisionWeight } from './revisionResolver';
 
 /**
  * Calculates which records are the latest revision, and flags Rev0 based on Latest Resolved Revision.

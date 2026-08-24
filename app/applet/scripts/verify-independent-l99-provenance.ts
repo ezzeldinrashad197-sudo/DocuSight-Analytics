@@ -19,7 +19,7 @@ const EXPECTED_GOLDEN_CANONICAL_SHA256 = '0df9f688e1bc989fce9d3434faeb66016be41d
 
 export function runIndependentProvenanceTest() {
   console.log('===================================================================================');
-  console.log('DOCUSIGHT — INDEPENDENT L99 PROVENANCE & DECOUPLED IDENTITY EQUALITY GATE');
+  console.log('STRUCTUSIGHT — INDEPENDENT L99 PROVENANCE & DECOUPLED IDENTITY EQUALITY GATE');
   console.log('===================================================================================\n');
 
   // 1. Load Original Authoritative Master Finding Specification

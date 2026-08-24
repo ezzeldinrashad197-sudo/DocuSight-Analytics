@@ -2,7 +2,7 @@ import * as crypto from 'crypto';
 import { MASTER_28_FINDINGS } from './reconcile-l99-audit';
 
 console.log('===================================================================================');
-console.log('DOCUSIGHT — EXECUTING L99 28-FINDING IMMUTABLE IDENTITY EQUALITY TEST');
+console.log('STRUCTUSIGHT — EXECUTING L99 28-FINDING IMMUTABLE IDENTITY EQUALITY TEST');
 console.log('===================================================================================');
 
 // Expected 28 Master IDs in exact order

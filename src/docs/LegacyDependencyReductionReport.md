@@ -1,4 +1,4 @@
-# DocuSight Analytics – Legacy Dependency Reduction Report
+# StructuSight Analytics – Legacy Dependency Reduction Report
 
 This report tracks the reduction of legacy code paths as we execute the progressive **Runtime Activation Phase**. In accordance with your strict instructions, migration must happen module-by-module without bulk transitions. Only after a module completes its dual-execution parity validation is it certified, and its legacy calls are safely replaced.
 

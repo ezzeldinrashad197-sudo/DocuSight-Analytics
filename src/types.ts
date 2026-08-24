@@ -51,6 +51,8 @@ export interface SubmittalRow {
   area: string;
   tradeSystem: string;
 
+  priority?: 'CRITICAL' | 'NORMAL' | string;
+
   // NCR/SOR Specific fields
   ncrRef?: string;
   ncrLastRev?: string;
@@ -116,23 +118,58 @@ export interface CompositeIdentity {
 }
 
 export interface KPIStats {
-  totalSubmittedSheets: number;
-  totalDrawingsRev0: number; // Unique Document Numbers in Rev 0
-  totalDrawingsFurtherRev: number;
-  totalSheetsRev0: number;
-  totalSheetsFurtherRev: number;
-  totalUniqueDrawings?: number;
-  
-  approved: number;
-  rejectedOpen: number;
-  rejectedClosed: number;
-  pending: number;
-  
-  overdue: number;       // Pending and today > due date
-  avgResponseTime: number; // Days
+  // 1. Workload / Physical Row Metrics (Row / Record Grain)
+  totalSubmittedSheets: number; // Total Rows / Sheets submitted
+  totalSheetsRev0: number;      // Rows with Rev = 0
+  totalSheetsFurtherRev: number; // Rows with Rev > 0
+  totalDrawingsRev0: number;    // Legacy alias
+  totalDrawingsFurtherRev: number; // Legacy alias
+
+  // Row-Level Workload Rejection Metrics (Grain: Row / Physical Submission Event)
+  totalRejectedRows: number;    // Total rows with Rejected Status (Open or Closed)
+  rejectedOpenRows: number;     // Total rows with Rejected Open Status (e.g. Code C Open)
+  rejectedClosedRows: number;   // Total rows with Rejected Closed Status (e.g. Code C Closed, Code D)
+
+  // 2. Current State Metrics (Grain: Unique Entity / Latest Valid Revision)
+  totalUniqueDrawings: number;  // Total Unique SUB Ref
+  currentApproved: number;      // Current Approved Items (Unique grain)
+  currentRejectedOpen: number;  // Current Rejected Open Items (Unique grain)
+  currentRejectedClosed: number;// Current Rejected Closed Items (Unique grain)
+  currentRejected: number;      // Current Rejected Items (Unique grain: Open + Closed)
+  currentPending: number;       // Current Pending Items (Unique grain)
+  currentOpen: number;          // Current Open Items (Unique grain: Pending + Rejected Open)
+  currentClosed: number;        // Current Closed Items (Unique grain: Approved + Rejected Closed)
+
+  // Standard & Backwards Compatible Aliases
+  approved: number;             // Approved Current Items (Alias for currentApproved)
+  rejectedOpen: number;         // Rejected Open Current Items (Alias for currentRejectedOpen)
+  rejectedClosed: number;       // Rejected Closed Current Items (Alias for currentRejectedClosed)
+  totalRejected?: number;       // Rejected Open + Rejected Closed (Combined)
+  pending: number;              // Pending Current Items (Alias for currentPending)
+  unclassified?: number;        // Unclassified Current Items
+
+  // 3. Historical Rejection Events & Resolution Metrics
+  rejectionEvents?: number;        // Total rows with Code C/D (Alias for totalRejectedRows)
+  rejectionEventsOpen?: number;    // Rows with Status=Open & Code C/D (Alias for rejectedOpenRows)
+  rejectionEventsClosed?: number;  // Rows with Status=Closed & Code C/D (Alias for rejectedClosedRows)
+  resolvedRejections?: number;     // Unique SUB Ref with past C/D now Approved
+  rejectionResolutionRate?: number;// Resolution percentage
+
+  // 4. Overdue & Performance (Derived Attribute on Active Population)
+  activeItems?: number;               // Pending + Rejected Open
+  activeCurrentItems?: number;        // Pending + Rejected Open (Alias)
+  slaEligibleActiveItems?: number;    // Active items with defined SLA
+  overdue: number;                    // Current Active items > SLA
+  overdueRateOnActive?: number;       // (Overdue / Active Current Items) * 100
+  avgResponseTime: number;            // Days
 
   approvalRate: number;
   rejectionOpenRate: number;
   rejectionClosedRate: number;
   delayRate: number;
+  
+  // 5. Mathematical Reconciliation Verification
+  isWorkloadReconciled?: boolean;
+  isCurrentStateReconciled?: boolean;
+  reconciliationPassed?: boolean;
 }

@@ -25,8 +25,10 @@ export function getPieLabelTranslator(name: string, language: 'ar' | 'en') {
   if (language !== 'ar') return name;
   const lower = name.toUpperCase().trim();
   if (lower === 'APPROVED') return 'معتمد';
-  if (lower === 'REJECTED') return 'مرفوض';
-  if (lower === 'PENDING') return 'معلق';
+  if (lower === 'REJECTED' || lower === 'TOTAL REJECTED' || lower === 'TOTAL REJ.') return 'إجمالي المرفوض';
+  if (lower === 'REJECTED OPEN' || lower === 'REJ. OPEN' || lower === 'OPEN REJECTIONS') return 'مرفوض مفتوح';
+  if (lower === 'REJECTED CLOSED' || lower === 'REJ. CLOSED' || lower === 'CLOSED REJECTIONS') return 'مرفوض مغلق';
+  if (lower === 'PENDING' || lower === 'PENDING REVIEW') return 'معلق';
   if (lower === 'CLOSED') return 'مغلق';
   if (lower === 'OPEN') return 'مفتوح';
   if (lower === 'SENT') return 'الصادر';
@@ -37,13 +39,20 @@ export function getPieLabelTranslator(name: string, language: 'ar' | 'en') {
 export function getColLabel(label: string, language: 'ar' | 'en') {
   if (language !== 'ar') return label;
   const lower = label.toUpperCase().trim();
-  if (lower === 'ITEMS') return 'البنود';
-  if (lower === 'TOTAL REV.00' || lower === 'TOTAL REV00') return 'إجمالي مراجعة 00';
-  if (lower === 'TOTAL FURTHER REV.') return 'إجمالي مراجعات لاحقة';
-  if (lower === 'TOTAL') return 'الإجمالي';
+  if (lower === 'ITEMS' || lower === 'DISCIPLINE') return 'البنود / التخصص';
+  if (lower === 'TOTAL SUBMITTALS' || lower === 'WORKLOAD' || lower === 'WORKLOAD SHEETS') return 'حجم العمل (الصفحات)';
+  if (lower === 'TOTAL SHEETS REV.00' || lower === 'TOTAL REV.00' || lower === 'TOTAL REV00' || lower === 'REV 00' || lower === 'REV.00') return 'مراجعة 00';
+  if (lower === 'TOTAL SHEETS FURTHER REV.' || lower === 'TOTAL FURTHER REV.' || lower === 'FURTHER REV' || lower === 'FURTHER REV.') return 'مراجعات لاحقة';
+  if (lower === 'TOTAL' || lower === 'TOTAL UNIQUE' || lower === 'UNIQUE ITEMS') return 'البنود الفريدة';
   if (lower === 'APPROVED') return 'معتمد';
   if (lower === 'REJECTED') return 'مرفوض';
+  if (lower === 'REJECTED OPEN' || lower === 'REJ. OPEN') return 'مرفوض مفتوح';
+  if (lower === 'REJECTED CLOSED' || lower === 'REJ. CLOSED') return 'مرفوض مغلق';
+  if (lower === 'TOTAL REJECTED' || lower === 'TOTAL REJ.') return 'إجمالي المرفوض';
   if (lower === 'PENDING') return 'معلق';
+  if (lower === 'ACTIVE' || lower === 'ACTIVE ITEMS') return 'النشط';
+  if (lower === 'OVERDUE') return 'متأخر';
+  if (lower === 'OVERDUE %') return 'نسبة التأخير %';
   if (lower === 'CLOSED') return 'مغلق';
   if (lower === 'OPEN') return 'مفتوح';
   if (lower === 'STAKEHOLDER') return 'الجهة المعنية / الأطراف';

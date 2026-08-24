@@ -1,4 +1,4 @@
-# DocuSight Analytics – Sprint 4 Plan: Usability, SharePoint Integration, & Automated Ingest
+# StructuSight Analytics – Sprint 4 Plan: Usability, SharePoint Integration, & Automated Ingest
 
 Following the formal approval of Sprint 3 and the explicit mandates of the Engineering Reviewer, **Sprint 4** focuses on transitioning the platform from an isolated calculation framework toward an everyday production-ready enterprise utility. 
 

@@ -1,7 +1,7 @@
-# DocuSight Analytics – Sprint 3 Completion Report
+# StructuSight Analytics – Sprint 3 Completion Report
 ## Canonical Runtime Migration & Dual-Execution Equivalence
 
-This document serves as the official **Sprint 3 Completion Report** for DocuSight Analytics. Sprint 3 has successfully completed the focus of **Canonical Runtime Migration** while strictly executing the parallel, dual-execution equivalence mandate specified by the Engineering Reviewer.
+This document serves as the official **Sprint 3 Completion Report** for StructuSight Analytics. Sprint 3 has successfully completed the focus of **Canonical Runtime Migration** while strictly executing the parallel, dual-execution equivalence mandate specified by the Engineering Reviewer.
 
 ---
 

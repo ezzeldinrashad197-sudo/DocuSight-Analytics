@@ -1,4 +1,4 @@
-# DocuSight Analytics – Dataset Certification Report
+# StructuSight Analytics – Dataset Certification Report
 
 This report certifies that the **Business Entity Key Extraction** logic is 100% consistent and verified across all project disciplines for the Non-Conformance Report (NCR) module.
 

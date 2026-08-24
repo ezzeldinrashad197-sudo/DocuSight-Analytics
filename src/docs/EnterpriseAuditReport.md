@@ -1,4 +1,4 @@
-# DocuSight Analytics – Enterprise Compliance Audit & Implementation Backlog
+# StructuSight Analytics – Enterprise Compliance Audit & Implementation Backlog
 
 ## 1. Full Source Code Inventory
 
@@ -25,7 +25,7 @@
 - `/src/utils/multiFileParser.ts`: Multi-file batch import and workspace processor.
 - `/src/utils/rfiAnalytics.ts`: RFI specific analytics engine.
 - `/src/utils/enterpriseEngine.ts`: Enterprise data transformation and hardening module.
-- `/src/utils/enterpriseUpgradeEngine.ts`: Enterprise schema migration and upgrade utility.
+- `/src/utils/enterpriseAnalyticsEngine.ts`: Enterprise schema migration and upgrade utility.
 - `/src/utils/statusMatrixEngine.ts`: Matrix mapping and status reconciliation utility.
 
 ### UI Views & Presentation Components (`/src/components/` & Root Components)

@@ -1,4 +1,4 @@
-# DocuSight Analytics – Next Sprint: Runtime Activation Phase Plan
+# StructuSight Analytics – Next Sprint: Runtime Activation Phase Plan
 
 This plan documents the roadmap for the **Runtime Activation Phase** (the formal continuation beyond Sprint 3). In strict accordance with your architectural guidelines, this phase transitions the application from isolated infrastructure validation to active, controlled production execution through a 5-stage progressive rollout.
 
@@ -71,4 +71,3 @@ Before any module can transition from the **Dual Execution** state to **Full Can
    - Traceability proofs from database/file intake to final display layers.
 5. **Rollback Verification**
    - Active validation of a zero-downtime regression switch back to `calculations.ts` if a live issue is detected.
-

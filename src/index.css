@@ -36,14 +36,19 @@
   }
 
   /* Prevent page breaks inside rows and cards */
-  tr, .analysis-card, .chart-container, .break-inside-avoid, .chart-card, .kpi-card, .presentation-slide {
+  tr, .analysis-card, .chart-container, .break-inside-avoid, .chart-card, .kpi-card, .presentation-slide, #report-recommendations-panel, .page-break-inside-avoid {
     page-break-inside: avoid !important;
     break-inside: avoid !important;
   }
   
-  .page-break-after-always, .presentation-slide, .chart-card {
+  .page-break-after-always, .presentation-slide {
     page-break-after: always !important;
     break-after: page !important;
+  }
+
+  .page-break-before-always, #report-recommendations-panel {
+    page-break-before: always !important;
+    break-before: page !important;
   }
 
   /* Force table wrappers to be visible and not truncate width */

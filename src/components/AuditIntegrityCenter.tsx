@@ -59,7 +59,7 @@ export const AuditIntegrityCenter: React.FC<AuditIntegrityCenterProps> = ({ proj
   const [expandedControlId, setExpandedControlId] = useState<string | null>('CTRL-003');
   const [expandedCertItem, setExpandedCertItem] = useState<string | null>('identity');
 
-  const verificationTimestamp = "2026-08-08T10:14:16Z";
+  const [verificationTimestamp] = useState(() => new Date().toISOString());
   const baselineVersion = "L99-v2.8-FINAL-FROZEN";
   const masterSpecDigest = "0a0b7ac3235605b211db336d06bc2943ebdcf704c4102635fc43d7a6e1c3831d";
   const goldenDatasetDigest = "79024cc4a0b2f9a86425b002ce055eaf0b152306ea89ff6383a4febb697631de";
@@ -856,4 +856,3 @@ export const AuditIntegrityCenter: React.FC<AuditIntegrityCenterProps> = ({ proj
     </div>
   );
 };
-

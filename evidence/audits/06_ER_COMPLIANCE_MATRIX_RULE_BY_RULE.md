@@ -1,5 +1,5 @@
 # Engineering Rules Compliance Matrix (Rule-by-Rule Assessment)
-**DocuSight Analytics — Official Production Edition v1.0 (Core Platform)**
+**StructuSight Analytics — Official Production Edition v1.0 (Core Platform)**
 **Audit Reference:** AUD-2026-ER-RULE-MATRIX-006
 **Engineering Rules Total:** 21 Rules (ER-001 → ER-021)
 **Overall Engineering Compliance:** **95.24%** (20 Rules Implemented, 1 Rule Intentionally Deferred to v1.1)
@@ -50,4 +50,4 @@
 ---
 
 ## 4. Final Certification Conclusion
-With **20 of 21 Engineering Rules fully implemented** and certified across mathematical regression, workflow isolation, and UI no-calculation audits, **DocuSight Analytics Official Production Edition v1.0 (Core Platform)** achieves **95.24% Engineering Compliance** and is officially certified for production deployment.
+With **20 of 21 Engineering Rules fully implemented** and certified across mathematical regression, workflow isolation, and UI no-calculation audits, **StructuSight Analytics Official Production Edition v1.0 (Core Platform)** achieves **95.24% Engineering Compliance** and is officially certified for production deployment.

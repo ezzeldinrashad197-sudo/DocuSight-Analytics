@@ -1,4 +1,4 @@
-name: DocuSight Production Certification Pipeline
+name: StructuSight Production Certification Pipeline
 
 on:
   push:

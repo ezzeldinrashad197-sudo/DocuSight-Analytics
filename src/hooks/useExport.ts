@@ -5,6 +5,7 @@ import { jsPDF } from 'jspdf';
 import pptxgen from "pptxgenjs";
 import { generatePptxReport } from '../analytics/exportEngine';
 import { ProjectSettings, SubmittalRow } from '../types';
+import { useLanguage } from '../utils/i18n';
 
 const prepareChartsForCapture = (clonedContainer: HTMLElement, originalContainer?: HTMLElement) => {
     const doc = clonedContainer.ownerDocument || document;
@@ -149,10 +150,11 @@ const drawPdfHeaderFooter = (pdf: any, projectInfo: ProjectSettings | null, acti
         periodStr = `${start} - ${end}`;
     }
 
-    const projName = (projectInfo?.projectName || "No Project Configured").substring(0, 30);
-    const projCode = projectInfo?.projectCode || "P1.17";
-    const contractor = projectInfo?.contractorName || "INNOVO";
-    const consultant = projectInfo?.consultantName || "ACE";
+    const rawProjName = projectInfo?.projectName;
+    const projName = (rawProjName && rawProjName !== 'No Project Configured' && rawProjName !== 'NO PROJECT CONFIGURED' ? rawProjName : 'StructuSight Master Project').substring(0, 35);
+    const projCode = projectInfo?.projectCode || "STS-P1.17";
+    const contractor = projectInfo?.contractorName || "Innovo Construction";
+    const consultant = projectInfo?.consultantName || "ACE Consulting Engineers";
     const reportName = activeTab.toUpperCase() + " PERFORMANCE REPORT";
 
     for (let i = 1; i <= totalPages; i++) {
@@ -249,6 +251,7 @@ interface UseExportProps {
 
 export function useExport({ data, activeTab, filterMonthly, filterCumulative, activeProject, setParseMessage, setIsError, startDate, endDate }: UseExportProps) {
     const [isExporting, setIsExporting] = useState(false);
+    const { language } = useLanguage();
 
     const handleDownloadPPTX = async (options?: any) => {
         setIsExporting(true);
@@ -257,16 +260,17 @@ export function useExport({ data, activeTab, filterMonthly, filterCumulative, ac
         
         try {
             await new Promise(r => setTimeout(r, 100));
-            const filename = `StructuSight-${activeTab}-${new Date().toISOString().split('T')[0]}.pptx`;
+            const isArabic = (language === 'ar') && !!options?.arabicEnabled;
+            const mergedOptions = { monthlyStart: startDate, ...options, arabicEnabled: isArabic };
 
             if (activeTab === 'presentation') {
                 // Programmatic, native slide-by-slide generator for presentation mode
                 // This builds native tables, text blocks, and vector shapes that are 100% editable
-                await generatePptxReport(data, activeProject, 'presentation', { filterMonthly, filterCumulative }, { monthlyStart: startDate, ...options });
+                await generatePptxReport(data, activeProject, 'presentation', { filterMonthly, filterCumulative }, mergedOptions);
             } else {
                 // Standard flow for other tabs using programmatic report generator
                 const filteredData = data.filter(activeTab === 'monthly' ? filterMonthly : filterCumulative);
-                await generatePptxReport(filteredData, activeProject, activeTab === 'monthly' ? 'monthly' : 'cumulative', undefined, { monthlyStart: startDate, ...options });
+                await generatePptxReport(filteredData, activeProject, activeTab === 'monthly' ? 'monthly' : 'cumulative', undefined, mergedOptions);
             }
 
             const exportDuration = Date.now() - startTime;
@@ -625,11 +629,33 @@ export function useExport({ data, activeTab, filterMonthly, filterCumulative, ac
                         }
                     },
                     jsPDF:        { unit: 'mm', format: options?.pageSize?.toLowerCase() || 'a3', orientation: options?.orientation?.toLowerCase() || (isLandscape ? 'landscape' : 'portrait') },
-                    pagebreak:    { mode: ['css', 'legacy'], avoid: ['tr', 'tbody', 'table', '.page-break-inside-avoid', '.chart-card', '.kpi-card', '#report-charts-grid', '#report-bottleneck-spotlight', '#report-executive-summary', '#report-kpi-grid', '#report-main-table', '.recharts-wrapper', 'h1', 'h2', 'h3'], after: ['.page-break-after-always', '.chart-card'] }
+                    pagebreak:    { mode: ['css', 'legacy'], avoid: ['tr', '.page-break-inside-avoid', '.chart-card', '.kpi-card', '#report-charts-grid', '#report-bottleneck-spotlight', '#report-executive-summary', '#report-kpi-grid', '.recharts-wrapper'], after: ['.page-break-after-always', '.presentation-slide'], before: ['.page-break-before-always', '#report-recommendations-panel'] }
                 };
 
                 await (html2pdf().set(opt).from(exportElement).toPdf().get('pdf').then((pdf: any) => {
                     drawPdfHeaderFooter(pdf, activeProject, activeTab, startDate, endDate, options);
+
+                    // Apply Custom Page Range filter if options provided (e.g. from slideRangeStart to slideRangeEnd)
+                    const totalPages = pdf.internal.getNumberOfPages();
+                    if (options?.slideRangeStart !== undefined && options?.slideRangeEnd !== undefined && totalPages > 1) {
+                        const start = Math.max(1, Math.min(options.slideRangeStart, totalPages));
+                        const end = Math.max(start, Math.min(options.slideRangeEnd, totalPages));
+
+                        for (let p = totalPages; p > end; p--) {
+                            try {
+                                pdf.deletePage(p);
+                            } catch (e) {
+                                console.warn('Could not delete page', p, e);
+                            }
+                        }
+                        for (let p = start - 1; p >= 1; p--) {
+                            try {
+                                pdf.deletePage(p);
+                            } catch (e) {
+                                console.warn('Could not delete page', p, e);
+                            }
+                        }
+                    }
                 }) as any).save();
             }
 

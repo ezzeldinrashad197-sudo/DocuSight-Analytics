@@ -1,4 +1,4 @@
-# DocuSight Analytics — Change Impact Report (3604 → 3589)
+# StructuSight Analytics — Change Impact Report (3604 → 3589)
 **Document Title:** Change Impact Report (Audit Trail of Delta -15)  
 **Audit Target:** SSOT Dataset Reconciliation & Delta Investigation  
 **Date:** August 3, 2026  

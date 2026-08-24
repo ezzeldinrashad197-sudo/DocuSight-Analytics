@@ -12,7 +12,7 @@ interface TranslationDictionary {
 const translations: TranslationDictionary = {
   // Login Screen
   'enterprise_access': { en: 'Enterprise Access', ar: 'وصول المؤسسات' },
-  'docusight_platform': { en: 'StructuSight — Engineering Intelligence Platform', ar: 'منصة StructuSight للهندسة والذكاء المستنداتي' },
+  'structusight_platform': { en: 'StructuSight — Engineering Intelligence Platform', ar: 'منصة StructuSight للهندسة والذكاء المستنداتي' },
   'sso_required_message': { en: 'Please authenticate via SSO to access the command center.', ar: 'يرجى المصادقة عبر بوابة SSO للوصول إلى مركز التحكم.' },
   'sign_in_with_sso': { en: 'Sign In with SSO', ar: 'تسجيل الدخول عبر SSO' },
   'authenticating': { en: 'Authenticating...', ar: 'جاري التحقق من الهوية...' },
@@ -245,4 +245,3 @@ export function parseMixedText(text: string, language: 'en' | 'ar'): string {
   }
   return text;
 }
-

@@ -1,5 +1,5 @@
 # Official Production Certification & Engineering Audit Sign-Off
-**DocuSight Analytics — Official Production Edition v1.0 (Core Platform)**
+**StructuSight Analytics — Official Production Edition v1.0 (Core Platform)**
 **Document Reference:** CERT-2026-PROD-V1.0-CORE
 **Engineering Authority:** Ezz Rashad (Project Document Control Lead)
 
@@ -8,9 +8,9 @@
 ## 1. Production Certification Status: APPROVED & CERTIFIED (Core Platform) ✅
 **Engineering Compliance Ratio:** **95.24%** (20 of 21 Engineering Rules Implemented)
 
-The **DocuSight Analytics Platform (Production Edition v1.0 — Core Platform)** has undergone comprehensive architectural, mathematical, functional, security, and performance audits. 
+The **StructuSight Analytics Platform (Production Edition v1.0 — Core Platform)** has undergone comprehensive architectural, mathematical, functional, security, and performance audits. 
 
-All core calculation pipelines, status engines, revision resolution modules, workflow classifiers, metrics layers, export generators, and FAT suites satisfy the requirements set forth in the **DocuSight Analytics — Executive Technical Audit & Refactoring Specification v1.0** and the **Engineering Execution Contract (EEC)**.
+All core calculation pipelines, status engines, revision resolution modules, workflow classifiers, metrics layers, export generators, and FAT suites satisfy the requirements set forth in the **StructuSight Analytics — Executive Technical Audit & Refactoring Specification v1.0** and the **Engineering Execution Contract (EEC)**.
 
 > **Official Specification Deferral Note (ER-018):**
 > *ER-018 (Enterprise SharePoint / Microsoft Graph Integration) has been intentionally deferred to Version v1.1 pending deployment against a live Microsoft 365 tenant and successful operational validation. This deferral does not affect the integrity or correctness of the Core Analytics Platform.*

@@ -365,4 +365,4 @@ In accordance with strict audit instructions, zero source code, calculation, dat
 - **Test Fixture Files Modified**: `0`
 
 ---
-*Report certified strictly under the DocuSight Universal Classification & Inspection Audit Standard.*
+*Report certified strictly under the StructuSight Universal Classification & Inspection Audit Standard.*

@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { compareRevisionsCanonical } from '../analytics/revisionResolver';
 import { SubmittalRow } from '../types';
 import {
   Shield, CheckCircle2, AlertTriangle, XCircle, Info, RefreshCw, 
@@ -47,7 +48,7 @@ export default function EnterpriseHardeningView({
     return 'Dual Comparison';
   });
 
-  const todayStr = '2026-06-21';
+  const todayStr = new Date().toISOString().substring(0, 10);
 
   // ----------------------------------------------------
   // CALCULATIONS & ALGORITHMS FOR HARDENING SUITE
@@ -128,9 +129,7 @@ export default function EnterpriseHardeningView({
       totalChecked++;
       // Sort by revision sequence order
       const sorted = [...rows].sort((a, b) => {
-        const revA = parseInt(a.rev) || 0;
-        const revB = parseInt(b.rev) || 0;
-        return revA - revB;
+        return compareRevisionsCanonical(a.rev, b.rev);
       });
 
       let wasClosed = false;

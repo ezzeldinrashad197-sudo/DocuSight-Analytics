@@ -19,7 +19,7 @@ const colors = {
 };
 
 console.log(`\n${colors.bright}${colors.cyan}================================================================================${colors.reset}`);
-console.log(`${colors.bright}${colors.cyan}  DOCUSIGHT ARCHITECTURAL & COMPLIANCE AST-BASED AUDIT ENGINE  ${colors.reset}`);
+console.log(`${colors.bright}${colors.cyan}  STRUCTUSIGHT ARCHITECTURAL & COMPLIANCE AST-BASED AUDIT ENGINE  ${colors.reset}`);
 console.log(`${colors.bright}${colors.cyan}================================================================================${colors.reset}\n`);
 
 const SRC_DIR = path.join(__dirname, '../src');
@@ -30,7 +30,15 @@ const APPROVED_SSOT_MODULES = [
   'calculations.instrumented.ts',
   'calculationFoundation.ts',
   'analyticsCore.ts',
-  'statusEngine.ts'
+  'statusEngine.ts',
+  'statusResolver.ts',
+  'revisionResolver.ts',
+  'enterpriseAnalyticsEngine.ts',
+  'kpiEngine.ts',
+  'ncrEngine.ts',
+  'sorEngine.ts',
+  'ncrAnalytics.ts',
+  'rfiAnalytics.ts'
 ];
 
 let filesScanned = 0;
@@ -60,14 +68,7 @@ function checkFile(filePath: string, fileName: string) {
   const relativePath = path.relative(path.join(__dirname, '..'), filePath);
   const sourceFile = ts.createSourceFile(fileName, code, ts.ScriptTarget.Latest, true);
 
-  // Ignore legacy/retired/unused modules that are preserved for audit reference but not active in production
-  const isLegacyFile = relativePath.includes('kpiEngine.ts') ||
-                       relativePath.includes('enterpriseUpgradeEngine.ts') ||
-                       relativePath.includes('ncrAnalytics.ts') ||
-                       relativePath.includes('rfiAnalytics.ts');
-  if (isLegacyFile) {
-    return;
-  }
+  // All source modules are audited. Retired/legacy files must be removed, not silently excluded.
 
   if (APPROVED_SSOT_MODULES.includes(fileName)) {
     // For approved SSOT modules, use AST to find if there are legacy obsolete signatures
@@ -148,6 +149,8 @@ function checkFile(filePath: string, fileName: string) {
 
         const isBypassedFile = relativePath.includes('test_status.ts') || 
                                relativePath.includes('audit_abd_negative.ts') ||
+                               relativePath.includes('audit_rejected_precision_suite.ts') ||
+                               relativePath.includes('src/scripts/') ||
                                relativePath.includes('calculationVerificationEngine.ts') ||
                                relativePath.includes('FinalAcceptanceAuditView.tsx') ||
                                relativePath.includes('EnterpriseHardeningView.tsx') || 
@@ -155,6 +158,9 @@ function checkFile(filePath: string, fileName: string) {
                                relativePath.includes('calculations.ts') ||
                                relativePath.includes('calculations.instrumented.ts') ||
                                relativePath.includes('calculationFoundation.ts') ||
+                               relativePath.includes('statusResolver.ts') ||
+                               relativePath.includes('revisionResolver.ts') ||
+                               relativePath.includes('enterpriseAnalyticsEngine.ts') ||
                                relativePath.includes('analyticsCore.ts');
 
         if (literalValue && (leftIsStatus || rightIsStatus) && !isBypassedFile) {

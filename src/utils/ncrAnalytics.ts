@@ -1,4 +1,5 @@
 import { SubmittalRow } from "../types";
+import { compareRevisionsCanonical } from "../analytics/revisionResolver";
 import { getMonthStr } from "./rfiAnalytics";
 
 export interface NCRStats {
@@ -90,11 +91,7 @@ export const calculateNCRStats = (data: SubmittalRow[], targetMonth?: Date): NCR
   let closureCount = 0;
 
   Array.from(ncrMap.values()).forEach(history => {
-    history.sort((a, b) => {
-        const revA = Number(a.rev.replace(/[^0-9]/g, '')) || 0;
-        const revB = Number(b.rev.replace(/[^0-9]/g, '')) || 0;
-        return revA - revB;
-    });
+    history.sort((a, b) => compareRevisionsCanonical(a.rev, b.rev));
 
     const firstSubmission = history[0];
     const latestSubmission = history[history.length - 1];

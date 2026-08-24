@@ -298,4 +298,4 @@ $$\Large \mathbf{\text{🟡 APPROVED WITH CONDITIONS}}$$
 3. **Condition 3**: Full test execution against the 25-case Golden Regression Matrix must be conducted immediately after code changes and verified via `compile_applet` and `lint_applet`.
 
 ---
-*Report certified strictly under the DocuSight Pre-Mutation Architecture & Identity Preservation Standard.*
+*Report certified strictly under the StructuSight Pre-Mutation Architecture & Identity Preservation Standard.*

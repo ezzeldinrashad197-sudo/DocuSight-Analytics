@@ -1,4 +1,4 @@
-# DocuSight Analytics – Canonical Runtime Wiring Report
+# StructuSight Analytics – Canonical Runtime Wiring Report
 
 This report documents the exact runtime wiring state of the **Canonical Engine Adapter** (`canonicalEngineAdapter.ts`) at the end of the Sprint 3 **Canonical Runtime Migration** phase. In strict alignment with the "Zero Deletion" and parallel verification constraints, this document outlines which components are active, which remain legacy, and how the pipeline executes.
 

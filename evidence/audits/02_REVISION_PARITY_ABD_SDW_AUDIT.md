@@ -1,5 +1,5 @@
 # Revision Parity Audit: ABD & SDW Revisions Resolution
-**DocuSight Analytics — Official Production Edition v1.0**
+**StructuSight Analytics — Official Production Edition v1.0**
 **Audit Reference:** AUD-2026-REV-PARITY-002
 **Engineering Rule Target:** ER-002 (Business Entity Revision Classification) & ER-003 (Centralized Revision Logic)
 

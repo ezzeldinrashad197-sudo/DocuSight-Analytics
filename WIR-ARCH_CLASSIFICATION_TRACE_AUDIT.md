@@ -124,4 +124,4 @@ Per strict instruction, zero codebase or data mutations were performed during th
 * **0 datasets modified**: `0`
 
 ---
-*Report generated strictly following the DocuSight Audit & Inspection Specification.*
+*Report generated strictly following the StructuSight Audit & Inspection Specification.*

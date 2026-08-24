@@ -1,6 +1,6 @@
-# DocuSight Analytics – Sprint 1 Formal Verification Report
+# StructuSight Analytics – Sprint 1 Formal Verification Report
 
-This document is the official **Sprint 1 Verification Report** for the DocuSight Analytics platform. It presents formal, evidence-based verification of the calculation foundations, business rules catalog, formula libraries, and security regression suites established in Sprint 1.
+This document is the official **Sprint 1 Verification Report** for the StructuSight Analytics platform. It presents formal, evidence-based verification of the calculation foundations, business rules catalog, formula libraries, and security regression suites established in Sprint 1.
 
 All tests have been executed programmatically against production-aligned datasets and a high-performance in-memory simulation engine.
 

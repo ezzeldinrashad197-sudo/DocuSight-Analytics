@@ -1,4 +1,4 @@
-# DocuSight Analytics – Sprint 3 Plan: Canonical Runtime Migration
+# StructuSight Analytics – Sprint 3 Plan: Canonical Runtime Migration
 
 ## 1. Executive Summary & Objective
 Following the formal approval of Sprint 3 (**Canonical Runtime Migration**), this phase initiates the gradual migration of legacy calculation logic to the canonical calculation engine, while strictly adhering to the golden rule: **Zero deletion of legacy code**. All legacy code remains intact side-by-side with the canonical engine to enable continuous regression comparison until 100% equivalence is definitively proven.

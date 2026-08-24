@@ -1,4 +1,4 @@
-# DocuSight Analytics – Official Metrics Dictionary
+# StructuSight Analytics – Official Metrics Dictionary
 
 ## 1. Architectural Principles & Notation
 In accordance with the enterprise calculation engine specification, all metrics are defined using **pure logical descriptions** rather than SQL implementation syntax. 
@@ -62,4 +62,3 @@ $$\text{المعلق الكلي} = \text{مرحل معلق} + \text{معلق ا�
 Where:
 - **Carry Forward Pending (مرحل معلق)** represents pending items whose initial submission date lies prior to the active month's start.
 - **Current Month Pending (معلق الشهر الحالي)** represents pending items whose initial submission occurred within the active month.
-

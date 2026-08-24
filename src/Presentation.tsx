@@ -288,30 +288,40 @@ export default function Presentation({
 
       const s = bt === 'NCR' ? calculateNCRStats(dData, false) : (bt === 'SOR' ? calculateSORStats(dData, false) : (bt === 'LTR' ? calculateLTRStats(dData, false) : calculateStats(dData, dataset)));
       const isMonthlyReport = !!monthlyStart;
-      const countForType = isMonthlyReport 
-        ? (s.totalSubmittedSheets ?? ((s.totalSheetsRev0 || 0) + (s.totalSheetsFurtherRev || 0)))
-        : (s.totalUniqueDrawings !== undefined ? s.totalUniqueDrawings : ((s.totalSheetsRev0 || 0) + (s.totalSheetsFurtherRev || 0)));
+      const isDrawingType = bt === 'SDW' || bt === 'SHD' || bt === 'ABD';
+      const totalSheets = (s.totalSheetsRev0 || 0) + (s.totalSheetsFurtherRev || 0);
+      const totalSubmittals = s.totalUniqueDrawings !== undefined ? s.totalUniqueDrawings : dData.length;
+      const countForType = isDrawingType 
+        ? totalSheets 
+        : (isMonthlyReport 
+            ? (s.totalSubmittedSheets ?? totalSheets)
+            : (s.totalUniqueDrawings !== undefined ? s.totalUniqueDrawings : totalSheets));
+
       return {
         discipline: disc,
+        TotalSubmittals: totalSubmittals,
         Rev00: s.totalSheetsRev0 || 0,
         FurtherRev: s.totalSheetsFurtherRev || 0,
         Approved: s.approved,
         RejectedOpen: s.rejectedOpen,
         RejectedClosed: s.rejectedClosed,
+        Rejected: (s.rejectedOpen || 0) + (s.rejectedClosed || 0),
         Pending: s.pending,
         Total: countForType,
-        Closed: bt === 'NCR' || bt === 'SOR' ? s.approved : s.approved + s.rejectedClosed,
-        Open: bt === 'NCR' || bt === 'SOR' ? s.rejectedOpen : s.rejectedOpen + s.pending,
+        Closed: bt === 'RFI' ? ((s.totalSubmittedSheets || 0) - (s.pending || 0)) : (bt === 'NCR' || bt === 'SOR' ? s.approved : s.approved + s.rejectedClosed),
+        Open: bt === 'NCR' || bt === 'SOR' ? s.rejectedOpen : (bt === 'RFI' ? (s.pending || 0) : s.rejectedOpen + s.pending),
       };
     });
 
     const totalRow = {
       discipline: "TOTAL",
+      TotalSubmittals: stats.reduce((acc, curr) => acc + Number(curr.TotalSubmittals || 0), 0),
       Rev00: stats.reduce((acc, curr) => acc + Number(curr.Rev00), 0),
       FurtherRev: stats.reduce((acc, curr) => acc + Number(curr.FurtherRev), 0),
       Approved: stats.reduce((acc, curr) => acc + Number(curr.Approved), 0),
       RejectedOpen: stats.reduce((acc, curr) => acc + Number(curr.RejectedOpen), 0),
       RejectedClosed: stats.reduce((acc, curr) => acc + Number(curr.RejectedClosed), 0),
+      Rejected: stats.reduce((acc, curr) => acc + Number(curr.Rejected || 0), 0),
       Pending: stats.reduce((acc, curr) => acc + Number(curr.Pending), 0),
       Total: stats.reduce((acc, curr) => acc + Number(curr.Total), 0),
       Closed: stats.reduce((acc, curr) => acc + Number(curr.Closed), 0),
@@ -346,45 +356,50 @@ export default function Presentation({
   }, [data]);
 
   // Standard visual render parts
-  const renderStandardTable = (statsData: Record<string, any>, cols: Record<string, any>[]) => (
-    <table className="w-[48%] text-sm text-center border-collapse shrink-0" style={{ border: '2px solid #203864' }}>
-      <thead>
-        <tr style={{ backgroundColor: PRIMARY_BLUE, color: 'white' }}>
-          <th className="p-2 border border-[#4472c4] font-bold" colSpan={1}>{language === 'ar' ? 'الحالة' : 'STATUS'}</th>
-          <th className="p-2 border border-[#4472c4]" colSpan={cols.length - 1}></th>
-        </tr>
-        <tr style={{ backgroundColor: '#2f75b5', color: 'white', fontSize: '13px' }}>
-          {cols.map((c, i) => (
-            <th key={i} className="p-2 border border-[#4472c4] font-bold">
-              {getColLabel(c.label, language)}
+  const renderStandardTable = (statsData: Record<string, any>, cols: Record<string, any>[]) => {
+    const isEightCol = cols.length === 8;
+    return (
+      <table className={`${isEightCol ? 'w-[52%]' : 'w-[48%]'} text-sm text-center border-collapse shrink-0`} style={{ border: '2px solid #203864' }}>
+        <thead>
+          <tr style={{ backgroundColor: PRIMARY_BLUE, color: 'white' }}>
+            <th className="p-2 border border-[#4472c4] font-bold" colSpan={isEightCol ? 1 : 1}></th>
+            <th className="p-2 border border-[#4472c4] font-bold text-center uppercase tracking-wider text-xs" colSpan={cols.length - 1}>
+              {language === 'ar' ? 'الحالة' : 'STATUS'}
             </th>
+          </tr>
+          <tr style={{ backgroundColor: '#2f75b5', color: 'white', fontSize: isEightCol ? '11px' : '13px' }}>
+            {cols.map((c, i) => (
+              <th key={i} className="p-2 border border-[#4472c4] font-bold whitespace-normal">
+                {getColLabel(c.label, language)}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody className="bg-white text-[#333]">
+          {statsData.stats.map((s: Record<string, any>, index: number) => (
+            <tr key={`${s.discipline}-${index}`} className="even:bg-[#f2f2f2] h-[36px]">
+              <td className="p-2 border border-[#cbd5e1] font-medium text-xs">
+                {getDiscName(s.discipline, language)}
+              </td>
+              {cols.slice(1).map((c, i) => (
+                <td key={i} className={`p-2 border border-[#cbd5e1] text-xs ${c.key === "Total" ? "font-bold" : ""}`}>
+                  {s[c.key] !== undefined && s[c.key] !== null ? s[c.key] : ''}
+                </td>
+              ))}
+            </tr>
           ))}
-        </tr>
-      </thead>
-      <tbody className="bg-white text-[#333]">
-        {statsData.stats.map((s: Record<string, any>, index: number) => (
-          <tr key={`${s.discipline}-${index}`} className="even:bg-[#f2f2f2] h-[36px]">
-            <td className="p-2 border border-[#cbd5e1] font-medium text-xs">
-              {getDiscName(s.discipline, language)}
-            </td>
+          <tr className="bg-[#ddebf7] h-[45px] font-bold text-xs" style={{ color: PRIMARY_BLUE }}>
+            <td className="p-2 border border-[#cbd5e1]">{getDiscName(statsData.totalRow.discipline, language)}</td>
             {cols.slice(1).map((c, i) => (
-              <td key={i} className={`p-2 border border-[#cbd5e1] text-xs ${c.key === "Total" ? "font-bold" : ""}`}>
-                {s[c.key] !== undefined && s[c.key] !== null ? s[c.key] : ''}
+              <td key={i} className="p-2 border border-[#cbd5e1]">
+                {statsData.totalRow[c.key]}
               </td>
             ))}
           </tr>
-        ))}
-        <tr className="bg-[#ddebf7] h-[45px] font-bold text-xs" style={{ color: PRIMARY_BLUE }}>
-          <td className="p-2 border border-[#cbd5e1]">{getDiscName(statsData.totalRow.discipline, language)}</td>
-          {cols.slice(1).map((c, i) => (
-            <td key={i} className="p-2 border border-[#cbd5e1]">
-              {statsData.totalRow[c.key]}
-            </td>
-          ))}
-        </tr>
-      </tbody>
-    </table>
-  );
+        </tbody>
+      </table>
+    );
+  };
 
   const renderStandardBar = (statsData: Record<string, any>, titleStr: string) => (
     <div className="w-[48%] h-[350px] flex flex-col justify-center items-center">
@@ -417,13 +432,22 @@ export default function Presentation({
             "Approved": "#70AD47",
             "Closed": "#70AD47",
             "Rejected": "#C00000",
+            "Rej. Open": "#F43F5E",
+            "Rej. Closed": "#B91C1C",
             "Open": "#C00000",
             "Pending": "#FFC000",
             "Sent": "#5b9bd5",
             "Received": "#ed7d31"
           };
 
-          if (labels.length === 2 && labels[0] === "Closed") {
+          if (labels.length === 4) {
+            pieData = [
+              { name: "Approved", value: Number(s.Approved) || 0, fill: PIE_COLORS["Approved"] },
+              { name: "Rej. Open", value: Number(s.RejectedOpen) || 0, fill: PIE_COLORS["Rej. Open"] },
+              { name: "Rej. Closed", value: Number(s.RejectedClosed) || 0, fill: PIE_COLORS["Rej. Closed"] },
+              { name: "Pending", value: Number(s.Pending) || 0, fill: PIE_COLORS["Pending"] },
+            ];
+          } else if (labels.length === 2 && labels[0] === "Closed") {
             pieData = [
               { name: "Closed", value: Number(s.Closed) || 0, fill: PIE_COLORS["Closed"] },
               { name: "Pending", value: Number(s.Pending) || 0, fill: PIE_COLORS["Pending"] },
@@ -839,8 +863,15 @@ export default function Presentation({
               <div className="border border-slate-200 rounded-xl p-5 flex items-center gap-6 bg-slate-50">
                 <AlertTriangle className="w-12 h-12 text-red-500" />
                 <div>
-                  <span className="text-xs text-slate-500 font-bold uppercase tracking-wide block">{language === 'ar' ? 'الوثائق المتأخرة بالرد' : 'Total Overdue Items'}</span>
-                  <span className="text-2xl font-bold text-red-600">{overallMonthlyStats.overdueCount} {language === 'ar' ? 'معاملة معلقة متأخرة' : 'Overdue submittals'}</span>
+                  <span className="text-xs text-slate-500 font-bold uppercase tracking-wide block">{language === 'ar' ? 'المتأخرات من المجتمع النشط (Active Backlog)' : 'Overdue Active Items (of Active Population)'}</span>
+                  <span className="text-2xl font-bold text-red-600">
+                    {overallMonthlyStats.overdueCount} {language === 'ar' ? `من أصل ${overallMonthlyStats.pending + overallMonthlyStats.rejectedOpen} معاملة نشطة` : `of ${overallMonthlyStats.pending + overallMonthlyStats.rejectedOpen} Active`}
+                  </span>
+                  <span className="text-[10px] text-slate-500 block mt-0.5 font-medium">
+                    {language === 'ar' 
+                      ? `معدل التأخير: ${(overallMonthlyStats.pending + overallMonthlyStats.rejectedOpen) > 0 ? ((overallMonthlyStats.overdueCount / (overallMonthlyStats.pending + overallMonthlyStats.rejectedOpen)) * 100).toFixed(1) : 0}% من المعاملات النشطة (معلق + مرفوض مفتوح)` 
+                      : `Overdue Rate: ${(overallMonthlyStats.pending + overallMonthlyStats.rejectedOpen) > 0 ? ((overallMonthlyStats.overdueCount / (overallMonthlyStats.pending + overallMonthlyStats.rejectedOpen)) * 100).toFixed(1) : 0}% of Active (Pending + Rejected Open)`}
+                  </span>
                 </div>
               </div>
             </div>
@@ -878,13 +909,15 @@ export default function Presentation({
                 <Pie
                   data={[
                     { name: language === 'ar' ? 'معتمد' : 'Approved', value: overallMonthlyStats.approved, fill: '#70AD47' },
-                    { name: language === 'ar' ? 'مرفوض' : 'Rejected', value: overallMonthlyStats.rejectedOpen, fill: '#C00000' },
+                    { name: language === 'ar' ? 'مرفوض مفتوح' : 'Rejected Open', value: overallMonthlyStats.rejectedOpen, fill: '#F43F5E' },
+                    { name: language === 'ar' ? 'مرفوض مغلق' : 'Rejected Closed', value: overallMonthlyStats.rejectedClosed, fill: '#B91C1C' },
                     { name: language === 'ar' ? 'معلق' : 'Pending', value: overallMonthlyStats.pending, fill: '#FFC000' }
-                  ]}
+                  ].filter(d => d.value > 0)}
                   cx="50%" cy="50%" outerRadius={100} dataKey="value" isAnimationActive={false} label
                 >
                   <Cell fill="#70AD47" />
-                  <Cell fill="#C00000" />
+                  <Cell fill="#F43F5E" />
+                  <Cell fill="#B91C1C" />
                   <Cell fill="#FFC000" />
                 </Pie>
                 <RechartsTooltip />
@@ -904,33 +937,49 @@ export default function Presentation({
         view: "monthly",
         title: language === 'ar' ? "جدول سجلات الشهر الحالي" : "Monthly Register Statistics Table",
         element: renderContentSlide(
-          <div className="p-12 flex flex-col h-full justify-start gap-6">
-            <h3 className="font-bold text-xl border-b pb-2" style={{ color: primaryColor }}>{language === 'ar' ? 'تفصيل السجلات الهندسية لشهر المراجعة الحالي' : 'Register-Level Metrics for Selected Reporting Month'}</h3>
-            <table className="w-full text-sm text-center border-collapse border border-slate-200 shadow-sm mt-4">
-              <thead>
-                <tr style={{ backgroundColor: primaryColor, color: 'white' }}>
-                  <th className="p-3 border border-slate-300 font-bold">{language === 'ar' ? 'اسم السجل الهندسي' : 'Register Name'}</th>
-                  <th className="p-3 border border-slate-300 font-bold">{language === 'ar' ? 'إجمالي المعاملات' : 'Total Items'}</th>
-                  <th className="p-3 border border-slate-300 font-bold">{language === 'ar' ? 'معتمد (أ و ب)' : 'Approved (A/B)'}</th>
-                  <th className="p-3 border border-slate-300 font-bold">{language === 'ar' ? 'مرفوض (ج)' : 'Rejected (C)'}</th>
-                  <th className="p-3 border border-slate-300 font-bold">{language === 'ar' ? 'معلق (قيد المراجعة)' : 'Pending'}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {baseTypes.map(bt => {
-                  const bStats = compileStatsForBaseType(monthlyData, bt, startDate, data);
-                  return (
-                    <tr key={bt} className="even:bg-slate-50 hover:bg-slate-100/70 h-11 transition-colors">
-                      <td className="p-3 border border-slate-200 font-bold" style={{ color: primaryColor }}>{bt}</td>
-                      <td className="p-3 border border-slate-200 font-medium">{bStats.totalRow.Total}</td>
-                      <td className="p-3 border border-slate-200 text-emerald-600 font-semibold">{bStats.totalRow.Approved}</td>
-                      <td className="p-3 border border-slate-200 text-red-600 font-semibold">{bStats.totalRow.RejectedOpen}</td>
-                      <td className="p-3 border border-slate-200 text-amber-600 font-medium">{bStats.totalRow.Pending}</td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+          <div className="p-8 flex flex-col h-full justify-start gap-4">
+            <h3 className="font-bold text-lg border-b pb-2" style={{ color: primaryColor }}>{language === 'ar' ? 'تفصيل السجلات الهندسية لشهر المراجعة الحالي' : 'Register-Level Metrics for Selected Reporting Month'}</h3>
+            <div className="overflow-x-auto">
+              <table className="w-full text-xs text-center border-collapse border border-slate-200 shadow-sm mt-2">
+                <thead>
+                  <tr style={{ backgroundColor: primaryColor, color: 'white' }}>
+                    <th className="p-2 border border-slate-300 font-bold">{language === 'ar' ? 'السجل' : 'Register'}</th>
+                    <th className="p-2 border border-slate-300 font-bold">{language === 'ar' ? 'حجم العمل' : 'Workload'}</th>
+                    <th className="p-2 border border-slate-300 font-bold">{language === 'ar' ? 'مراجعة 00' : 'Rev 00'}</th>
+                    <th className="p-2 border border-slate-300 font-bold">{language === 'ar' ? 'لاحقة' : 'Further'}</th>
+                    <th className="p-2 border border-slate-300 font-bold">{language === 'ar' ? 'الفريدة' : 'Unique'}</th>
+                    <th className="p-2 border border-slate-300 font-bold">{language === 'ar' ? 'معتمد' : 'Approved'}</th>
+                    <th className="p-2 border border-slate-300 font-bold">{language === 'ar' ? 'مرفوض مفتوح' : 'Rej. Open'}</th>
+                    <th className="p-2 border border-slate-300 font-bold">{language === 'ar' ? 'مرفوض مغلق' : 'Rej. Closed'}</th>
+                    <th className="p-2 border border-slate-300 font-bold">{language === 'ar' ? 'إجمالي المرفوض' : 'Total Rej.'}</th>
+                    <th className="p-2 border border-slate-300 font-bold">{language === 'ar' ? 'معلق' : 'Pending'}</th>
+                    <th className="p-2 border border-slate-300 font-bold">{language === 'ar' ? 'النشط' : 'Active'}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {baseTypes.map(bt => {
+                    const bStats = compileStatsForBaseType(monthlyData, bt, startDate, data);
+                    const workload = (bStats.totalRow.Rev00 || 0) + (bStats.totalRow.FurtherRev || 0);
+                    const unique = bStats.totalRow.Total || 0;
+                    return (
+                      <tr key={bt} className="even:bg-slate-50 hover:bg-slate-100/70 h-9 transition-colors text-xs">
+                        <td className="p-2 border border-slate-200 font-bold" style={{ color: primaryColor }}>{bt}</td>
+                        <td className="p-2 border border-slate-200 font-medium">{workload}</td>
+                        <td className="p-2 border border-slate-200">{bStats.totalRow.Rev00}</td>
+                        <td className="p-2 border border-slate-200">{bStats.totalRow.FurtherRev}</td>
+                        <td className="p-2 border border-slate-200 font-semibold">{unique}</td>
+                        <td className="p-2 border border-slate-200 text-emerald-600 font-semibold">{bStats.totalRow.Approved}</td>
+                        <td className="p-2 border border-slate-200 text-rose-600 font-semibold">{bStats.totalRow.RejectedOpen}</td>
+                        <td className="p-2 border border-slate-200 text-red-900 font-semibold">{bStats.totalRow.RejectedClosed}</td>
+                        <td className="p-2 border border-slate-200 text-red-700 font-bold">{(bStats.totalRow.RejectedOpen || 0) + (bStats.totalRow.RejectedClosed || 0)}</td>
+                        <td className="p-2 border border-slate-200 text-amber-600 font-medium">{bStats.totalRow.Pending}</td>
+                        <td className="p-2 border border-slate-200 text-amber-800 font-bold">{(bStats.totalRow.RejectedOpen || 0) + (bStats.totalRow.Pending || 0)}</td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
           </div>,
           language === 'ar' ? "جدول سجلات الشهر الحالي" : "MONTHLY REGISTER METRICS",
           "monthly-register-stats"
@@ -1148,8 +1197,15 @@ export default function Presentation({
               <div className="border border-slate-200 rounded-xl p-5 flex items-center gap-6 bg-slate-50">
                 <AlertTriangle className="w-12 h-12 text-red-500" />
                 <div>
-                  <span className="text-xs text-slate-500 font-bold uppercase tracking-wide block">{language === 'ar' ? 'الوثائق المتأخرة بالرد تراكمياً' : 'Total Lifetime Overdue Items'}</span>
-                  <span className="text-2xl font-bold text-red-600">{overallCumulativeStats.overdueCount} {language === 'ar' ? 'وثيقة معلقة حالياً' : 'Active overdue items'}</span>
+                  <span className="text-xs text-slate-500 font-bold uppercase tracking-wide block">{language === 'ar' ? 'المتأخرات التراكمية من المجتمع النشط' : 'Total Lifetime Overdue Items (of Active Population)'}</span>
+                  <span className="text-2xl font-bold text-red-600">
+                    {overallCumulativeStats.overdueCount} {language === 'ar' ? `من أصل ${overallCumulativeStats.pending + overallCumulativeStats.rejectedOpen} معاملة نشطة` : `of ${overallCumulativeStats.pending + overallCumulativeStats.rejectedOpen} Active`}
+                  </span>
+                  <span className="text-[10px] text-slate-500 block mt-0.5 font-medium">
+                    {language === 'ar' 
+                      ? `معدل التأخير: ${(overallCumulativeStats.pending + overallCumulativeStats.rejectedOpen) > 0 ? ((overallCumulativeStats.overdueCount / (overallCumulativeStats.pending + overallCumulativeStats.rejectedOpen)) * 100).toFixed(1) : 0}% من المعاملات النشطة (معلق + مرفوض مفتوح)` 
+                      : `Overdue Rate: ${(overallCumulativeStats.pending + overallCumulativeStats.rejectedOpen) > 0 ? ((overallCumulativeStats.overdueCount / (overallCumulativeStats.pending + overallCumulativeStats.rejectedOpen)) * 100).toFixed(1) : 0}% of Active (Pending + Rejected Open)`}
+                  </span>
                 </div>
               </div>
             </div>
@@ -1187,13 +1243,15 @@ export default function Presentation({
                 <Pie
                   data={[
                     { name: language === 'ar' ? 'معتمد' : 'Approved', value: overallCumulativeStats.approved, fill: '#70AD47' },
-                    { name: language === 'ar' ? 'مرفوض' : 'Rejected', value: overallCumulativeStats.rejectedOpen, fill: '#C00000' },
+                    { name: language === 'ar' ? 'مرفوض مفتوح' : 'Rejected Open', value: overallCumulativeStats.rejectedOpen, fill: '#F43F5E' },
+                    { name: language === 'ar' ? 'مرفوض مغلق' : 'Rejected Closed', value: overallCumulativeStats.rejectedClosed, fill: '#B91C1C' },
                     { name: language === 'ar' ? 'معلق' : 'Pending', value: overallCumulativeStats.pending, fill: '#FFC000' }
-                  ]}
+                  ].filter(d => d.value > 0)}
                   cx="50%" cy="50%" outerRadius={100} dataKey="value" isAnimationActive={false} label
               >
                 <Cell fill="#70AD47" />
-                <Cell fill="#C00000" />
+                <Cell fill="#F43F5E" />
+                <Cell fill="#B91C1C" />
                 <Cell fill="#FFC000" />
               </Pie>
               <RechartsTooltip />
@@ -1213,33 +1271,49 @@ export default function Presentation({
         view: "cumulative",
         title: language === 'ar' ? "جدول سجلات المشروع التراكمية" : "Cumulative Register Statistics Table",
         element: renderContentSlide(
-          <div className="p-12 flex flex-col h-full justify-start gap-6">
-            <h3 className="font-bold text-xl border-b pb-2" style={{ color: primaryColor }}>{language === 'ar' ? 'تفصيل السجلات الهندسية التراكمية للمشروع' : 'Register-Level Metrics for Project Lifetime'}</h3>
-            <table className="w-full text-sm text-center border-collapse border border-slate-200 shadow-sm mt-4">
-              <thead>
-                <tr style={{ backgroundColor: primaryColor, color: 'white' }}>
-                  <th className="p-3 border border-slate-300 font-bold">{language === 'ar' ? 'اسم السجل الهندي' : 'Register Name'}</th>
-                  <th className="p-3 border border-slate-300 font-bold">{language === 'ar' ? 'إجمالي التقديمات' : 'Lifetime Items'}</th>
-                  <th className="p-3 border border-slate-300 font-bold">{language === 'ar' ? 'معتمد (أ و ب)' : 'Approved (A/B)'}</th>
-                  <th className="p-3 border border-slate-300 font-bold">{language === 'ar' ? 'مرفوض (ج)' : 'Rejected (C)'}</th>
-                  <th className="p-3 border border-slate-300 font-bold">{language === 'ar' ? 'معلق (قيد المراجعة)' : 'Pending'}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {baseTypes.map(bt => {
-                  const bStats = compileStatsForBaseType(cumulativeData, bt, undefined, data);
-                  return (
-                    <tr key={bt} className="even:bg-slate-50 hover:bg-slate-100/70 h-11 transition-colors">
-                      <td className="p-3 border border-slate-200 font-bold" style={{ color: primaryColor }}>{bt}</td>
-                      <td className="p-3 border border-slate-200 font-medium">{bStats.totalRow.Total}</td>
-                      <td className="p-3 border border-slate-200 text-emerald-600 font-semibold">{bStats.totalRow.Approved}</td>
-                      <td className="p-3 border border-slate-200 text-red-600 font-semibold">{bStats.totalRow.RejectedOpen}</td>
-                      <td className="p-3 border border-slate-200 text-amber-600 font-medium">{bStats.totalRow.Pending}</td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+          <div className="p-8 flex flex-col h-full justify-start gap-4">
+            <h3 className="font-bold text-lg border-b pb-2" style={{ color: primaryColor }}>{language === 'ar' ? 'تفصيل السجلات الهندسية التراكمية للمشروع' : 'Register-Level Metrics for Project Lifetime'}</h3>
+            <div className="overflow-x-auto">
+              <table className="w-full text-xs text-center border-collapse border border-slate-200 shadow-sm mt-2">
+                <thead>
+                  <tr style={{ backgroundColor: primaryColor, color: 'white' }}>
+                    <th className="p-2 border border-slate-300 font-bold">{language === 'ar' ? 'السجل' : 'Register'}</th>
+                    <th className="p-2 border border-slate-300 font-bold">{language === 'ar' ? 'حجم العمل' : 'Workload'}</th>
+                    <th className="p-2 border border-slate-300 font-bold">{language === 'ar' ? 'مراجعة 00' : 'Rev 00'}</th>
+                    <th className="p-2 border border-slate-300 font-bold">{language === 'ar' ? 'لاحقة' : 'Further'}</th>
+                    <th className="p-2 border border-slate-300 font-bold">{language === 'ar' ? 'الفريدة' : 'Unique'}</th>
+                    <th className="p-2 border border-slate-300 font-bold">{language === 'ar' ? 'معتمد' : 'Approved'}</th>
+                    <th className="p-2 border border-slate-300 font-bold">{language === 'ar' ? 'مرفوض مفتوح' : 'Rej. Open'}</th>
+                    <th className="p-2 border border-slate-300 font-bold">{language === 'ar' ? 'مرفوض مغلق' : 'Rej. Closed'}</th>
+                    <th className="p-2 border border-slate-300 font-bold">{language === 'ar' ? 'إجمالي المرفوض' : 'Total Rej.'}</th>
+                    <th className="p-2 border border-slate-300 font-bold">{language === 'ar' ? 'معلق' : 'Pending'}</th>
+                    <th className="p-2 border border-slate-300 font-bold">{language === 'ar' ? 'النشط' : 'Active'}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {baseTypes.map(bt => {
+                    const bStats = compileStatsForBaseType(cumulativeData, bt, undefined, data);
+                    const workload = (bStats.totalRow.Rev00 || 0) + (bStats.totalRow.FurtherRev || 0);
+                    const unique = bStats.totalRow.Total || 0;
+                    return (
+                      <tr key={bt} className="even:bg-slate-50 hover:bg-slate-100/70 h-9 transition-colors text-xs">
+                        <td className="p-2 border border-slate-200 font-bold" style={{ color: primaryColor }}>{bt}</td>
+                        <td className="p-2 border border-slate-200 font-medium">{workload}</td>
+                        <td className="p-2 border border-slate-200">{bStats.totalRow.Rev00}</td>
+                        <td className="p-2 border border-slate-200">{bStats.totalRow.FurtherRev}</td>
+                        <td className="p-2 border border-slate-200 font-semibold">{unique}</td>
+                        <td className="p-2 border border-slate-200 text-emerald-600 font-semibold">{bStats.totalRow.Approved}</td>
+                        <td className="p-2 border border-slate-200 text-rose-600 font-semibold">{bStats.totalRow.RejectedOpen}</td>
+                        <td className="p-2 border border-slate-200 text-red-900 font-semibold">{bStats.totalRow.RejectedClosed}</td>
+                        <td className="p-2 border border-slate-200 text-red-700 font-bold">{(bStats.totalRow.RejectedOpen || 0) + (bStats.totalRow.RejectedClosed || 0)}</td>
+                        <td className="p-2 border border-slate-200 text-amber-600 font-medium">{bStats.totalRow.Pending}</td>
+                        <td className="p-2 border border-slate-200 text-amber-800 font-bold">{(bStats.totalRow.RejectedOpen || 0) + (bStats.totalRow.Pending || 0)}</td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
           </div>,
           language === 'ar' ? "جدول سجلات المشروع التراكمية" : "CUMULATIVE REGISTER METRICS",
           "cumulative-register-stats"
@@ -1308,7 +1382,31 @@ export default function Presentation({
           { label: "Rejected", key: "RejectedOpen" },
           { label: "Pending", key: "Pending" },
         ];
-        if (bt === 'RFI') {
+        if (bt === 'DOC') {
+          cols = [
+            { label: "Items", key: "discipline" },
+            { label: "Workload", key: "TotalSubmittals" },
+            { label: "Rev.00", key: "Rev00" },
+            { label: "Further Rev.", key: "FurtherRev" },
+            { label: "Total", key: "Total" },
+            { label: "Approved", key: "Approved" },
+            { label: "Rej. Open", key: "RejectedOpen" },
+            { label: "Rej. Closed", key: "RejectedClosed" },
+            { label: "Total Rej.", key: "Rejected" },
+            { label: "Pending", key: "Pending" },
+          ];
+        } else if (bt === 'SDW' || bt === 'SHD' || bt === 'ABD') {
+          cols = [
+            { label: "Items", key: "discipline" },
+            { label: "Total Submittals", key: "TotalSubmittals" },
+            { label: "Total Sheets Rev.00", key: "Rev00" },
+            { label: "Total Sheets Further Rev.", key: "FurtherRev" },
+            { label: "Total", key: "Total" },
+            { label: "Approved", key: "Approved" },
+            { label: "Rejected", key: "Rejected" },
+            { label: "Pending", key: "Pending" },
+          ];
+        } else if (bt === 'RFI') {
           cols = [
             { label: "Items", key: "discipline" },
             { label: "Total Rev.00", key: "Rev00" },
@@ -1351,7 +1449,7 @@ export default function Presentation({
         });
 
         // Pie Grid for Quality
-        const pieLabels = bt === 'RFI' ? ["Closed", "Pending"] : (bt === 'NCR' || bt === 'SOR' ? ["Closed", "Open", "Pending"] : (bt === 'LTR' ? ["Sent", "Received"] : ["Approved", "Rejected", "Pending"]));
+        const pieLabels = bt === 'DOC' ? ["Approved", "Rej. Open", "Rej. Closed", "Pending"] : (bt === 'RFI' ? ["Closed", "Pending"] : (bt === 'NCR' || bt === 'SOR' ? ["Closed", "Open", "Pending"] : (bt === 'LTR' ? ["Sent", "Received"] : ["Approved", "Rejected", "Pending"])));
         slides.push({
           id: `reg-monthly-pie-${bt}`,
           view: "registers",
@@ -1375,7 +1473,31 @@ export default function Presentation({
           { label: "Rejected", key: "RejectedOpen" },
           { label: "Pending", key: "Pending" },
         ];
-        if (bt === 'RFI') {
+        if (bt === 'DOC') {
+          cols = [
+            { label: "Items", key: "discipline" },
+            { label: "Workload", key: "TotalSubmittals" },
+            { label: "Rev.00", key: "Rev00" },
+            { label: "Further Rev.", key: "FurtherRev" },
+            { label: "Total", key: "Total" },
+            { label: "Approved", key: "Approved" },
+            { label: "Rej. Open", key: "RejectedOpen" },
+            { label: "Rej. Closed", key: "RejectedClosed" },
+            { label: "Total Rej.", key: "Rejected" },
+            { label: "Pending", key: "Pending" },
+          ];
+        } else if (bt === 'SDW' || bt === 'SHD' || bt === 'ABD') {
+          cols = [
+            { label: "Items", key: "discipline" },
+            { label: "Total Submittals", key: "TotalSubmittals" },
+            { label: "Total Sheets Rev.00", key: "Rev00" },
+            { label: "Total Sheets Further Rev.", key: "FurtherRev" },
+            { label: "Total", key: "Total" },
+            { label: "Approved", key: "Approved" },
+            { label: "Rejected", key: "Rejected" },
+            { label: "Pending", key: "Pending" },
+          ];
+        } else if (bt === 'RFI') {
           cols = [
             { label: "Items", key: "discipline" },
             { label: "Total Rev.00", key: "Rev00" },
@@ -1418,7 +1540,7 @@ export default function Presentation({
         });
 
         // Pie Grid for Quality
-        const pieLabels = bt === 'RFI' ? ["Closed", "Pending"] : (bt === 'NCR' || bt === 'SOR' ? ["Closed", "Open", "Pending"] : (bt === 'LTR' ? ["Sent", "Received"] : ["Approved", "Rejected", "Pending"]));
+        const pieLabels = bt === 'DOC' ? ["Approved", "Rej. Open", "Rej. Closed", "Pending"] : (bt === 'RFI' ? ["Closed", "Pending"] : (bt === 'NCR' || bt === 'SOR' ? ["Closed", "Open", "Pending"] : (bt === 'LTR' ? ["Sent", "Received"] : ["Approved", "Rejected", "Pending"])));
         slides.push({
           id: `reg-cumulative-pie-${bt}`,
           view: "registers",

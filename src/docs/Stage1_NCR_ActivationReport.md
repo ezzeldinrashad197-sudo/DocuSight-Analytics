@@ -1,4 +1,4 @@
-# DocuSight Analytics – Stage 1: NCR Activation Report (Template Proof-of-Concept)
+# StructuSight Analytics – Stage 1: NCR Activation Report (Template Proof-of-Concept)
 
 This report presents the formal verification evidence for the completion of **Stage 1 (NCR Activation)** under the progressive **Runtime Activation Phase**. It demonstrates how the canonical engine adapter replaces the legacy calculations for the NCR module, verified under strict parallel dual execution.
 

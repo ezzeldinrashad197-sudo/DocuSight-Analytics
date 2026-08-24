@@ -1,5 +1,5 @@
 # Filter Engine Audit & Canonical Dataset Integration
-**DocuSight Analytics — Official Production Edition v1.0 (Core Platform)**
+**StructuSight Analytics — Official Production Edition v1.0 (Core Platform)**
 **Audit Reference:** AUD-2026-FILTER-ENGINE-007
 **Engineering Rule Target:** ER-001 (SSOT), ER-013 (Enterprise Metrics Layer), ER-016 (Project & Multi-Filter Isolation), ER-021 (Platform Compliance)
 

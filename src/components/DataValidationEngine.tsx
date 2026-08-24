@@ -4,7 +4,7 @@ import { AlertTriangle, CheckCircle2, XCircle, Download, DatabaseZap, FileText, 
 import { getStatusCodeCategory, parseDateTimestamp } from '../utils/calculations';
 import { getPerformanceValidationRows } from '../analytics/calculationFoundation';
 import { compareRevisions } from '../analytics/analyticsCore';
-import { getRevisionWeight } from '../utils/enterpriseUpgradeEngine';
+import { getRevisionWeight } from '../analytics/revisionResolver';
 
 const getNormalizedRevision = (rev?: string | number, isRev0?: boolean): string => {
     if (rev === undefined || rev === null) {
@@ -127,7 +127,7 @@ export default function DataValidationEngine({ data }: Props) {
             // 3. Status Logic
             totalChecks += 1;
             const cat = getStatusCodeCategory(row.status);
-            if (cat === 'UNKNOWN' && row.status) {
+            if (cat === 'UNCLASSIFIED' && row.status) {
                 failedChecks++; cats.statusLogic++; errs.push({ ref: rowRef || 'Unknown', type: 'Invalid Status Code', desc: `Status code ${row.status} is undefined` });
             }
         });
@@ -162,8 +162,8 @@ export default function DataValidationEngine({ data }: Props) {
                             failedChecks++; cats.revisionLogic++; errs.push({ ref, type: 'Revision Regression', desc: `Revision reverted from ${prev} to ${curr}` });
                         }
                     } else if (/[0-9]+/.test(prev) && /[0-9]+/.test(curr)) {
-                         const prevNum = parseInt(prev, 10);
-                         const currNum = parseInt(curr, 10);
+                         const prevNum = getRevisionWeight(prev);
+                         const currNum = getRevisionWeight(curr);
                          const dist = currNum - prevNum;
                          if (dist > 1) {
                             failedChecks++; cats.revisionLogic++; errs.push({ ref, type: 'Missing Revision', desc: `Skipped revision from ${prev} to ${curr}` });

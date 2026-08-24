@@ -1,4 +1,4 @@
-# DocuSight Analytics — Full System Regression Verification Report
+# StructuSight Analytics — Full System Regression Verification Report
 **Document Version:** 2.1.0-ENTERPRISE-REGRESSION-SUITE  
 **Audit Target:** Full Engine Regression Across All 10 Engineering Modules & Core Classification Pipeline  
 **Date:** August 3, 2026  
@@ -88,7 +88,7 @@ Comparing direct raw Excel row evaluation against the updated engine across all 
 
 ```
 ===================================================================================
-DOCUSIGHT ENGINE REGRESSION VERIFICATION RESULTS
+STRUCTUSIGHT ENGINE REGRESSION VERIFICATION RESULTS
 ===================================================================================
 Timestamp: 2026-08-03T06:12:00.000Z
 Golden Dataset Size: 820 records (810 active, 10 CANCELLED)
@@ -122,4 +122,4 @@ TEST DETAILS:
 3. **100% Alignment with Raw Excel Computation**: All discipline breakdowns (ARCH 3 Code D, ELEC 3 Code D, MECH 1 Code D) match direct Excel evaluation with zero variance.
 4. **Zero Regressions**: All 10 modules pass validation with 100% compliance.
 
-*Certified by DocuSight Lead Software Architect & Verification Engine v2.1.0*
+*Certified by StructuSight Lead Software Architect & Verification Engine v2.1.0*

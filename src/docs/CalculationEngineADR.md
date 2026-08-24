@@ -4,9 +4,9 @@
 Proposed / Under Evaluation (Pending Formal Approval)
 
 ## Context & Problem Statement
-DocuSight Analytics currently contains multiple calculation utilities, modules, and helper functions distributed across `/src/utils/calculations.ts`, `/src/analytics/calculationFoundation.ts`, `/src/analytics/kpiEngine.ts`, `/src/analytics/statusEngine.ts`, and specialized register engines (such as NCR, SOR, LTR). 
+StructuSight Analytics currently contains multiple calculation utilities, modules, and helper functions distributed across `/src/utils/calculations.ts`, `/src/analytics/calculationFoundation.ts`, `/src/analytics/kpiEngine.ts`, `/src/analytics/statusEngine.ts`, and specialized register engines (such as NCR, SOR, LTR). 
 
-To comply with **DocuSight Analytics – Official Calculation Engine Specification Version 1.0** (specifically Chapters 12, 14, 22, and 30 - *Single Source of Truth*, *Read Once – Calculate Once*, and *No Duplicate Logic*), we must evaluate all existing calculation engines, establish a single Canonical Calculation Engine, and define a rigorous migration strategy.
+To comply with **StructuSight Analytics – Official Calculation Engine Specification Version 1.0** (specifically Chapters 12, 14, 22, and 30 - *Single Source of Truth*, *Read Once – Calculate Once*, and *No Duplicate Logic*), we must evaluate all existing calculation engines, establish a single Canonical Calculation Engine, and define a rigorous migration strategy.
 
 ---
 

@@ -61,8 +61,13 @@ export default function SmartExportModal({
     const [rangeType, setRangeType] = useState<'all' | 'custom'>('all');
     const [rangeStart, setRangeStart] = useState<number>(1);
     const [rangeEnd, setRangeEnd] = useState<number>(20);
-    const [arabicEnabled, setArabicEnabled] = useState<boolean>(true);
+    const [arabicEnabled, setArabicEnabled] = useState<boolean>(language === 'ar');
     const [dataScope, setDataScope] = useState<'active' | 'monthly' | 'cumulative'>('active');
+
+    // Keep arabicEnabled in sync when application language changes
+    React.useEffect(() => {
+        setArabicEnabled(language === 'ar');
+    }, [language]);
 
     // --- Enterprise Customization States ---
     const [primaryColor, setPrimaryColor] = useState<string>('#0A192F');
@@ -149,11 +154,14 @@ export default function SmartExportModal({
                 ? (activeTab === 'monthly' ? 'monthly' : activeTab === 'cumulative' ? 'cumulative' : 'presentation')
                 : dataScope;
 
+            // Strict policy: No Arabic text in any report when application language is English
+            const effectiveArabic = (language === 'ar') && !!arabicEnabled;
+
             const exportOptions = {
                 selectedSections: sectionsList,
                 slideRangeStart: rangeType === 'custom' ? rangeStart : undefined,
                 slideRangeEnd: rangeType === 'custom' ? rangeEnd : undefined,
-                arabicEnabled: arabicEnabled,
+                arabicEnabled: effectiveArabic,
                 monthlyStart: startDate,
                 primaryColor,
                 accentColor,
@@ -229,7 +237,7 @@ export default function SmartExportModal({
                         windowWidth: 1550
                     },
                     jsPDF:        { unit: 'mm', format: pageSize.toLowerCase(), orientation: activeTab === 'presentation' ? 'landscape' : orientation.toLowerCase() },
-                    pagebreak:    { mode: ['css', 'legacy'], avoid: ['tr', '.page-break-inside-avoid', '.chart-card', '.kpi-card', 'h1', 'h2', 'h3'], after: ['.page-break-after-always', '.chart-card', '.presentation-slide'] }
+                    pagebreak:    { mode: ['css', 'legacy'], avoid: ['tr', '.page-break-inside-avoid', '#report-charts-grid', '.chart-card', '.kpi-card', 'h1', 'h2', 'h3'], after: ['.page-break-after-always', '.presentation-slide'] }
                 };
 
                 await (html2pdf().set(opt).from(exportElement).toPdf().get('pdf').then((pdf: any) => {
@@ -262,10 +270,11 @@ export default function SmartExportModal({
                             periodStr = `${start} - ${end}`;
                         }
 
-                        const projName = (activeProject?.projectName || "No Project Configured").substring(0, 30);
-                        const projCode = activeProject?.projectCode || "P1.17";
-                        const contractor = activeProject?.contractorName || "INNOVO";
-                        const consultant = activeProject?.consultantName || "ACE";
+                        const rawProjName = activeProject?.projectName;
+                        const projName = (rawProjName && rawProjName !== 'No Project Configured' && rawProjName !== 'NO PROJECT CONFIGURED' ? rawProjName : 'StructuSight Master Project').substring(0, 35);
+                        const projCode = activeProject?.projectCode || "STS-P1.17";
+                        const contractor = activeProject?.contractorName || "Innovo Construction";
+                        const consultant = activeProject?.consultantName || "ACE Consulting Engineers";
                         const reportName = activeTab.toUpperCase() + " PERFORMANCE REPORT";
 
                         const primRgb = hexToRgb(primaryColor);
@@ -349,6 +358,29 @@ export default function SmartExportModal({
                             const footerBottomText = customFooter || `StructuSight Enterprise Engineering Intelligence Platform | CONCEPT & PRODUCT VISION BY EZZ RASHAD`;
                             pdf.text(footerBottomText, 10, pdfHeight - 7);
                             pdf.text(`Page ${i} of ${totalPages}`, pdfWidth - 30, pdfHeight - 7);
+                        }
+                    }
+
+                    // Apply Custom Page Range filter if selected (e.g. from page X to page Y)
+                    if (rangeType === 'custom' && totalPages > 1) {
+                        const start = Math.max(1, Math.min(rangeStart, totalPages));
+                        const end = Math.max(start, Math.min(rangeEnd, totalPages));
+                        
+                        // Delete trailing pages after `end`
+                        for (let p = totalPages; p > end; p--) {
+                            try {
+                                pdf.deletePage(p);
+                            } catch (e) {
+                                console.warn('Could not delete page', p, e);
+                            }
+                        }
+                        // Delete leading pages before `start`
+                        for (let p = start - 1; p >= 1; p--) {
+                            try {
+                                pdf.deletePage(p);
+                            } catch (e) {
+                                console.warn('Could not delete page', p, e);
+                            }
                         }
                     }
                 }) as any).save();
@@ -919,22 +951,33 @@ export default function SmartExportModal({
 
                             {/* Language RTL Switch */}
                             <div>
-                                <label className="flex items-start gap-3 p-3 bg-white rounded-xl border border-slate-200 cursor-pointer">
+                                <label className={`flex items-start gap-3 p-3 bg-white rounded-xl border border-slate-200 ${language === 'en' ? 'opacity-70 bg-slate-50 cursor-not-allowed' : 'cursor-pointer'}`}>
                                     <input 
                                         type="checkbox" 
-                                        checked={arabicEnabled} 
-                                        onChange={() => setArabicEnabled(!arabicEnabled)}
-                                        className="rounded mt-1 border-slate-300 text-[#0A192F] focus:ring-[#0A192F] w-4.5 h-4.5"
+                                        checked={language === 'ar' && arabicEnabled} 
+                                        disabled={language === 'en'}
+                                        onChange={() => {
+                                            if (language === 'ar') {
+                                                setArabicEnabled(!arabicEnabled);
+                                            }
+                                        }}
+                                        className="rounded mt-1 border-slate-300 text-[#0A192F] focus:ring-[#0A192F] w-4.5 h-4.5 disabled:opacity-40"
                                     />
                                     <div className="text-sm">
                                         <span className="block font-bold text-slate-800 flex items-center gap-1.5">
                                             <Languages className="w-4 h-4 text-[#D4AF37]" />
-                                            {isRtl ? 'تفعيل معالجة اللغة العربية وخدمة RTL للفقرات' : 'Optimize Arabic Text & RTL Alignment'}
+                                            {isRtl 
+                                                ? 'تفعيل معالجة اللغة العربية وخدمة RTL للفقرات' 
+                                                : (language === 'en' ? 'English Report Output (Active)' : 'Optimize Arabic Text & RTL Alignment')
+                                            }
                                         </span>
                                         <span className="text-xs text-slate-400 block mt-0.5">
-                                            {isRtl 
-                                                ? 'محاذاة تلقائية كاملة للنصوص والجداول والشروح مع دقة دمج الحروف العربية لتفادي الانفصال' 
-                                                : 'Keeps Arabic script cohesive and right-aligned across all native tables and diagrams'
+                                            {language === 'en'
+                                                ? 'Application language is English. All report slides, tables, and metrics will generate in 100% English.'
+                                                : (isRtl 
+                                                    ? 'محاذاة تلقائية كاملة للنصوص والجداول والشروح مع دقة دمج الحروف العربية لتفادي الانفصال' 
+                                                    : 'Keeps Arabic script cohesive and right-aligned across all native tables and diagrams'
+                                                  )
                                             }
                                         </span>
                                     </div>

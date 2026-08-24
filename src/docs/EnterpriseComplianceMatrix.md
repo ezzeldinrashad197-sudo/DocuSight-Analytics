@@ -1,6 +1,6 @@
-# DocuSight Analytics – Official Chapter-by-Chapter Constitutional Compliance Matrix
+# StructuSight Analytics – Official Chapter-by-Chapter Constitutional Compliance Matrix
 
-This document is the **Official Chapter-by-Chapter Constitutional Compliance Matrix** (Chapters 1–83) for the DocuSight Analytics platform. It serves as the formal baseline for enterprise certification, mapping every constitutional chapter of the Official Enterprise Constitution to its concrete implementation within our codebase.
+This document is the **Official Chapter-by-Chapter Constitutional Compliance Matrix** (Chapters 1–83) for the StructuSight Analytics platform. It serves as the formal baseline for enterprise certification, mapping every constitutional chapter of the Official Enterprise Constitution to its concrete implementation within our codebase.
 
 ---
 
@@ -159,4 +159,4 @@ This document is the **Official Chapter-by-Chapter Constitutional Compliance Mat
 
 ## Architectural Verification Summary
 
-DocuSight Analytics has achieved **100% Full Compliance** across all **83 chapters** of the **Official Enterprise Constitution**. Every claim is anchored directly to functional production-grade source files (`server.ts`, `parser.ts`, `auditFramework.ts`, etc.) and verified by strict compiler-grade static analyses and automated verification dashboards. The system is structurally complete, mature, and officially certified for immediate production deployment.
+StructuSight Analytics has achieved **100% Full Compliance** across all **83 chapters** of the **Official Enterprise Constitution**. Every claim is anchored directly to functional production-grade source files (`server.ts`, `parser.ts`, `auditFramework.ts`, etc.) and verified by strict compiler-grade static analyses and automated verification dashboards. The system is structurally complete, mature, and officially certified for immediate production deployment.

@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-14T09:25:09.558Z",
+  "generatedAt": "2026-08-22T17:01:45.535Z",
   "overallStatus": "APPROVED",
   "steps": [
     {
@@ -46,31 +46,31 @@
           {
             "docNo": "DOC-ST-001",
             "category": "APPROVED",
-            "delayDays": 0,
+            "delayDays": 9,
             "isOverdue": false
           },
           {
             "docNo": "DOC-ST-001",
             "category": "PENDING",
-            "delayDays": 19,
+            "delayDays": 41,
             "isOverdue": true
           },
           {
             "docNo": "DOC-AR-002",
             "category": "REJECTED_CLOSED",
-            "delayDays": 0,
+            "delayDays": 12,
             "isOverdue": false
           },
           {
             "docNo": "DOC-ME-003",
             "category": "REJECTED_OPEN",
-            "delayDays": 26,
+            "delayDays": 48,
             "isOverdue": true
           },
           {
             "docNo": "DOC-EL-004",
             "category": "APPROVED",
-            "delayDays": 2,
+            "delayDays": 16,
             "isOverdue": false
           }
         ]
@@ -85,19 +85,42 @@
           "totalSubmittedSheets": 5,
           "totalSheetsRev0": 4,
           "totalSheetsFurtherRev": 1,
-          "totalDrawingsRev0": 3,
+          "totalDrawingsRev0": 4,
           "totalDrawingsFurtherRev": 1,
           "totalUniqueDrawings": 4,
           "approved": 1,
           "rejectedOpen": 1,
           "rejectedClosed": 1,
+          "totalRejected": 2,
           "pending": 1,
+          "unclassified": 0,
+          "activeItems": 2,
+          "activeCurrentItems": 2,
+          "slaEligibleActiveItems": 2,
+          "rejectionEvents": 2,
+          "rejectionEventsOpen": 1,
+          "rejectionEventsClosed": 1,
+          "resolvedRejections": 0,
+          "rejectionResolutionRate": 0,
           "overdue": 2,
+          "overdueRateOnActive": 100,
           "avgResponseTime": 14,
-          "approvalRate": 33.33333333333333,
-          "rejectionOpenRate": 33.33333333333333,
-          "rejectionClosedRate": 33.33333333333333,
-          "delayRate": 40
+          "approvalRate": 25,
+          "rejectionOpenRate": 25,
+          "rejectionClosedRate": 25,
+          "delayRate": 50,
+          "isWorkloadReconciled": true,
+          "isCurrentStateReconciled": true,
+          "reconciliationPassed": true,
+          "dataQuality": {
+            "issues": [],
+            "missingDatesCount": 0,
+            "blankStatusCount": 0,
+            "futureDatesCount": 0,
+            "duplicateKeysCount": 0,
+            "invalidRevisionsCount": 0,
+            "totalIssuesCount": 0
+          }
         }
       }
     },

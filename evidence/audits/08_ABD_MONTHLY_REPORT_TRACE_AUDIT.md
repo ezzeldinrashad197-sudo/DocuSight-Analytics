@@ -1,5 +1,5 @@
 # ABD Monthly Report End-to-End Audit & Execution Trace
-**DocuSight Analytics — Official Production Edition v1.0 (Core Platform)**
+**StructuSight Analytics — Official Production Edition v1.0 (Core Platform)**
 **Audit Reference:** AUD-2026-ABD-TRACE-008
 **Engineering Rule Target:** ER-001 (SSOT), ER-004 (Revision Engine), ER-013 (Metrics Layer), ER-017 (As-Built & Shop Drawing Parity)
 

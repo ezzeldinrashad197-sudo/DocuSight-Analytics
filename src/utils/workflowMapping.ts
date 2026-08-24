@@ -111,9 +111,12 @@ const DEFAULT_ALIASES: AliasMapping[] = [
   { alias: 'SDW-ARC', display: 'SDW-ARC', workflowFamily: 'SDW' },
   { alias: 'SDW-ELE', display: 'SDW-ELE', workflowFamily: 'SDW' },
   { alias: 'SDW-MEC', display: 'SDW-MEC', workflowFamily: 'SDW' },
-  { alias: 'SDW-LND', display: 'SDW-LND', workflowFamily: 'SDW' },
+  { alias: 'SDW-LND', display: 'SDW-LAND', workflowFamily: 'SDW' },
+  { alias: 'SDW-LAND', display: 'SDW-LAND', workflowFamily: 'SDW' },
   { alias: 'SDW-INFRA', display: 'SDW-INFRA', workflowFamily: 'SDW' },
   { alias: 'SDW-IRR', display: 'SDW-IRR', workflowFamily: 'SDW' },
+  { alias: 'SDW-SUR', display: 'SDW-SUR', workflowFamily: 'SDW' },
+  { alias: 'SDW-SURVEY', display: 'SDW-SUR', workflowFamily: 'SDW' },
 
   // ABD As-Built Drawing Family
   { alias: 'ABD', display: 'ABD', workflowFamily: 'ABD' },
@@ -127,11 +130,23 @@ const DEFAULT_ALIASES: AliasMapping[] = [
   { alias: 'MIR', display: 'MIR', workflowFamily: 'MIR' },
   { alias: 'MATERIAL INSPECTION REQUEST', display: 'MIR', workflowFamily: 'MIR' },
   { alias: 'MATERIAL INSPECTION', display: 'MIR', workflowFamily: 'MIR' },
+  { alias: 'MIR-STR', display: 'MIR-STR', workflowFamily: 'MIR' },
+  { alias: 'MIR-ARC', display: 'MIR-ARC', workflowFamily: 'MIR' },
+  { alias: 'MIR-MEC', display: 'MIR-MEC', workflowFamily: 'MIR' },
+  { alias: 'MIR-ELE', display: 'MIR-ELE', workflowFamily: 'MIR' },
+  { alias: 'MIR-SUR', display: 'MIR-SUR', workflowFamily: 'MIR' },
 
   // WIR Family (4.4)
   { alias: 'WIR', display: 'WIR', workflowFamily: 'WIR' },
   { alias: 'WORK INSPECTION REQUEST', display: 'WIR', workflowFamily: 'WIR' },
   { alias: 'WORK INSPECTION', display: 'WIR', workflowFamily: 'WIR' },
+  { alias: 'WIR-ARC', display: 'WIR-ARC', workflowFamily: 'WIR' },
+  { alias: 'WIR-SUR', display: 'WIR-SUR', workflowFamily: 'WIR' },
+  { alias: 'WIR-STR', display: 'WIR-STR', workflowFamily: 'WIR' },
+  { alias: 'WIR-MEC', display: 'WIR-MEC', workflowFamily: 'WIR' },
+  { alias: 'WIR-ELE', display: 'WIR-ELE', workflowFamily: 'WIR' },
+  { alias: 'WIR-INFRA', display: 'WIR-INFRA', workflowFamily: 'WIR' },
+  { alias: 'WIR-LND', display: 'WIR-LND', workflowFamily: 'WIR' },
 
   // MAR Family (4.5)
   { alias: 'MAR', display: 'MAR', workflowFamily: 'MAR' },
@@ -170,7 +185,7 @@ const DEFAULT_ALIASES: AliasMapping[] = [
   { alias: 'DOCUMENT WORKFLOW', display: 'DOC', workflowFamily: 'DOC' },
 ];
 
-const LOCAL_STORAGE_KEY = 'docusight_custom_aliases';
+const LOCAL_STORAGE_KEY = 'structusight_custom_aliases';
 
 // Load all mappings (combining defaults and user-defined mappings from localStorage)
 export function getActiveMappings(): AliasMapping[] {
@@ -226,19 +241,19 @@ export function saveCustomAlias(alias: string, workflowFamily: WorkflowFamily, d
     // Save to Smart Import Profile & Learning Rules per project to complete the feedback loop
     const projectId = localStorage.getItem('docuCtrl_activeProjectId') || 'default_project';
     try {
-      const smartSaved = localStorage.getItem('docusight_smart_import_profiles');
+      const smartSaved = localStorage.getItem('structusight_smart_import_profiles');
       const smartProfiles = smartSaved ? JSON.parse(smartSaved) : {};
       if (!smartProfiles[projectId]) {
         smartProfiles[projectId] = {};
       }
       smartProfiles[projectId][cleanAlias] = workflowFamily;
-      localStorage.setItem('docusight_smart_import_profiles', JSON.stringify(smartProfiles));
+      localStorage.setItem('structusight_smart_import_profiles', JSON.stringify(smartProfiles));
     } catch (e) {
       console.error('Error saving smart profile inside custom alias:', e);
     }
 
     try {
-      const rulesSaved = localStorage.getItem('docusight_learning_engine_rules');
+      const rulesSaved = localStorage.getItem('structusight_learning_engine_rules');
       const allRules = rulesSaved ? JSON.parse(rulesSaved) : {};
       if (!allRules[projectId]) {
         allRules[projectId] = [];
@@ -251,7 +266,7 @@ export function saveCustomAlias(alias: string, workflowFamily: WorkflowFamily, d
         target: workflowFamily,
         type: 'registerType'
       });
-      localStorage.setItem('docusight_learning_engine_rules', JSON.stringify(allRules));
+      localStorage.setItem('structusight_learning_engine_rules', JSON.stringify(allRules));
     } catch (e) {
       console.error('Error saving learning rule inside custom alias:', e);
     }

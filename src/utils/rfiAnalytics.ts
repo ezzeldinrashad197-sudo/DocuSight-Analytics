@@ -1,4 +1,6 @@
 import { SubmittalRow } from "../types";
+import { compareRevisionsCanonical } from "../analytics/revisionResolver";
+import { getStatusCategory } from "./statusMatrixEngine";
 
 export interface RFITradeStat {
   trade: string;
@@ -37,7 +39,7 @@ export const getMonthStr = (d: Date | string) => {
   return isNaN(date.getTime()) ? '' : `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
 };
 
-export const calculateRFIStats = (data: SubmittalRow[], targetMonth?: Date): RFIStats => {
+export const calculateRFIStats = (data: SubmittalRow[], targetMonth?: Date, asOfDate?: Date): RFIStats => {
   const rfiMap = new Map<string, SubmittalRow[]>();
 
   const rfiData = data.filter(d => (d.documentType || '').includes('RFI') || (d.logType || '').toUpperCase().includes('RFI'));
@@ -72,11 +74,7 @@ export const calculateRFIStats = (data: SubmittalRow[], targetMonth?: Date): RFI
   const targetMonthStr = targetMonth ? getMonthStr(targetMonth) : '';
 
   Array.from(rfiMap.values()).forEach(history => {
-    history.sort((a, b) => {
-        const revA = Number(a.rev.replace(/[^0-9]/g, '')) || 0;
-        const revB = Number(b.rev.replace(/[^0-9]/g, '')) || 0;
-        return revA - revB;
-    });
+    history.sort((a, b) => compareRevisionsCanonical(a.rev, b.rev));
 
     const firstSubmission = history[0];
     const latestSubmission = history[history.length - 1];
@@ -90,8 +88,8 @@ export const calculateRFIStats = (data: SubmittalRow[], targetMonth?: Date): RFI
     const issueDateStr = firstSubmission.submissionDate;
     const responseDateStr = latestSubmission.responseDate;
     
-    const rawStatus = (latestSubmission.status || '').toUpperCase();
-    const isClosed = rawStatus.includes('APP') || rawStatus.includes('CLOS') || rawStatus.includes('A') || rawStatus.includes('B');
+    const statusCategory = getStatusCategory(latestSubmission.status);
+    const isClosed = statusCategory === 'CLOSED';
     const isOpen = !isClosed;
 
     const issueMonth = getMonthStr(issueDateStr);
@@ -119,7 +117,8 @@ export const calculateRFIStats = (data: SubmittalRow[], targetMonth?: Date): RFI
       
       const start = issueDateStr ? new Date(issueDateStr).getTime() : 0;
       if (start) {
-        daysOpen = Math.floor((new Date().getTime() - start) / (1000 * 3600 * 24));
+        const reportingDate = asOfDate && !isNaN(asOfDate.getTime()) ? asOfDate : new Date();
+        daysOpen = Math.floor((reportingDate.getTime() - start) / (1000 * 3600 * 24));
         if (daysOpen > targetSLA) {
             stats.overdue++;
             tStat.overdue++;

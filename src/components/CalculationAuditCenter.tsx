@@ -9,7 +9,7 @@ import {
 import { SubmittalRow, ProjectSettings } from '../types';
 import { calculateStats, calculateNCRStats, calculateSORStats, parseDateTimestamp } from '../utils/calculations';
 import { compareRevisions, isValidRevision } from '../analytics/analyticsCore';
-import { getRevisionWeight } from '../utils/enterpriseUpgradeEngine';
+import { getRevisionWeight } from '../analytics/revisionResolver';
 import { AuditIntegrityCenter } from './AuditIntegrityCenter';
 
 interface CalculationAuditCenterProps {

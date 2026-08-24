@@ -1,58 +1,50 @@
 [
   {
-    "functionName": "getStatusCodeCategory",
-    "cyclomatic": 47,
-    "loc": 52,
-    "halsteadVolume": 1410.64,
-    "maintainabilityIndex": 116.08,
-    "normalizedMi": 68
-  },
-  {
-    "functionName": "getDelayDays",
-    "cyclomatic": 6,
-    "loc": 23,
-    "halsteadVolume": 343.38,
-    "maintainabilityIndex": 134.18,
-    "normalizedMi": 78
-  },
-  {
     "functionName": "classifyNcrStatus",
-    "cyclomatic": 37,
-    "loc": 187,
-    "halsteadVolume": 2173.74,
-    "maintainabilityIndex": 114.06,
-    "normalizedMi": 67
-  },
-  {
-    "functionName": "calculateLTRStats",
-    "cyclomatic": 7,
-    "loc": 40,
-    "halsteadVolume": 393.46,
-    "maintainabilityIndex": 132.34,
-    "normalizedMi": 77
-  },
-  {
-    "functionName": "calculateSORStats",
-    "cyclomatic": 25,
-    "loc": 74,
-    "halsteadVolume": 1372.29,
-    "maintainabilityIndex": 120.71,
-    "normalizedMi": 71
-  },
-  {
-    "functionName": "calculateNCRStats",
-    "cyclomatic": 17,
-    "loc": 70,
-    "halsteadVolume": 1128.29,
-    "maintainabilityIndex": 123.66,
-    "normalizedMi": 72
+    "cyclomatic": 44,
+    "loc": 129,
+    "halsteadVolume": 2000.1,
+    "maintainabilityIndex": 113.48,
+    "normalizedMi": 66
   },
   {
     "functionName": "calculateStats",
-    "cyclomatic": 46,
-    "loc": 145,
-    "halsteadVolume": 2810.35,
-    "maintainabilityIndex": 111.06,
-    "normalizedMi": 65
+    "cyclomatic": 1,
+    "loc": 3,
+    "halsteadVolume": 28.07,
+    "maintainabilityIndex": 151.65,
+    "normalizedMi": 89
+  },
+  {
+    "functionName": "calculateNCRStats",
+    "cyclomatic": 1,
+    "loc": 3,
+    "halsteadVolume": 23.26,
+    "maintainabilityIndex": 152.63,
+    "normalizedMi": 89
+  },
+  {
+    "functionName": "calculateSORStats",
+    "cyclomatic": 1,
+    "loc": 3,
+    "halsteadVolume": 23.26,
+    "maintainabilityIndex": 152.63,
+    "normalizedMi": 89
+  },
+  {
+    "functionName": "calculateLTRStats",
+    "cyclomatic": 1,
+    "loc": 3,
+    "halsteadVolume": 23.26,
+    "maintainabilityIndex": 152.63,
+    "normalizedMi": 89
+  },
+  {
+    "functionName": "getDelayDays",
+    "cyclomatic": 8,
+    "loc": 14,
+    "halsteadVolume": 298.78,
+    "maintainabilityIndex": 135.25,
+    "normalizedMi": 79
   }
 ]

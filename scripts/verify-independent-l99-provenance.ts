@@ -16,7 +16,7 @@ const EXPECTED_MASTER_IDENTITY_FINGERPRINT = '3f49ce1a1f0a06802e3bdfdd8cb8cf4ef6
 
 export function runIndependentProvenanceTest() {
   console.log('===================================================================================');
-  console.log('DOCUSIGHT — INDEPENDENT L99 PROVENANCE & DECOUPLED IDENTITY EQUALITY GATE');
+  console.log('STRUCTUSIGHT — INDEPENDENT L99 PROVENANCE & DECOUPLED IDENTITY EQUALITY GATE');
   console.log('===================================================================================\n');
 
   // 1. Load Original Authoritative Master Finding Specification directly from JSON

@@ -1,7 +1,7 @@
-# DocuSight Analytics – Sprint 2 Completion Report
+# StructuSight Analytics – Sprint 2 Completion Report
 ## Hardened Data Validation & Exception Handling
 
-This document serves as the official **Sprint 2 Completion Report** for DocuSight Analytics. Sprint 2 has successfully achieved its focus of **Data Validation (Ch 19)** and **Exception Handling (Ch 20)** hardening.
+This document serves as the official **Sprint 2 Completion Report** for StructuSight Analytics. Sprint 2 has successfully achieved its focus of **Data Validation (Ch 19)** and **Exception Handling (Ch 20)** hardening.
 
 ---
 

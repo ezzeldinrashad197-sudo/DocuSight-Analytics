@@ -22,11 +22,11 @@ import {
   StatusMapConfig,
   getDocRegisterType,
   getStatusCategory,
-  getRevisionWeight,
   calculateDocumentLifecycle,
   generateExecutiveIntelligence,
   checkIfOverdueDynamically
-} from './utils/enterpriseUpgradeEngine';
+} from './utils/enterpriseAnalyticsEngine';
+import { getRevisionWeight } from './analytics/revisionResolver';
 
 import * as XLSX from 'xlsx';
 import { jsPDF } from 'jspdf';
@@ -85,7 +85,7 @@ export default function EnterpriseDashboard({ data }: EnterpriseDashboardProps) 
 
   const handleAddAuditLog = (newLog: Omit<AuditLogEntry, 'id' | 'timestamp'>) => {
     const nextId = String(auditLogs.length + 1);
-    const dateStr = '2026-06-21 ' + new Date().toTimeString().split(' ')[0].substring(0, 5);
+    const dateStr = new Date().toISOString().replace('T', ' ').substring(0, 16);
     const logItem: AuditLogEntry = {
       id: nextId,
       timestamp: dateStr,
@@ -96,8 +96,9 @@ export default function EnterpriseDashboard({ data }: EnterpriseDashboardProps) 
 
 
   // Date selections
-  const [startDate, setStartDate] = useState<string>('2026-01-01');
-  const [endDate, setEndDate] = useState<string>('2026-12-31');
+  const currentYear = new Date().getFullYear();
+  const [startDate, setStartDate] = useState<string>(() => `${currentYear}-01-01`);
+  const [endDate, setEndDate] = useState<string>(() => `${currentYear}-12-31`);
 
   // Selected document for tracking
   const [selectedDocNo, setSelectedDocNo] = useState<string>('');

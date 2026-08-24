@@ -1,4 +1,5 @@
 import { SubmittalRow, ProjectSettings } from '../types';
+import { getStatusCategory as getCanonicalStatusCategory } from '../analytics/statusResolver';
 
 export interface StatusMapConfig {
   open: string[];
@@ -24,6 +25,8 @@ export const saveProjectStatusMap = (projectId: string, map: StatusMapConfig) =>
 
 export type NormalizedStatus = 'OPEN' | 'CLOSED' | 'REJECTED' | 'OVERDUE' | 'UNKNOWN';
 
+export const getStatusCategory = getCanonicalStatusCategory;
+
 export const getNormalizedStatus = (
   row: SubmittalRow,
   projectId: string,
@@ -34,32 +37,15 @@ export const getNormalizedStatus = (
   
   const rawStatus = (row.status || '').trim().toUpperCase();
   if (!rawStatus) {
-    return isOverdue ? 'OVERDUE' : 'OPEN';
+    return isOverdue ? 'OVERDUE' : 'UNKNOWN';
   }
   
   const config = getProjectStatusMap(projectId);
-  
-  // Strict EXACT matching only - absolutely no partial string or wildcard includes() matching.
-  const isClosed = config.closed.some(s => s.toUpperCase() === rawStatus);
-  if (isClosed) return 'CLOSED';
-  
-  const isRejected = config.rejected.some(s => s.toUpperCase() === rawStatus);
-  if (isRejected) return 'REJECTED';
-  
-  const isOpen = config.open.some(s => s.toUpperCase() === rawStatus);
-  if (isOpen) {
-    return isOverdue ? 'OVERDUE' : 'OPEN';
-  }
-
-  // Exact fallback protections for safety
-  if (['A', 'B', 'CODE A', 'CODE B', 'APPROVED', 'CLOSED', 'ACCEPTED'].includes(rawStatus)) {
-    return 'CLOSED';
-  }
-  if (['C', 'CODE C', 'REJECTED', 'RETURNED', 'REJ'].includes(rawStatus)) {
-    return 'REJECTED';
-  }
-  
-  return isOverdue ? 'OVERDUE' : 'OPEN';
+  const category = getCanonicalStatusCategory(rawStatus, config);
+  if (category === 'CLOSED') return 'CLOSED';
+  if (category === 'REJECTED') return 'REJECTED';
+  if (category === 'OPEN') return isOverdue ? 'OVERDUE' : 'OPEN';
+  return 'UNKNOWN';
 };
 
 export const checkIfOverdueDynamically = (

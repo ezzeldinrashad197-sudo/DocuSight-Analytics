@@ -2,7 +2,7 @@ import React, { useMemo, useState, useEffect } from 'react';
 import { SubmittalRow, ProjectSettings } from '../types';
 import { calculateStats, calculateNCRStats, classifyNcrStatus, getStatusCodeCategory, parseDateTimestamp } from '../utils/calculations';
 import { compareRevisions, isValidRevision } from '../analytics/analyticsCore';
-import { getRevisionWeight } from '../utils/enterpriseUpgradeEngine';
+import { compareRevisionsCanonical, getRevisionWeight } from '../analytics/revisionResolver';
 import { validateAllBusinessRules, validateAllFormulas, verifyParallelEngineEquivalence } from '../analytics/governance/validationFramework';
 import { classifyRegisterSheet } from '../utils/classificationEngine';
 import { 
@@ -490,11 +490,7 @@ export default function FinalAcceptanceAuditView({ data, filterMonthly, filterCu
 
     Array.from(grouped.values()).forEach(history => {
       // Find latest revision
-      history.sort((a, b) => {
-        const revA = Number(a.rev.replace(/[^0-9]/g, '')) || 0;
-        const revB = Number(b.rev.replace(/[^0-9]/g, '')) || 0;
-        return revA - revB;
-      });
+      history.sort((a, b) => compareRevisionsCanonical(a.rev, b.rev));
       const latest = history[history.length - 1];
 
       const statusRaw = (latest.ncrStatus || latest.sorStatus || latest.status || '').toUpperCase().trim();
@@ -654,9 +650,8 @@ export default function FinalAcceptanceAuditView({ data, filterMonthly, filterCu
     data.forEach(row => {
       const docNo = (row.docNo || '').trim().toUpperCase();
       if (docNo) {
-        const rev = parseInt(row.rev || '0', 10);
         const existing = uniqueNcrMap.get(docNo);
-        if (!existing || rev > parseInt(existing.rev || '0', 10)) {
+        if (!existing || getRevisionWeight(row.rev) > getRevisionWeight(existing.rev)) {
           uniqueNcrMap.set(docNo, row);
         }
       }
@@ -730,8 +725,9 @@ export default function FinalAcceptanceAuditView({ data, filterMonthly, filterCu
 
     // 5. UNIT TEST: CarryForwardPending + CurrentMonthPending = Pending Balance
     const t5Start = performance.now();
-    // Reporting period start: July 1st, 2026
-    const reportStart = new Date('2026-07-01T00:00:00').getTime();
+    // Reporting period starts at the first day of the current reporting month.
+    const now = new Date();
+    const reportStart = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
     let carryForwardPending = 0;
     let currentMonthPending = 0;
     let totalPendingCount = 0;

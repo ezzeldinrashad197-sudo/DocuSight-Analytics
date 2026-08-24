@@ -1,5 +1,5 @@
 # Architecture Audit: Enterprise Metrics Layer & UI No-Calculation Compliance
-**DocuSight Analytics — Official Production Edition v1.0**
+**StructuSight Analytics — Official Production Edition v1.0**
 **Audit Reference:** AUD-2026-METRICS-LAYER-004
 **Engineering Rule Target:** ER-001 (Single Source of Truth), ER-005 (Calculation Centralization), ER-012 (KPI Governance), ER-013 (Enterprise Metrics Layer)
 

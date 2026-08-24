@@ -1,4 +1,4 @@
-# DocuSight Analytics – Enterprise Acceptance Report
+# StructuSight Analytics – Enterprise Acceptance Report
 
 ## 1. Executive Summary & Approval Context
 This **Enterprise Acceptance Report** represents the final formal deliverable for Phase Two (Sprints 1, 2, and 3). In strict compliance with governance rules, this report provides comprehensive documentation of the **Canonical Runtime Migration**, detailing the traceability of all specification chapters, business rules, formulas, and runtime module dependencies.
@@ -64,7 +64,7 @@ This matrix maps each official Formula ID (`FORM-XXXX`) from the **Official Metr
 
 ## 5. Runtime Dependency Map
 
-This map traces the intake, processing, and display pipelines of DocuSight Analytics to prove that all active modules route exclusively through the **Canonical Calculation Engine**.
+This map traces the intake, processing, and display pipelines of StructuSight Analytics to prove that all active modules route exclusively through the **Canonical Calculation Engine**.
 
 ```
   [Raw Input Files: Excel/SharePoint Logs]

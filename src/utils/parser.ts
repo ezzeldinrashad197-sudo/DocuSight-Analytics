@@ -1,6 +1,6 @@
 import * as XLSX from "xlsx";
 import { SubmittalRow } from "../types";
-import { normalizeData } from "./calculations";
+import { normalizeData, getRevisionWeight } from "./calculations";
 import { classifyRegisterSheet, normalizeDiscipline } from "./classificationEngine";
 import { mapDocumentToWorkflow } from "./workflowMapping";
 
@@ -316,13 +316,46 @@ export const parseExcelFile = (file: File): Promise<SubmittalRow[]> => {
             const extractDiscipline = (str: string): string | null => {
               const t = str.toUpperCase().trim();
               if (t.includes("STR/SUR") || t.includes("STR-SUR") || t.includes("STR_SUR")) return "STR/SUR";
-              const words = t.split(/[-_ \/(),&.]/);
+
+              // 1. Check composite register pattern first (e.g. INN-ARC-WIR-SUR-01938 -> SUR, WIR-ARC -> ARCH)
+              const compMatch = t.match(/\b(?:WIR|SDW|MAR|RFI|NCR|MIR|SOR|ABD|DOC|QS|LTR)[-_ /](SUR|SURV|SURVEY|STR|STRUCT|STRUCTURAL|CIVIL|CVL|ARC|ARCH|ARCHITECTURAL|MEC|MECH|MECHANICAL|HVAC|ELE|ELEC|ELECTRICAL|MEP|INFRA|INFR|INF|INFRASTRUCTURE|UTILITIES|LND|LAND|LANDSCAPE|IRR|IRRIGATION|HSE|SAFETY|GEN|GENERAL)\b/);
+              if (compMatch) {
+                const token = compMatch[1];
+                if (['SUR', 'SURV', 'SURVEY'].includes(token)) return "SURVEY";
+                if (['ARC', 'ARCH', 'ARCHITECTURAL'].includes(token)) return "ARCH";
+                if (['STR', 'STRUCT', 'STRUCTURAL', 'CIVIL', 'CVL'].includes(token)) return "STR";
+                if (['ELE', 'ELEC', 'ELECTRICAL'].includes(token)) return "ELEC";
+                if (['MEC', 'MECH', 'MECHANICAL', 'HVAC'].includes(token)) return "MECH";
+                if (['MEP'].includes(token)) return "MEP";
+                if (['INFRA', 'INFR', 'INF', 'INFRASTRUCTURE', 'UTILITIES'].includes(token)) return "INFRA";
+                if (['LND', 'LAND', 'LANDSCAPE'].includes(token)) return "LAND";
+                if (['IRR', 'IRRIGATION'].includes(token)) return "IRR";
+                if (['HSE', 'SAFETY'].includes(token)) return "HSE";
+                if (['GEN', 'GENERAL'].includes(token)) return "GEN";
+              }
+
+              let words = t.split(/[-_ \/(),&.]+/).filter(Boolean);
+
+              // If text starts with contractor-consultant prefix like INN-ARC or INN-ACE, strip the partner prefix so ARC does not contaminate
+              if (words.length > 2 && words[0] === 'INN' && (words[1] === 'ARC' || words[1] === 'ACE')) {
+                words = words.slice(2);
+              }
+
               if (words.includes("STR") && (words.includes("ARC") || words.includes("ARCH"))) {
                 return null; // Multi-discipline name (e.g. ARCH & STR)
               }
               if (words.includes("MEP") || words.includes("M.E.P") || t.includes("كهروميكانيك") || t.includes("اليكتروميكانيك") || t.includes("الكتروميكانيك")) {
                 return "MEP";
               }
+              if (
+                words.includes("SUR") ||
+                words.includes("SURV") ||
+                words.includes("SURVEY") ||
+                t.includes("SURVEY") ||
+                t.includes("مساحة") ||
+                t.includes("مساحه")
+              )
+                return "SURVEY";
               if (
                 words.includes("ARC") ||
                 words.includes("ARCH") ||
@@ -386,14 +419,6 @@ export const parseExcelFile = (file: File): Promise<SubmittalRow[]> => {
                 t.includes("بيئه")
               )
                 return "HSE";
-              if (
-                words.includes("SURV") ||
-                words.includes("SURVEY") ||
-                t.includes("SURVEY") ||
-                t.includes("مساحة") ||
-                t.includes("مساحه")
-              )
-                return "SURVEY";
               return null;
             };
 
@@ -494,7 +519,11 @@ export const parseExcelFile = (file: File): Promise<SubmittalRow[]> => {
               trade: "", // Normalized later
               workflowStage: "", // Normalized later
               isLatestRev: false, // Normalized later
-              isRev0: false, // Normalized later
+              isRev0: (() => {
+                const rawRev = colRev >= 0 ? String(r[colRev] || "").trim().toUpperCase() : "";
+                const w = getRevisionWeight(rawRev);
+                return w === 0 && rawRev !== 'AS-BUILT' && rawRev !== 'IFC';
+              })(),
               delayDays: 0, // Normalized later
               overdue: false, // Normalized later
               docNo: colDocNo >= 0 ? String(r[colDocNo] || "").trim() : "",

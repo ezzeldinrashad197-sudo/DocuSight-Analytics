@@ -4,7 +4,7 @@ import { calculateStats, getStatusCodeCategory } from './utils/calculations';
 import { Sparkles, Loader2, Bot, AlertTriangle, TrendingUp, Lightbulb, TrendingDown, Target, Clock, Users, Flame } from 'lucide-react';
 import Markdown from 'react-markdown';
 
-import { runEnterpriseEngine } from './utils/enterpriseEngine';
+import { runExecutiveAnalytics } from './utils/enterpriseAnalyticsEngine';
 
 interface AIInsightsProps {
   data: SubmittalRow[];
@@ -17,7 +17,7 @@ export default function AIInsights({ data, projectInfo }: AIInsightsProps) {
   const [error, setError] = useState<string>('');
 
   const stats = calculateStats(data);
-  const enterpriseData = useMemo(() => runEnterpriseEngine(data), [data]);
+  const enterpriseData = useMemo(() => runExecutiveAnalytics(data), [data]);
 
   const localInsights = useMemo(() => {
       if (!data || data.length === 0) return null;

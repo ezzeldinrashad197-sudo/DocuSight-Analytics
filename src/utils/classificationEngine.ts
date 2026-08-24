@@ -15,7 +15,27 @@ export function detectDisciplineFromText(text: string): { discipline: string; ra
   if (!text) return null;
   const clean = text.toUpperCase().trim();
 
-  // Arabic detection
+  // 1. Structured Composite Pattern Match (e.g. INN-ARC-WIR-SUR-01938 -> SUR, WIR-ARC -> ARC, etc.)
+  const compMatch = clean.match(/\b(?:WIR|SDW|MAR|RFI|NCR|MIR|SOR|ABD|DOC|QS|LTR)[-_ /](SUR|SURV|SURVEY|STR|STRUCT|STRUCTURAL|CIVIL|CVL|ARC|ARCH|ARCHITECTURAL|MEC|MECH|MECHANICAL|HVAC|ELE|ELEC|ELECTRICAL|MEP|INFRA|INFR|INF|INFRASTRUCTURE|UTILITIES|LND|LAND|LANDSCAPE|IRR|IRRIGATION|HSE|SAFETY|GEN|GENERAL)\b/);
+  if (compMatch) {
+    const token = compMatch[1];
+    if (['SUR', 'SURV', 'SURVEY'].includes(token)) return { discipline: 'SURVEY', rawMatch: token };
+    if (['ARC', 'ARCH', 'ARCHITECTURAL'].includes(token)) return { discipline: 'ARCH', rawMatch: token };
+    if (['STR', 'STRUCT', 'STRUCTURAL', 'CIVIL', 'CVL'].includes(token)) return { discipline: 'STR', rawMatch: token };
+    if (['ELE', 'ELEC', 'ELECTRICAL'].includes(token)) return { discipline: 'ELEC', rawMatch: token };
+    if (['MEC', 'MECH', 'MECHANICAL', 'HVAC'].includes(token)) return { discipline: 'MECH', rawMatch: token };
+    if (['MEP'].includes(token)) return { discipline: 'MEP', rawMatch: token };
+    if (['INFRA', 'INFR', 'INF', 'INFRASTRUCTURE', 'UTILITIES'].includes(token)) return { discipline: 'INFRA', rawMatch: token };
+    if (['LND', 'LAND', 'LANDSCAPE'].includes(token)) return { discipline: 'LAND', rawMatch: token };
+    if (['IRR', 'IRRIGATION'].includes(token)) return { discipline: 'IRR', rawMatch: token };
+    if (['HSE', 'SAFETY'].includes(token)) return { discipline: 'HSE', rawMatch: token };
+    if (['GEN', 'GENERAL'].includes(token)) return { discipline: 'GEN', rawMatch: token };
+  }
+
+  // 2. Arabic detection
+  if (clean.includes('مساحة') || clean.includes('مساحه')) {
+    return { discipline: 'SURVEY', rawMatch: 'مساحة' };
+  }
   if (clean.includes('معماري') || clean.includes('معمارى') || clean.includes('عمارة')) {
     return { discipline: 'ARCH', rawMatch: 'معماري' };
   }
@@ -37,17 +57,27 @@ export function detectDisciplineFromText(text: string): { discipline: string; ra
   if (clean.includes('سلامة') || clean.includes('سلامه') || clean.includes('بيئة') || clean.includes('بيئه')) {
     return { discipline: 'HSE', rawMatch: 'سلامة' };
   }
-  if (clean.includes('مساحة') || clean.includes('مساحه')) {
-    return { discipline: 'SURVEY', rawMatch: 'مساحة' };
+  if (clean.includes('لاندسكيب') || clean.includes('تنسيق مواقع') || clean.includes('تنسيق الموقع') || clean.includes('حدائق') || clean.includes('زراعة')) {
+    return { discipline: 'LAND', rawMatch: 'لاندسكيب' };
   }
 
-  const words = clean.split(/[-_ \/(),&.]+/);
+  // 3. Tokenize words
+  let words = clean.split(/[-_ \/(),&.]+/).filter(Boolean);
+
+  // If text starts with contractor-consultant prefix like INN-ARC or INN-ACE, strip the partner prefix so ARC does not contaminate
+  if (words.length > 2 && words[0] === 'INN' && (words[1] === 'ARC' || words[1] === 'ACE')) {
+    words = words.slice(2);
+  }
+
   if ((words.includes('ARCH') || words.includes('ARC')) && (words.includes('STR') || words.includes('CIVIL'))) {
     return { discipline: 'MULTIDISCIPLINE', rawMatch: 'ARCH & STR' };
   }
 
   if (words.includes('MEP') || words.includes('M.E.P')) {
     return { discipline: 'MEP', rawMatch: 'MEP' };
+  }
+  if (words.includes('SURVEY') || words.includes('SURV') || words.includes('SUR')) {
+    return { discipline: 'SURVEY', rawMatch: 'SURVEY' };
   }
   if (words.includes('ARCH') || words.includes('ARC') || words.includes('ARCHITECTURAL') || words.includes('ARCHITECTURE')) {
     return { discipline: 'ARCH', rawMatch: 'ARCH' };
@@ -76,10 +106,10 @@ export function detectDisciplineFromText(text: string): { discipline: string; ra
   if (words.includes('GEN') || words.includes('GENERAL')) {
     return { discipline: 'GEN', rawMatch: 'GEN' };
   }
-  if (words.includes('SURVEY') || words.includes('SURV')) {
-    return { discipline: 'SURVEY', rawMatch: 'SURVEY' };
-  }
 
+  if (clean.includes('-SUR') || clean.includes('_SUR') || clean.includes(' SUR ') || clean.includes('(SUR)')) {
+    return { discipline: 'SURVEY', rawMatch: 'SUR' };
+  }
   if (clean.includes('-ARCH') || clean.includes('_ARCH') || clean.includes('-ARC') || clean.includes('_ARC')) {
     return { discipline: 'ARCH', rawMatch: 'ARCH' };
   }
@@ -109,6 +139,19 @@ export function buildCompositeIdentity(
   headers: string[],
   sampleRows: any[][]
 ): CompositeIdentity {
+  const getShortCode = (d: string) => {
+    if (d === 'SURVEY' || d === 'SUR') return 'SUR';
+    if (d === 'ARCH' || d === 'ARC') return 'ARC';
+    if (d === 'STR' || d === 'CIVIL') return 'STR';
+    if (d === 'ELEC' || d === 'ELE') return 'ELE';
+    if (d === 'MECH' || d === 'MEC') return 'MEC';
+    if (d === 'INFRA' || d === 'INF') return 'INFRA';
+    if (d === 'LAND' || d === 'LND') return 'LND';
+    if (d === 'IRR') return 'IRR';
+    if (d === 'HSE') return 'HSE';
+    return d;
+  };
+
   const fileDisc = detectDisciplineFromText(fileName);
   const sheetDisc = detectDisciplineFromText(sheetName);
 
@@ -134,7 +177,7 @@ export function buildCompositeIdentity(
     return {
       family,
       discipline: fileDisc.discipline,
-      compositeCode: `${family}-${fileDisc.discipline}`,
+      compositeCode: `${family}-${getShortCode(fileDisc.discipline)}`,
       rawSourceIdentity: fileName,
       evidenceSource: 'filename',
       evidenceLevel: 'LEVEL_1_FILENAME_COMPOSITE',
@@ -150,7 +193,7 @@ export function buildCompositeIdentity(
     return {
       family,
       discipline: sheetDisc.discipline,
-      compositeCode: `${family}-${sheetDisc.discipline}`,
+      compositeCode: `${family}-${getShortCode(sheetDisc.discipline)}`,
       rawSourceIdentity: `${fileName}::${sheetName}`,
       evidenceSource: 'worksheet',
       evidenceLevel: 'LEVEL_2_WORKSHEET_COMPOSITE',
@@ -165,7 +208,7 @@ export function buildCompositeIdentity(
     return {
       family,
       discipline: hdrDisc.discipline,
-      compositeCode: `${family}-${hdrDisc.discipline}`,
+      compositeCode: `${family}-${getShortCode(hdrDisc.discipline)}`,
       rawSourceIdentity: `${fileName}::headers`,
       evidenceSource: 'header_title_block',
       evidenceLevel: 'LEVEL_3_HEADER_TITLE_BLOCK',
@@ -180,7 +223,7 @@ export function buildCompositeIdentity(
     return {
       family,
       discipline: rowDisc.discipline,
-      compositeCode: `${family}-${rowDisc.discipline}`,
+      compositeCode: `${family}-${getShortCode(rowDisc.discipline)}`,
       rawSourceIdentity: `${fileName}::rows`,
       evidenceSource: 'row_data_cell',
       evidenceLevel: 'LEVEL_4_ROW_DATA_CELL',
@@ -211,12 +254,13 @@ export interface LearnRule {
   type: 'registerType' | 'discipline';
 }
 
-const SMART_PROFILES_KEY = 'docusight_smart_import_profiles';
-const LEARNING_RULES_KEY = 'docusight_learning_engine_rules';
+const SMART_PROFILES_KEY = 'structusight_smart_import_profiles';
+const LEARNING_RULES_KEY = 'structusight_learning_engine_rules';
 
 // 1. Get/Set Smart Import Profiles per project
 export function getSmartImportProfiles(): Record<string, Record<string, WorkflowFamily>> {
   try {
+    if (typeof window === 'undefined' || !window.localStorage) return {};
     const saved = localStorage.getItem(SMART_PROFILES_KEY);
     return saved ? JSON.parse(saved) : {};
   } catch (e) {
@@ -227,6 +271,7 @@ export function getSmartImportProfiles(): Record<string, Record<string, Workflow
 
 export function saveSmartImportProfile(projectId: string, sheetName: string, family: WorkflowFamily) {
   try {
+    if (typeof window === 'undefined' || !window.localStorage) return;
     const profiles = getSmartImportProfiles();
     if (!profiles[projectId]) {
       profiles[projectId] = {};
@@ -240,6 +285,7 @@ export function saveSmartImportProfile(projectId: string, sheetName: string, fam
 
 export function deleteSmartImportProfile(projectId: string, sheetName: string) {
   try {
+    if (typeof window === 'undefined' || !window.localStorage) return;
     const profiles = getSmartImportProfiles();
     if (profiles[projectId]) {
       delete profiles[projectId][sheetName.toUpperCase().trim()];
@@ -253,6 +299,7 @@ export function deleteSmartImportProfile(projectId: string, sheetName: string) {
 // 2. Get/Set Learning Engine Rules per project
 export function getLearningRules(projectId: string): LearnRule[] {
   try {
+    if (typeof window === 'undefined' || !window.localStorage) return [];
     const saved = localStorage.getItem(LEARNING_RULES_KEY);
     const allRules: Record<string, LearnRule[]> = saved ? JSON.parse(saved) : {};
     return allRules[projectId] || [];
@@ -264,6 +311,7 @@ export function getLearningRules(projectId: string): LearnRule[] {
 
 export function saveLearningRule(projectId: string, input: string, target: string, type: 'registerType' | 'discipline') {
   try {
+    if (typeof window === 'undefined' || !window.localStorage) return;
     const saved = localStorage.getItem(LEARNING_RULES_KEY);
     const allRules: Record<string, LearnRule[]> = saved ? JSON.parse(saved) : {};
     if (!allRules[projectId]) {
@@ -289,6 +337,7 @@ export function saveLearningRule(projectId: string, input: string, target: strin
 
 export function deleteLearningRule(projectId: string, input: string, type: 'registerType' | 'discipline') {
   try {
+    if (typeof window === 'undefined' || !window.localStorage) return;
     const saved = localStorage.getItem(LEARNING_RULES_KEY);
     const allRules: Record<string, LearnRule[]> = saved ? JSON.parse(saved) : {};
     if (allRules[projectId]) {
@@ -469,8 +518,8 @@ export function classifyRegisterSheet(params: {
   checkStringInNames(cleanSheetName, 30, 'Worksheet Name');
 
   // --- ADDITIONAL EVIDENCE: Explicit shop drawing keyword matching in worksheet headers & name ---
-  const isTradeSheet = ['STR', 'ARCH', 'ELEC', 'MECH', 'MEC', 'ELE', 'CIVIL', 'CVL', 'LAND', 'LND', 'INFRA', 'INF'].includes(cleanSheetName) ||
-                        /^(STR|ARC|ELE|MEC|CIV|INF|LND)/.test(cleanSheetName);
+  const isTradeSheet = ['STR', 'ARCH', 'ELEC', 'MECH', 'MEC', 'ELE', 'CIVIL', 'CVL', 'LAND', 'LND', 'INFRA', 'INF', 'SUR', 'SURV', 'SURVEY'].includes(cleanSheetName) ||
+                        /^(STR|ARC|ELE|MEC|CIV|INF|LND|SUR)/.test(cleanSheetName);
   
   const isAsBuiltFile = cleanFileName.includes('AS-BUILT') || cleanFileName.includes('AS BUILT') || cleanFileName.includes('ABD');
   const isShopDrawingFile = !isAsBuiltFile && (cleanFileName.includes('SHOP') || cleanFileName.includes('SDW') || cleanFileName.includes('SHD') || cleanFileName.includes('DRAWING'));

@@ -1,4 +1,4 @@
-# DocuSight Analytics — Engineering Execution Contract (EEC)
+# StructuSight Analytics — Engineering Execution Contract (EEC)
 **Official Production Edition v1.0 (Core Platform)**
 **Authoritative Execution & Governance Contract**
 
@@ -6,9 +6,9 @@
 
 ## 1. Executive Summary & Statement of Authority
 
-This **Engineering Execution Contract (EEC)** governs the execution, validation, refactoring, and enterprise delivery of **DocuSight Analytics (Official Production Edition v1.0 — Core Platform)**. 
+This **Engineering Execution Contract (EEC)** governs the execution, validation, refactoring, and enterprise delivery of **StructuSight Analytics (Official Production Edition v1.0 — Core Platform)**. 
 
-It aligns with the **DocuSight Analytics — Executive Technical Audit & Refactoring Specification v1.0** and transforms the architectural vision into a legally binding engineering execution contract. Every engineering decision, code modification, data pipeline transformation, and report calculation is strictly bound by **Engineering Rules ER-001 through ER-021**.
+It aligns with the **StructuSight Analytics — Executive Technical Audit & Refactoring Specification v1.0** and transforms the architectural vision into a legally binding engineering execution contract. Every engineering decision, code modification, data pipeline transformation, and report calculation is strictly bound by **Engineering Rules ER-001 through ER-021**.
 
 > **Official Specification Deferral Note (ER-018):**
 > *ER-018 (Enterprise SharePoint / Microsoft Graph Integration) has been intentionally deferred to Version v1.1 pending deployment against a live Microsoft 365 tenant and successful operational validation. This deferral does not affect the integrity or correctness of the Core Analytics Platform.*
@@ -104,7 +104,7 @@ A phase shall be considered complete **ONLY** when all of the following conditio
 3. **Zero Duplicated Workflow Mapping:** All workflow identification flows through `Workflow Intelligence Engine`.
 4. **Functional Acceptance Testing (FAT):** FAT passes using real-world engineering project datasets (e.g. NCR, MIR, WIR, RFI, SOR, QS).
 5. **Evidence Registration:** All required test logs, screenshots, and benchmarks are saved in `/evidence/`.
-6. **Specification Compliance:** Implementation matches *DocuSight Analytics Official Production Specification v1.0 (Core Platform)*.
+6. **Specification Compliance:** Implementation matches *StructuSight Analytics Official Production Specification v1.0 (Core Platform)*.
 7. **Lead Sign-Off:** The Project Document Control Lead has formally approved the phase completion.
 
 *Failure of any single criterion shall prevent progression to the next phase.*
@@ -178,5 +178,5 @@ Google AI Studio Technical Implementation Agent
 
 **Approved by Authority:**  
 **Ezz Rashad**  
-*Project Document Control Lead & Author, DocuSight Analytics Specification v1.0*  
+*Project Document Control Lead & Author, StructuSight Analytics Specification v1.0*  
 *Date: July 24, 2026*

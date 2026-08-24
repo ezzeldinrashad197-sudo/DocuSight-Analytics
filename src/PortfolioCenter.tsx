@@ -2,8 +2,8 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { ProjectSettings } from './types';
 import { ShieldAlert, TrendingUp, AlertTriangle, Presentation, Briefcase, Activity, Hexagon } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { collection, getDocs } from 'firebase/firestore';
-import { db, handleFirestoreError, OperationType } from './firebase';
+import { collection, documentId, getDocs, query, where } from 'firebase/firestore';
+import { auth, db, getCurrentUserProjectScope, handleFirestoreError, OperationType } from './firebase';
 
 interface PortfolioCenterProps {
   projects: ProjectSettings[];
@@ -15,9 +15,18 @@ export default function PortfolioCenter({ projects }: PortfolioCenterProps) {
   useEffect(() => {
      const fetchStats = async () => {
          try {
-             const snap = await getDocs(collection(db, 'project_stats'));
+             const user = auth.currentUser;
+             if (!user) return;
+             const scope = await getCurrentUserProjectScope();
+             const projectIds = scope.unrestricted ? projects.map(p => p.id).filter(Boolean) : scope.projectIds;
+             const chunks: string[][] = [];
+             for (let i = 0; i < projectIds.length; i += 30) chunks.push(projectIds.slice(i, i + 30));
              const st: any[] = [];
-             snap.forEach(d => st.push({ id: d.id, ...d.data() }));
+             for (const chunk of chunks) {
+                 if (!chunk.length) continue;
+                 const snap = await getDocs(query(collection(db, 'project_stats'), where(documentId(), 'in', chunk)));
+                 snap.forEach(d => st.push({ id: d.id, ...d.data() }));
+             }
              setRealStats(st);
          } catch (err) {
              console.warn('[Portfolio Center] Non-fatal project_stats fetch warning:', err);

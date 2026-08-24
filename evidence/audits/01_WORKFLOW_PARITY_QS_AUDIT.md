@@ -1,5 +1,5 @@
 # Workflow Parity Audit: Quantity Surveying (QS) Workflow Isolation
-**DocuSight Analytics — Official Production Edition v1.0**
+**StructuSight Analytics — Official Production Edition v1.0**
 **Audit Reference:** AUD-2026-QS-PARITY-001
 **Engineering Rule Target:** ER-008 (Workflow Intelligence) & ER-009 (Discipline Intelligence)
 
@@ -53,4 +53,4 @@ An automated audit scan was run against 500 test submittal records containing va
 ---
 
 ## 4. Audit Finding & Certification
-**VERIFIED PASSED.** Quantity Surveying submittals maintain 100% workflow isolation and are cleanly categorized as `QS` across the entire DocuSight Analytics engine.
+**VERIFIED PASSED.** Quantity Surveying submittals maintain 100% workflow isolation and are cleanly categorized as `QS` across the entire StructuSight Analytics engine.

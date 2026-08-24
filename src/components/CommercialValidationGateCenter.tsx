@@ -842,7 +842,7 @@ export const CommercialValidationGateCenter: React.FC = () => {
                 </div>
                 <div>
                   <span className="text-xs font-mono uppercase text-indigo-600 font-bold tracking-widest block">
-                    DOCUSIGHT COMMERCIAL VALIDATION GATE
+                    STRUCTUSIGHT COMMERCIAL VALIDATION GATE
                   </span>
                   <h2 className="text-2xl font-black text-slate-900">
                     CVG-01 Commercial Validation Evidence Report
@@ -862,7 +862,7 @@ export const CommercialValidationGateCenter: React.FC = () => {
               <div className="p-4 bg-slate-900 text-white rounded-2xl space-y-2">
                 <div className="flex justify-between items-center text-xs">
                   <span className="text-slate-400 font-mono">REPORT IDENTIFIER:</span>
-                  <span className="font-mono text-amber-400 font-bold">DOCUSIGHT-CVG01-CORPUS-CERT-2026</span>
+                  <span className="font-mono text-amber-400 font-bold">STRUCTUSIGHT-CVG01-CORPUS-CERT-2026</span>
                 </div>
                 <div className="flex justify-between items-center text-xs">
                   <span className="text-slate-400 font-mono">CORPUS SIZE:</span>

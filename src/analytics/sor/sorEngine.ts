@@ -1,5 +1,6 @@
 import { SubmittalRow } from '../../types';
 import { classifyNcrStatus } from '../../utils/calculations';
+import { compareRevisionsCanonical, getRevisionWeight } from '../revisionResolver';
 
 export const isYes = (v: unknown) => typeof v === 'string' ? v.toUpperCase() === 'YES' || v.toUpperCase() === 'Y' : !!v;
 
@@ -20,11 +21,7 @@ export const getLatestRev = (rows: SubmittalRow[], upToDate?: Date): SubmittalRo
    const explicitLatest = validRows.find(r => isYes(r.isLatestRev));
    if (explicitLatest && !upToDate) return explicitLatest;
 
-   validRows.sort((a, b) => {
-       const ra = parseInt((a.rev || '0').replace(/\D/g, ''), 10) || 0;
-       const rb = parseInt((b.rev || '0').replace(/\D/g, ''), 10) || 0;
-       return ra - rb;
-   });
+   validRows.sort((a, b) => compareRevisionsCanonical(a.rev, b.rev));
    return validRows[validRows.length - 1];
 };
 
@@ -147,8 +144,8 @@ export const processSORData = (safeData: SubmittalRow[], monthlyStart: string | 
 
        if (isSentInMonth) {
            st.totalSubs++;
-           const revNum = parseInt((latestOfMon.rev || '0').replace(/\D/g, ''), 10) || 0;
-           if (revNum === 0) st.rev0++; else st.revHigh++;
+           const revNum = getRevisionWeight(latestOfMon.rev);
+           if (revNum === 0) st.rev0++; else if (revNum > 0) st.revHigh++;
            
            if (classification === 'Approved Closed' || (isApp && isClosed)) { st.approved++; classification = 'Approved Closed'; }
            if (classification === 'Rejected Open') st.rejectedOpen++;

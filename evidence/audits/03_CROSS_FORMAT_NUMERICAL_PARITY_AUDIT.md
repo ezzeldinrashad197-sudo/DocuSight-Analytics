@@ -1,5 +1,5 @@
 # Cross-Format Numerical Parity Audit
-**DocuSight Analytics — Official Production Edition v1.0**
+**StructuSight Analytics — Official Production Edition v1.0**
 **Audit Reference:** AUD-2026-CROSS-PARITY-003
 **Engineering Rule Target:** ER-001 (SSOT), ER-012 (KPI Governance), ER-013 (Metrics Layer), ER-021 (Platform Compliance)
 

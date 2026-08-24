@@ -1,12 +1,12 @@
 import { SubmittalRow } from '../../types';
 import { buildCanonicalDataset, evaluatePerformanceLayer, parseDateTimestamp } from '../calculationFoundation';
 import { compareRevisions, isValidRevision } from '../analyticsCore';
-import { getRevisionWeight } from '../../utils/enterpriseUpgradeEngine';
+import { getRevisionWeight } from '../revisionResolver';
 import { getStatusCodeCategory } from '../../utils/calculations';
 
 export const ENGINE_VERSIONS = {
   revisionEngine: 'v1.0.0',
-  statusEngine: 'v1.0.0',
+  statusResolver: 'v2.0.0',
   workflowEngine: 'v1.0.0',
   governanceRules: 'v1.0.0',
   baselineDate: '2026-07-29',

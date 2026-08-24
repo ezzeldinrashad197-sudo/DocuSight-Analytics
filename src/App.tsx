@@ -183,14 +183,27 @@ export default function App() {
       const saved = localStorage.getItem('docuCtrl_projects');
       if (saved) {
         const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed)) {
+        if (Array.isArray(parsed) && parsed.length > 0) {
           return parsed;
         }
       }
     } catch (e) {
       console.error("[Local Storage Diagnostics] Corrupted projects data in localStorage. Resetting projects state:", e);
     }
-    return [];
+    return [
+      {
+        id: 'proj-1',
+        projectName: 'StructuSight Master Project',
+        projectCode: 'STS-P1.17',
+        clientName: 'Main Client / Employer',
+        consultantName: 'ACE Consulting Engineers',
+        contractorName: 'Innovo Construction',
+        projectManager: 'Eng. Project Director',
+        documentControlManager: 'Eng. Ezz Rashad',
+        reviewPeriodDays: 14,
+        workingDaysPerWeek: 6
+      }
+    ];
   });
   
   const [activeProjectId, setActiveProjectId] = useState<string>(() => {

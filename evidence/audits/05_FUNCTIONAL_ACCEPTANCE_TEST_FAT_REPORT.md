@@ -1,12 +1,12 @@
 # Functional Acceptance Testing (FAT) Protocol & Execution Report
-**DocuSight Analytics — Official Production Edition v1.0**
+**StructuSight Analytics — Official Production Edition v1.0**
 **Report Reference:** FAT-2026-EXECUTION-005
 **Target Specification:** Executive Technical Audit & Refactoring Specification v1.0 Chapters 21, 22
 
 ---
 
 ## 1. Executive Summary & Objective
-This **Functional Acceptance Testing (FAT)** report documents the end-to-end execution of DocuSight Analytics against **5 real-world engineering datasets** (`NCR`, `MIR`, `WIR`, `RFI`, `SOR`, `QS`, `SDW`, `ABD`, `MAR`).
+This **Functional Acceptance Testing (FAT)** report documents the end-to-end execution of StructuSight Analytics against **5 real-world engineering datasets** (`NCR`, `MIR`, `WIR`, `RFI`, `SOR`, `QS`, `SDW`, `ABD`, `MAR`).
 
 The objective is to verify that the live system achieves 100% mathematical accuracy, zero duplicate item inflation, deterministic status resolution, and complete compliance with Engineering Rules ER-001 through ER-021 under enterprise production conditions.
 

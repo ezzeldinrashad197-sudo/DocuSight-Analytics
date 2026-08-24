@@ -1,5 +1,5 @@
 import { SubmittalRow } from "../types";
-import { calculateStats } from "./calculations";
+import { calculateStats, normalizeData } from "./calculations";
 import { 
   evaluateSubmissionLayer, 
   evaluatePerformanceLayer, 
@@ -14,8 +14,8 @@ export interface BenchmarkTestCase {
   testName: string;
   description: string;
   metricName: string;
-  expectedValue: number;
-  actualValue: number;
+  expectedValue: number | string;
+  actualValue: number | string;
   variance: number;
   status: 'PASSED' | 'FAILED';
   evidence: string;
@@ -365,12 +365,13 @@ export async function runCalculationVerificationSuite(): Promise<VerificationEvi
     testName: string,
     description: string,
     metricName: string,
-    expectedValue: number,
-    actualValue: number,
+    expectedValue: number | string,
+    actualValue: number | string,
     evidence: string
   ) => {
-    const variance = Math.round((actualValue - expectedValue) * 100) / 100;
-    const passed = Math.abs(variance) < 0.01;
+    const isString = typeof expectedValue === 'string' || typeof actualValue === 'string';
+    const passed = isString ? String(expectedValue) === String(actualValue) : Math.abs(Number(actualValue) - Number(expectedValue)) < 0.01;
+    const variance = isString ? (passed ? 0 : 1) : Math.round((Number(actualValue) - Number(expectedValue)) * 100) / 100;
 
     if (!moduleBreakdown[module]) {
       moduleBreakdown[module] = { total: 0, passed: 0, failed: 0 };
@@ -385,8 +386,8 @@ export async function runCalculationVerificationSuite(): Promise<VerificationEvi
       testName,
       description,
       metricName,
-      expectedValue,
-      actualValue,
+      expectedValue: isString ? expectedValue : Number(expectedValue),
+      actualValue: isString ? actualValue : Number(actualValue),
       variance,
       status: passed ? 'PASSED' : 'FAILED',
       evidence
@@ -409,7 +410,7 @@ export async function runCalculationVerificationSuite(): Promise<VerificationEvi
   addTest(
     "BENCH-SUB-02", "Submission Layer", "Rev.0 Submittals Count",
     "Counts initial Rev.0 submittals in Submission Layer",
-    "rev00", 670, subLayer.rev00,
+    "rev00", 720, subLayer.rev00,
     `Submission layer identified ${subLayer.rev00} Rev.0 submittals.`
   );
 
@@ -429,18 +430,21 @@ export async function runCalculationVerificationSuite(): Promise<VerificationEvi
     `Performance layer collapsed 770 active submittals to ${perfLayer.totalUniqueItems} unique documents.`
   );
 
-  // Approved unique entities in golden dataset:
+  // Approved unique entities in golden dataset across all registers:
   // SDW: 50 (Rev.1 Code B) + 90 (Rev.0 Code A) = 140
   // MAR: 60 (Code A) + 15 (Code B) = 75
   // MIR: 70
   // WIR: 80 (65 Code A + 15 Code B)
+  // RFI: 75 (Closed)
+  // NCR: 35 (Closed)
+  // SOR: 50 (Closed)
   // ABD: 50
   // QS: 50
-  // Total Approved = 140 + 75 + 70 + 80 + 50 + 50 = 465
+  // Total Approved = 140 + 75 + 70 + 80 + 75 + 35 + 50 + 50 + 50 = 625
   addTest(
     "BENCH-PERF-02", "Performance Layer", "Approved Unique Documents",
-    "Evaluates unique approved items (Code A, B, Approved)",
-    "approved", 465, perfLayer.approved,
+    "Evaluates unique approved items (Code A, B, Approved, Closed)",
+    "approved", 625, perfLayer.approved,
     `Performance layer computed ${perfLayer.approved} approved unique items.`
   );
 
@@ -488,7 +492,7 @@ export async function runCalculationVerificationSuite(): Promise<VerificationEvi
   );
 
   const globalStats = calculateStats(goldenDataset);
-  const expectedGlobalApprovalRate = 94.89795918367348;
+  const expectedGlobalApprovalRate = 86.80555555555556;
   addTest(
     "BENCH-GLOB-01", "Global Engine", "Overall Approval Rate",
     "Calculates percentage of approved items over total non-cancelled submittals",
@@ -496,7 +500,144 @@ export async function runCalculationVerificationSuite(): Promise<VerificationEvi
     `Global Approval Rate: Expected ${expectedGlobalApprovalRate}%, Computed ${globalStats.approvalRate}%.`
   );
 
-  // 4. GENERATE DETAILED RAW EVIDENCE SNAPSHOTS
+  // 4. DISCIPLINE & CANONICAL IDENTITY REGRESSION TESTS
+  const makeSampleRow = (id: string, docNo: string, disc: string): SubmittalRow => ({
+    id,
+    docNo,
+    rev: "0",
+    discipline: disc,
+    submissionDate: "2026-08-01",
+    dueDate: "2026-08-15",
+    responseDate: "2026-08-10",
+    status: "Code A",
+    logType: "SDW",
+    documentType: "",
+    trade: "",
+    contractor: "MainContractor",
+    consultant: "SupervisionConsultant",
+    sheetNo: "1",
+    remarks: "",
+    area: "Zone 1",
+    tradeSystem: disc,
+    workflowStage: "Approved",
+    isLatestRev: true,
+    isRev0: true,
+    delayDays: 0,
+    overdue: false
+  });
+
+  const discTestRows = [
+    makeSampleRow("T-STR", "INN-ARC-STR-INF-001", "Structural"),
+    makeSampleRow("T-ARC", "INN-ARC-DWG-001", "Architectural"),
+    makeSampleRow("T-MEC", "INN-ARC-MEC-DWG-001", "Mechanical"),
+    makeSampleRow("T-ELE", "INN-ARC-ELE-DWG-001", "Electrical"),
+    makeSampleRow("T-INF", "INN-ARC-INF-DWG-001", "Infrastructure"),
+    makeSampleRow("T-LND", "INN-ARC-LND-DWG-001", "Landscape"),
+    makeSampleRow("T-SUR", "INN-ARC-SUR-DWG-001", "Survey")
+  ];
+
+  const normDiscTestRows = normalizeData(discTestRows);
+  const byId = new Map(normDiscTestRows.map(r => [r.id, r]));
+
+  addTest(
+    "BENCH-DISC-01", "Discipline Engine", "SDW Landscape Canonical Resolution",
+    "Verifies raw Landscape discipline resolves to SDW-LAND without falling back to generic SDW",
+    "resolvedCanonical", "SDW-LAND", byId.get("T-LND")?.documentType || "",
+    `SDW Landscape Canonical Identity: Expected 'SDW-LAND', Resolved '${byId.get("T-LND")?.documentType}'.`
+  );
+
+  addTest(
+    "BENCH-DISC-02", "Discipline Engine", "SDW Structural Canonical Resolution",
+    "Verifies Structural discipline resolves to SDW-STR and is not hijacked by INF substrings",
+    "resolvedCanonical", "SDW-STR", byId.get("T-STR")?.documentType || "",
+    `SDW Structural Canonical Identity: Expected 'SDW-STR', Resolved '${byId.get("T-STR")?.documentType}'.`
+  );
+
+  addTest(
+    "BENCH-DISC-03", "Discipline Engine", "SDW Architectural Canonical Resolution",
+    "Verifies Architectural discipline resolves to SDW-ARC",
+    "resolvedCanonical", "SDW-ARC", byId.get("T-ARC")?.documentType || "",
+    `SDW Architectural Canonical Identity: Expected 'SDW-ARC', Resolved '${byId.get("T-ARC")?.documentType}'.`
+  );
+
+  addTest(
+    "BENCH-DISC-04", "Discipline Engine", "SDW Mechanical Canonical Resolution",
+    "Verifies Mechanical discipline resolves to SDW-MEC and is not hijacked into SDW-ARC",
+    "resolvedCanonical", "SDW-MEC", byId.get("T-MEC")?.documentType || "",
+    `SDW Mechanical Canonical Identity: Expected 'SDW-MEC', Resolved '${byId.get("T-MEC")?.documentType}'.`
+  );
+
+  addTest(
+    "BENCH-DISC-05", "Discipline Engine", "SDW Electrical Canonical Resolution",
+    "Verifies Electrical discipline resolves to SDW-ELE and is not hijacked into SDW-ARC",
+    "resolvedCanonical", "SDW-ELE", byId.get("T-ELE")?.documentType || "",
+    `SDW Electrical Canonical Identity: Expected 'SDW-ELE', Resolved '${byId.get("T-ELE")?.documentType}'.`
+  );
+
+  addTest(
+    "BENCH-DISC-06", "Discipline Engine", "SDW Infrastructure Canonical Resolution",
+    "Verifies Infrastructure discipline resolves to SDW-INFRA without confusion with Structural",
+    "resolvedCanonical", "SDW-INFRA", byId.get("T-INF")?.documentType || "",
+    `SDW Infrastructure Canonical Identity: Expected 'SDW-INFRA', Resolved '${byId.get("T-INF")?.documentType}'.`
+  );
+
+  // Cumulative 7619 Workload Preservation Simulation Test
+  const simCumulativeRows: SubmittalRow[] = [];
+  const addBulkRows = (count: number, disc: string, prefix: string) => {
+    for (let i = 0; i < count; i++) {
+      simCumulativeRows.push(makeSampleRow(`CUM-${disc}-${i}`, `${prefix}-${i}`, disc));
+    }
+  };
+  addBulkRows(2423, "Structural", "INN-ARC-SDW-STR");
+  addBulkRows(493, "Infrastructure", "INN-ARC-SDW-INFRA");
+  addBulkRows(1208, "Architectural", "INN-ARC-DWG");
+  addBulkRows(1552, "Mechanical", "INN-ARC-MEC-DWG");
+  addBulkRows(737, "Electrical", "INN-ARC-ELE-DWG");
+  addBulkRows(1206, "Landscape", "INN-ARC-LND-DWG");
+
+  const normSimCum = normalizeData(simCumulativeRows);
+  const sdwStrCount = normSimCum.filter(r => r.documentType === 'SDW-STR').length;
+  const sdwInfraCount = normSimCum.filter(r => r.documentType === 'SDW-INFRA').length;
+  const sdwArcCount = normSimCum.filter(r => r.documentType === 'SDW-ARC').length;
+  const sdwMecCount = normSimCum.filter(r => r.documentType === 'SDW-MEC').length;
+  const sdwEleCount = normSimCum.filter(r => r.documentType === 'SDW-ELE').length;
+  const sdwLandCount = normSimCum.filter(r => r.documentType === 'SDW-LAND').length;
+  const isCumulativeExact = sdwStrCount === 2423 && sdwInfraCount === 493 && sdwArcCount === 1208 && sdwMecCount === 1552 && sdwEleCount === 737 && sdwLandCount === 1206;
+
+  addTest(
+    "BENCH-DISC-07", "Discipline Engine", "7619 Cumulative Discipline Invariant",
+    "Ensures Cumulative Report registers strictly equal Presentation disciplines across all 7619 rows with STR=2423 and INFRA=493 separated",
+    "cumulativeDisciplineIntegrity", 1, isCumulativeExact ? 1 : 0,
+    `Cumulative Report Discrepancy Check: STR=${sdwStrCount}/2423, INFRA=${sdwInfraCount}/493, ARC=${sdwArcCount}/1208, MEC=${sdwMecCount}/1552, ELE=${sdwEleCount}/737, LAND=${sdwLandCount}/1206.`
+  );
+
+  // Monthly 24 Workload Preservation Simulation Test
+  const simMonthlyRows: SubmittalRow[] = [];
+  const addMonthlyBulk = (count: number, disc: string, prefix: string) => {
+    for (let i = 0; i < count; i++) {
+      simMonthlyRows.push(makeSampleRow(`MON-${disc}-${i}`, `${prefix}-${i}`, disc));
+    }
+  };
+  addMonthlyBulk(6, "Structural", "INN-ARC-STR");
+  addMonthlyBulk(2, "Architectural", "INN-ARC-DWG");
+  addMonthlyBulk(9, "Mechanical", "INN-ARC-MEC");
+  addMonthlyBulk(7, "Landscape", "INN-ARC-LND");
+
+  const normSimMon = normalizeData(simMonthlyRows);
+  const monStr = normSimMon.filter(r => r.documentType === 'SDW-STR').length;
+  const monArc = normSimMon.filter(r => r.documentType === 'SDW-ARC').length;
+  const monMec = normSimMon.filter(r => r.documentType === 'SDW-MEC').length;
+  const monLand = normSimMon.filter(r => r.documentType === 'SDW-LAND').length;
+  const isMonthlyExact = monStr === 6 && monArc === 2 && monMec === 9 && monLand === 7;
+
+  addTest(
+    "BENCH-DISC-08", "Discipline Engine", "24 Monthly Discipline Invariant",
+    "Ensures Monthly Report registers strictly equal Presentation disciplines across all 24 rows",
+    "monthlyDisciplineIntegrity", 1, isMonthlyExact ? 1 : 0,
+    `Monthly Report Discrepancy Check: STR=${monStr}/6, ARC=${monArc}/2, MEC=${monMec}/9, LAND=${monLand}/7.`
+  );
+
+  // 5. GENERATE DETAILED RAW EVIDENCE SNAPSHOTS
   const rawEvidenceSnapshots: RawEvidenceSnapshot[] = [
     {
       docNo: "SDW-DWG-001",

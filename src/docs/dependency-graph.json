@@ -61,6 +61,10 @@
       "layer": 3
     },
     {
+      "id": "src/analytics/__tests__/canonicalCalculations.test.ts",
+      "layer": 2
+    },
+    {
       "id": "src/analytics/analyticsCore.ts",
       "layer": 2
     },
@@ -137,11 +141,15 @@
       "layer": 2
     },
     {
+      "id": "src/analytics/revisionResolver.ts",
+      "layer": 2
+    },
+    {
       "id": "src/analytics/sor/sorEngine.ts",
       "layer": 2
     },
     {
-      "id": "src/analytics/statusEngine.ts",
+      "id": "src/analytics/statusResolver.ts",
       "layer": 2
     },
     {
@@ -265,6 +273,26 @@
       "layer": 3
     },
     {
+      "id": "src/scripts/audit_cumulative_wir_ssot_suite.ts",
+      "layer": 3
+    },
+    {
+      "id": "src/scripts/audit_doc_forensic_suite.ts",
+      "layer": 3
+    },
+    {
+      "id": "src/scripts/audit_multi_register_suite.ts",
+      "layer": 3
+    },
+    {
+      "id": "src/scripts/audit_rejected_precision_suite.ts",
+      "layer": 3
+    },
+    {
+      "id": "src/scripts/audit_wir_discipline_e2e_suite.ts",
+      "layer": 3
+    },
+    {
       "id": "src/types.ts",
       "layer": 0
     },
@@ -281,11 +309,7 @@
       "layer": 3
     },
     {
-      "id": "src/utils/enterpriseEngine.ts",
-      "layer": 3
-    },
-    {
-      "id": "src/utils/enterpriseUpgradeEngine.ts",
+      "id": "src/utils/enterpriseAnalyticsEngine.ts",
       "layer": 1
     },
     {
@@ -340,7 +364,7 @@
     },
     {
       "source": "src/AIInsights.tsx",
-      "target": "src/utils/enterpriseEngine.ts"
+      "target": "src/utils/enterpriseAnalyticsEngine.ts"
     },
     {
       "source": "src/App.tsx",
@@ -496,7 +520,11 @@
     },
     {
       "source": "src/EnterpriseDashboard.tsx",
-      "target": "src/utils/enterpriseUpgradeEngine.ts"
+      "target": "src/utils/enterpriseAnalyticsEngine.ts"
+    },
+    {
+      "source": "src/EnterpriseDashboard.tsx",
+      "target": "src/analytics/revisionResolver.ts"
     },
     {
       "source": "src/EnterpriseDashboard.tsx",
@@ -568,7 +596,7 @@
     },
     {
       "source": "src/RFIAnalytics.tsx",
-      "target": "src/utils/enterpriseUpgradeEngine.ts"
+      "target": "src/analytics/revisionResolver.ts"
     },
     {
       "source": "src/RFIAnalytics.tsx",
@@ -619,6 +647,18 @@
       "target": "src/utils/i18n.tsx"
     },
     {
+      "source": "src/analytics/__tests__/canonicalCalculations.test.ts",
+      "target": "src/analytics/calculationFoundation.ts"
+    },
+    {
+      "source": "src/analytics/__tests__/canonicalCalculations.test.ts",
+      "target": "src/types.ts"
+    },
+    {
+      "source": "src/analytics/__tests__/canonicalCalculations.test.ts",
+      "target": "src/utils/calculations.ts"
+    },
+    {
       "source": "src/analytics/analyticsCore.ts",
       "target": "src/types.ts"
     },
@@ -628,7 +668,7 @@
     },
     {
       "source": "src/analytics/analyticsCore.ts",
-      "target": "src/utils/enterpriseUpgradeEngine.ts"
+      "target": "src/analytics/revisionResolver.ts"
     },
     {
       "source": "src/analytics/analyticsService.ts",
@@ -644,11 +684,11 @@
     },
     {
       "source": "src/analytics/calculationFoundation.ts",
-      "target": "src/utils/enterpriseUpgradeEngine.ts"
+      "target": "src/analytics/revisionResolver.ts"
     },
     {
       "source": "src/analytics/calculationFoundation.ts",
-      "target": "src/utils/calculations.ts"
+      "target": "src/analytics/statusResolver.ts"
     },
     {
       "source": "src/analytics/dataValidator.ts",
@@ -728,7 +768,7 @@
     },
     {
       "source": "src/analytics/governance/goldenRegressionSuite.ts",
-      "target": "src/utils/enterpriseUpgradeEngine.ts"
+      "target": "src/analytics/revisionResolver.ts"
     },
     {
       "source": "src/analytics/governance/goldenRegressionSuite.ts",
@@ -792,7 +832,7 @@
     },
     {
       "source": "src/analytics/recordTransformer.ts",
-      "target": "src/analytics/statusEngine.ts"
+      "target": "src/analytics/statusResolver.ts"
     },
     {
       "source": "src/analytics/recordTransformer.ts",
@@ -808,7 +848,7 @@
     },
     {
       "source": "src/analytics/revisionEngine.ts",
-      "target": "src/utils/enterpriseUpgradeEngine.ts"
+      "target": "src/analytics/revisionResolver.ts"
     },
     {
       "source": "src/analytics/sor/sorEngine.ts",
@@ -819,8 +859,12 @@
       "target": "src/utils/calculations.ts"
     },
     {
-      "source": "src/analytics/statusEngine.ts",
-      "target": "src/analytics/models.ts"
+      "source": "src/analytics/sor/sorEngine.ts",
+      "target": "src/analytics/revisionResolver.ts"
+    },
+    {
+      "source": "src/analytics/statusResolver.ts",
+      "target": "src/types.ts"
     },
     {
       "source": "src/components/ActionTracker.tsx",
@@ -856,7 +900,7 @@
     },
     {
       "source": "src/components/CalculationAuditCenter.tsx",
-      "target": "src/utils/enterpriseUpgradeEngine.ts"
+      "target": "src/analytics/revisionResolver.ts"
     },
     {
       "source": "src/components/CalculationAuditCenter.tsx",
@@ -884,7 +928,7 @@
     },
     {
       "source": "src/components/DataValidationEngine.tsx",
-      "target": "src/utils/enterpriseUpgradeEngine.ts"
+      "target": "src/analytics/revisionResolver.ts"
     },
     {
       "source": "src/components/EngineeringItemDatasetView.tsx",
@@ -893,6 +937,10 @@
     {
       "source": "src/components/EngineeringItemDatasetView.tsx",
       "target": "src/analytics/calculationFoundation.ts"
+    },
+    {
+      "source": "src/components/EnterpriseHardeningView.tsx",
+      "target": "src/analytics/revisionResolver.ts"
     },
     {
       "source": "src/components/EnterpriseHardeningView.tsx",
@@ -924,7 +972,7 @@
     },
     {
       "source": "src/components/FinalAcceptanceAuditView.tsx",
-      "target": "src/utils/enterpriseUpgradeEngine.ts"
+      "target": "src/analytics/revisionResolver.ts"
     },
     {
       "source": "src/components/FinalAcceptanceAuditView.tsx",
@@ -1035,6 +1083,10 @@
       "target": "src/types.ts"
     },
     {
+      "source": "src/hooks/useExport.ts",
+      "target": "src/utils/i18n.tsx"
+    },
+    {
       "source": "src/hooks/useFilters.ts",
       "target": "src/types.ts"
     },
@@ -1072,7 +1124,7 @@
     },
     {
       "source": "src/scripts/audit_abd_negative.ts",
-      "target": "src/utils/enterpriseUpgradeEngine.ts"
+      "target": "src/analytics/revisionResolver.ts"
     },
     {
       "source": "src/scripts/audit_abd_negative.ts",
@@ -1092,7 +1144,7 @@
     },
     {
       "source": "src/scripts/audit_abd_populations.ts",
-      "target": "src/utils/enterpriseUpgradeEngine.ts"
+      "target": "src/analytics/revisionResolver.ts"
     },
     {
       "source": "src/scripts/audit_abd_populations.ts",
@@ -1108,11 +1160,79 @@
     },
     {
       "source": "src/scripts/audit_abd_suite.ts",
-      "target": "src/utils/enterpriseUpgradeEngine.ts"
+      "target": "src/analytics/revisionResolver.ts"
     },
     {
       "source": "src/scripts/audit_abd_suite.ts",
       "target": "src/analytics/calculationFoundation.ts"
+    },
+    {
+      "source": "src/scripts/audit_cumulative_wir_ssot_suite.ts",
+      "target": "src/analytics/calculationFoundation.ts"
+    },
+    {
+      "source": "src/scripts/audit_cumulative_wir_ssot_suite.ts",
+      "target": "src/utils/calculations.ts"
+    },
+    {
+      "source": "src/scripts/audit_cumulative_wir_ssot_suite.ts",
+      "target": "src/types.ts"
+    },
+    {
+      "source": "src/scripts/audit_doc_forensic_suite.ts",
+      "target": "src/analytics/calculationFoundation.ts"
+    },
+    {
+      "source": "src/scripts/audit_doc_forensic_suite.ts",
+      "target": "src/types.ts"
+    },
+    {
+      "source": "src/scripts/audit_multi_register_suite.ts",
+      "target": "src/analytics/calculationFoundation.ts"
+    },
+    {
+      "source": "src/scripts/audit_multi_register_suite.ts",
+      "target": "src/utils/calculations.ts"
+    },
+    {
+      "source": "src/scripts/audit_multi_register_suite.ts",
+      "target": "src/utils/rfiAnalytics.ts"
+    },
+    {
+      "source": "src/scripts/audit_multi_register_suite.ts",
+      "target": "src/utils/calculations.ts"
+    },
+    {
+      "source": "src/scripts/audit_multi_register_suite.ts",
+      "target": "src/types.ts"
+    },
+    {
+      "source": "src/scripts/audit_rejected_precision_suite.ts",
+      "target": "src/analytics/calculationFoundation.ts"
+    },
+    {
+      "source": "src/scripts/audit_rejected_precision_suite.ts",
+      "target": "src/utils/calculations.ts"
+    },
+    {
+      "source": "src/scripts/audit_rejected_precision_suite.ts",
+      "target": "src/types.ts"
+    },
+    {
+      "source": "src/scripts/audit_wir_discipline_e2e_suite.ts",
+      "target": "src/analytics/calculationFoundation.ts"
+    },
+    {
+      "source": "src/scripts/audit_wir_discipline_e2e_suite.ts",
+      "target": "src/utils/calculations.ts"
+    },
+    {
+      "source": "src/scripts/audit_wir_discipline_e2e_suite.ts",
+      "target": "src/utils/classificationEngine.ts"
+    },
+    {
+      "source": "src/scripts/audit_wir_discipline_e2e_suite.ts",
+      "target": "src/types.ts"
     },
     {
       "source": "src/utils/calculationVerificationEngine.ts",
@@ -1140,13 +1260,17 @@
     },
     {
       "source": "src/utils/calculations.ts",
-      "target": "src/utils/enterpriseUpgradeEngine.ts"
+      "target": "src/analytics/revisionResolver.ts"
     },
     {
       "source": "src/utils/calculations.ts",
       "target": "src/utils/workflowMapping.ts"
     },
     {
+      "source": "src/utils/calculations.ts",
+      "target": "src/analytics/statusResolver.ts"
+    },
+    {
       "source": "src/utils/classificationEngine.ts",
       "target": "src/utils/workflowMapping.ts"
     },
@@ -1155,20 +1279,24 @@
       "target": "src/types.ts"
     },
     {
-      "source": "src/utils/enterpriseEngine.ts",
+      "source": "src/utils/enterpriseAnalyticsEngine.ts",
       "target": "src/types.ts"
     },
     {
-      "source": "src/utils/enterpriseEngine.ts",
+      "source": "src/utils/enterpriseAnalyticsEngine.ts",
+      "target": "src/utils/statusMatrixEngine.ts"
+    },
+    {
+      "source": "src/utils/enterpriseAnalyticsEngine.ts",
+      "target": "src/analytics/revisionResolver.ts"
+    },
+    {
+      "source": "src/utils/enterpriseAnalyticsEngine.ts",
       "target": "src/utils/calculations.ts"
     },
     {
-      "source": "src/utils/enterpriseUpgradeEngine.ts",
-      "target": "src/types.ts"
-    },
-    {
-      "source": "src/utils/enterpriseUpgradeEngine.ts",
-      "target": "src/utils/statusMatrixEngine.ts"
+      "source": "src/utils/enterpriseAnalyticsEngine.ts",
+      "target": "src/analytics/statusResolver.ts"
     },
     {
       "source": "src/utils/multiFileParser.ts",
@@ -1181,6 +1309,10 @@
     {
       "source": "src/utils/ncrAnalytics.ts",
       "target": "src/types.ts"
+    },
+    {
+      "source": "src/utils/ncrAnalytics.ts",
+      "target": "src/analytics/revisionResolver.ts"
     },
     {
       "source": "src/utils/ncrAnalytics.ts",
@@ -1207,12 +1339,24 @@
       "target": "src/types.ts"
     },
     {
+      "source": "src/utils/rfiAnalytics.ts",
+      "target": "src/analytics/revisionResolver.ts"
+    },
+    {
+      "source": "src/utils/rfiAnalytics.ts",
+      "target": "src/utils/statusMatrixEngine.ts"
+    },
+    {
       "source": "src/utils/securityRegressionSuite.ts",
       "target": "src/types.ts"
     },
     {
       "source": "src/utils/statusMatrixEngine.ts",
       "target": "src/types.ts"
+    },
+    {
+      "source": "src/utils/statusMatrixEngine.ts",
+      "target": "src/analytics/statusResolver.ts"
     }
   ]
 }

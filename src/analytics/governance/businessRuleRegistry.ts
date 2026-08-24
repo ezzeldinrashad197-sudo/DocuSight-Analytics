@@ -10,7 +10,7 @@ export interface BusinessRuleDefinition {
 
 export const ENGINE_RULE_VERSIONS = {
   revisionEngine: 'v1.0.0',
-  statusEngine: 'v1.0.0',
+  statusResolver: 'v2.0.0',
   workflowEngine: 'v1.0.0',
   governanceRules: 'v1.0.0',
   baselineDate: '2026-07-29',

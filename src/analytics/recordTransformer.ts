@@ -1,12 +1,12 @@
 import { SubmittalRow } from '../types';
 import { AnyRecord } from './models';
-import { normalizeStatus, normalizeNcrStatus } from './statusEngine';
+import { getRecordNormalizedStatus } from './statusResolver';
 import { runRevisionEngine } from './revisionEngine';
 
 export const transformRecords = (rows: SubmittalRow[]): AnyRecord[] => {
     const records = rows.map(r => {
         const rawStatus = r.status || '';
-        let normStatus = normalizeStatus(rawStatus);
+        let normStatus = getRecordNormalizedStatus(r);
         
         let typeStr = r.documentType?.toUpperCase() || '';
         const logStr = r.logType?.toUpperCase() || '';
@@ -27,9 +27,6 @@ export const transformRecords = (rows: SubmittalRow[]): AnyRecord[] => {
         else if (typeStr.includes('SI') || logStr.includes('SI')) recordType = 'SI';
         else if (typeStr.includes('MOM') || logStr.includes('MOM')) recordType = 'MOM';
 
-        if (recordType === 'NCR') {
-            normStatus = normalizeNcrStatus(r);
-        }
 
         const base = {
             id: r.id,

@@ -1,400 +1,79 @@
-import { SubmittalRow, KPIStats } from "../types";
-import { buildCanonicalDataset, evaluateSubmissionLayer, evaluatePerformanceLayer, getBusinessEntityKey, parseDateTimestamp } from "../analytics/calculationFoundation";
-export { parseDateTimestamp };
+import { SubmittalRow, KPIStats } from '../types';
+import { 
+  buildCanonicalDataset, 
+  evaluateSubmissionLayer, 
+  evaluatePerformanceLayer, 
+  getBusinessEntityKey, 
+  parseDateTimestamp, 
+  calculateCanonicalKPIs,
+  calculateStats as calcStatsFoundation,
+  calculateNCRStats as calcNCRStatsFoundation,
+  calculateSORStats as calcSORStatsFoundation,
+  calculateLTRStats as calcLTRStatsFoundation,
+  resolveRowDiscipline,
+  resolveCanonicalTrade
+} from "../analytics/calculationFoundation";
+export { parseDateTimestamp, buildCanonicalDataset, evaluateSubmissionLayer, evaluatePerformanceLayer, getBusinessEntityKey, calculateCanonicalKPIs, resolveRowDiscipline, resolveCanonicalTrade };
 import { compareRevisions } from "../analytics/analyticsCore";
-import { getRevisionWeight } from "./enterpriseUpgradeEngine";
+import { compareRevisionsCanonical, getRevisionWeight } from "../analytics/revisionResolver";
 import { mapDocumentToWorkflow } from "./workflowMapping";
+import { getStatusCodeCategory, getStatusCategory, getRecordNormalizedStatus } from '../analytics/statusResolver';
+export { getStatusCodeCategory, getStatusCategory, getRecordNormalizedStatus, compareRevisions, compareRevisionsCanonical, getRevisionWeight, mapDocumentToWorkflow };
 
-export const getStatusCodeCategory = (codeOrRow?: string | SubmittalRow): 'APPROVED' | 'REJECTED_OPEN' | 'REJECTED_CLOSED' | 'PENDING' | 'UNKNOWN' => {
-  if (!codeOrRow) return 'PENDING'; // Assume pending if no status
-  
-  let code = '';
-  let recordStatus = '';
-  let workflowStage = '';
-  let action = '';
-
-  if (typeof codeOrRow === 'object') {
-    code = (codeOrRow.status || (codeOrRow as any).ncrStatus || (codeOrRow as any).sorStatus || '').toUpperCase().trim();
-    recordStatus = (codeOrRow.recordStatus || '').toUpperCase().trim();
-    workflowStage = (codeOrRow.workflowStage || '').toUpperCase().trim();
-    action = (codeOrRow.action || (codeOrRow as any).ncrAction || (codeOrRow as any).sorAction || '').toUpperCase().trim();
-  } else {
-    code = codeOrRow.toUpperCase().trim();
-  }
-
-  if (!code && !recordStatus && !workflowStage && !action) return 'PENDING';
-
-  const normalized = code.replace(/["':\-\s]+/g, ' ').trim();
-  const combined = `${code} ${recordStatus} ${workflowStage} ${action}`.replace(/["':\-\s]+/g, ' ').trim();
-
-  // 1. Explicit Code D / Rejected Closed check (Code D is ALWAYS Rejected Closed: Disapproved / Do Not Resubmit)
-  if (normalized === 'D' || normalized === 'CODE D' || normalized.startsWith('D ') || normalized.endsWith(' D') || normalized.includes('CODE D') || combined.includes('C CLOSED') || combined.includes('REJ CLOS') || combined.includes('REJECTED CLOSED')) {
-    return 'REJECTED_CLOSED';
-  }
-
-  // 2. Explicit Code C / Rejected Open check (Code C is Rejected Open unless explicitly marked CLOSED)
-  const isCodeC = normalized === 'C' || normalized === 'CODE C' || normalized.startsWith('C ') || normalized.endsWith(' C') || normalized.includes('CODE C') || normalized.includes('REJ') || normalized.includes('REJECT');
-  const isClosed = recordStatus === 'CLOSED' || recordStatus === 'CLOSE' || workflowStage === 'CLOSED' || action === 'CLOSED';
-
-  if (isCodeC) {
-    if (isClosed) return 'REJECTED_CLOSED';
-    return 'REJECTED_OPEN';
-  }
-
-  // 3. Approved codes map -> Code A, Code B, Approved, Accepted (Code D is NOT included here)
-  if (['A', 'B'].includes(normalized) || 
-      normalized.startsWith('A ') || normalized.startsWith('B ') || 
-      normalized.includes('CODE A') || normalized.includes('CODE B') || 
-      normalized.includes('APP') || normalized.includes('ACC') || 
-      normalized.includes('SUPER')) {
-    return 'APPROVED';
-  }
-
-  // 4. Pending map -> W, WAITING, PEND
-  if (['W'].includes(normalized) || normalized.startsWith('W ') || normalized.includes('CODE W') || normalized.includes('PEN') || normalized.includes('WAIT')) {
-    return 'PENDING';
-  }
-
-  return 'UNKNOWN';
-}
-
-export const normalizeData = (rows: SubmittalRow[]): SubmittalRow[] => {
-  // Sort rows originally by docNo and then by rev, or just group them to find the highest rev
-  const docHistory = new Map<string, string[]>(); // docNo -> array of revs (to determine latest)
-  
-  // 1st Pass: Fill basic normalized fields and collect revisions
-  const normalized = rows.map(r => {
-      const logSearchArea = `${r.logType || ''} ${r.sourceFile || ''}`.toUpperCase();
-      const upperLogType = (r.logType || '').toUpperCase();
-      
-      // Determine candidate raw type: if row docNo, logType or sourceFile has explicit family prefix, prioritize it
-      let candidateType = r.logType || r.documentType || '';
-      const upperDocNo = (r.docNo || '').toUpperCase().trim();
-      const upperLog = (r.logType || '').toUpperCase().trim();
-      const upperSrc = (r.sourceFile || '').toUpperCase().trim();
-
-      if (upperDocNo.includes('ABD-') || upperDocNo.includes('AS-BUILT') || upperDocNo.includes('AS BUILT') || upperDocNo.includes('ASBUILT') || upperDocNo.startsWith('ABD') || upperLog.includes('ABD') || upperLog.includes('AS-BUILT') || upperLog.includes('AS BUILT') || upperLog.includes('ASBUILT') || upperSrc.includes('ABD') || upperSrc.includes('AS-BUILT') || upperSrc.includes('AS BUILT') || upperSrc.includes('ASBUILT')) {
-        candidateType = 'ABD';
-      } else if (upperDocNo.includes('SDW-') || upperDocNo.includes('SHD-') || upperDocNo.includes('SHOP-') || upperDocNo.startsWith('SDW') || upperDocNo.startsWith('SHD')) {
-        candidateType = 'SDW';
-      } else if (upperDocNo.includes('MAR-') || upperDocNo.startsWith('MAR')) {
-        candidateType = 'MAR';
-      } else if (upperDocNo.includes('RFI-') || upperDocNo.startsWith('RFI')) {
-        candidateType = 'RFI';
-      } else if (upperDocNo.includes('NCR-') || upperDocNo.startsWith('NCR')) {
-        candidateType = 'NCR';
-      } else if (upperDocNo.includes('WIR-') || upperDocNo.startsWith('WIR')) {
-        candidateType = 'WIR';
-      } else if (upperDocNo.includes('MIR-') || upperDocNo.startsWith('MIR')) {
-        candidateType = 'MIR';
-      } else if (upperDocNo.includes('SOR-') || upperDocNo.startsWith('SOR')) {
-        candidateType = 'SOR';
-      } else if (upperDocNo.includes('QS-') || upperDocNo.startsWith('QS')) {
-        candidateType = 'QS';
-      } else if (upperDocNo.includes('LTR-') || upperDocNo.startsWith('LTR') || upperDocNo.includes('CORR-')) {
-        candidateType = 'LETTER';
-      }
-
-      // Use official SSOT workflow mapper
-      const mapped = mapDocumentToWorkflow(candidateType);
-      // Keep 'LTR' as internal representation for LETTER for backward compatibility with correspondence views
-      let docType = mapped.workflowFamily === 'LETTER' ? 'LTR' : mapped.workflowFamily;
-
-      const resolveTradeFromRow = (r: SubmittalRow, docTypeFamily: string) => {
-          const compDisc = (r.compositeIdentity?.discipline || r.contextDiscipline || '').toUpperCase().trim();
-          const logType = (r.logType || r.rawSourceIdentity || r.documentType || '').toUpperCase().trim();
-          const explicitDisc = (r.discipline || '').toUpperCase().trim();
-          const tradeField = (r.trade || r.tradeSystem || '').toUpperCase().trim();
-
-          const mapDiscToTrade = (str: string) => {
-              if (!str) return null;
-              const clean = str.toUpperCase().trim();
-              if (!clean) return null;
-
-              // Tokenize string by standard punctuation/whitespace boundaries
-              const tokens = clean.split(/[-_ \/(),&.]+/).filter(Boolean);
-
-              // 1. Multi-discipline (e.g. ARCH & STR)
-              if (clean.includes('MULTIDISCIPLINE') || (tokens.includes('ARCH') && tokens.includes('STR')) || (tokens.includes('ARC') && tokens.includes('STR'))) {
-                  return { trade: 'Multi-Discipline', tradeShort: 'MULTI' };
-              }
-
-              // 2. INFRASTRUCTURE / INFRA / INFR / INF / UTILITIES / بنية تحتية
-              // MUST be resolved explicitly FIRST before Structural or any other matcher
-              if (
-                  tokens.some(t => ['INF', 'INFR', 'INFRA', 'INFRASTRUCTURE', 'UTILITIES'].includes(t)) ||
-                  clean.includes('بنية تحتية') ||
-                  clean.includes('مرافق') ||
-                  clean === 'INF' || clean === 'INFRA' || clean === 'INFR' || clean === 'INFRASTRUCTURE'
-              ) {
-                  return { trade: 'Infrastructure', tradeShort: 'INFRA' };
-              }
-
-              // 3. MEP (e.g. MEP, M.E.P, كهروميكانيك)
-              if (tokens.some(t => ['MEP', 'M.E.P'].includes(t)) || clean.includes('كهروميكانيك') || clean.includes('الكتروميكانيك') || clean.includes('اليكتروميكانيك')) {
-                  return { trade: 'MEP', tradeShort: 'MEP' };
-              }
-
-              // 4. Structural (e.g. STR, STRUCT, STRUCTURAL, CIVIL, CVL, إنشائي)
-              if (tokens.some(t => ['STR', 'STRUCT', 'STRUCTURAL', 'CIVIL', 'CVL'].includes(t)) || clean.includes('إنشائي') || clean.includes('انشائي') || clean.includes('مدني') || clean.includes('مدنى')) {
-                  return { trade: 'Structural', tradeShort: 'STR' };
-              }
-
-              // 5. Architectural (e.g. ARCH, ARC, ARCHITECTURAL, ARCHITECTURE, معماري)
-              if (tokens.some(t => ['ARCH', 'ARC', 'ARCHITECTURAL', 'ARCHITECTURE'].includes(t)) || clean.includes('معماري') || clean.includes('معمارى') || clean.includes('عمارة')) {
-                  return { trade: 'Architectural', tradeShort: 'ARC' };
-              }
-
-              // 6. Mechanical (e.g. MECH, MEC, MECHANICAL, HVAC, ميكانيك)
-              if (tokens.some(t => ['MECH', 'MEC', 'MECHANICAL', 'HVAC'].includes(t)) || clean.includes('ميكانيك') || clean.includes('ميكانيكا')) {
-                  return { trade: 'Mechanical', tradeShort: 'MEC' };
-              }
-
-              // 7. Electrical (e.g. ELEC, ELE, ELECTRICAL, ELECTRIC, كهرباء)
-              if (tokens.some(t => ['ELEC', 'ELE', 'ELECTRICAL', 'ELECTRIC'].includes(t)) || clean.includes('كهرباء') || clean.includes('كهربائية')) {
-                  return { trade: 'Electrical', tradeShort: 'ELE' };
-              }
-
-              // 8. Landscape (e.g. LAND, LND, LANDSCAPE, لاند)
-              if (tokens.some(t => ['LAND', 'LND', 'LANDSCAPE'].includes(t)) || clean.includes('لاند')) {
-                  return { trade: 'Landscape', tradeShort: 'LND' };
-              }
-
-              // 9. Irrigation (e.g. IRR, IRRIGATION, ري)
-              if (tokens.some(t => ['IRR', 'IRRIGATION'].includes(t)) || clean.includes('ري')) {
-                  return { trade: 'Irrigation', tradeShort: 'IRR' };
-              }
-
-              // 10. HSE / Safety (e.g. HSE, SAFETY, HEALTH, ENV, سلامة)
-              if (tokens.some(t => ['HSE', 'SAFETY', 'HEALTH', 'ENV'].includes(t)) || clean.includes('سلامة') || clean.includes('سلامه')) {
-                  return { trade: 'HSE', tradeShort: 'HSE' };
-              }
-
-              // 10. Survey (e.g. SURVEY, SURV, SUR, مساحة)
-              if (tokens.some(t => ['SURVEY', 'SURV', 'SUR'].includes(t)) || clean.includes('مساحة') || clean.includes('مساحه')) {
-                  return { trade: 'Survey', tradeShort: 'SURV' };
-              }
-
-              // 11. General
-              if (tokens.some(t => ['GEN', 'GENERAL'].includes(t)) || clean === 'GEN' || clean === 'GENERAL') {
-                  return { trade: 'General', tradeShort: 'GEN' };
-              }
-
-              return null;
-          };
-
-          // 0. Precedence Check: Explicit Document Reference Pattern / Register Code Lock
-          // If docNo, logType, or rawSourceIdentity explicitly contains a composite family pattern (e.g. WIR-STR, SDW-ARC, MAR-MEC),
-          // the document reference pattern / container identity takes precedence for the register documentType.
-          const refPatternStr = `${r.docNo || ''} ${r.logType || ''} ${r.rawSourceIdentity || ''} ${r.compositeIdentity?.compositeCode || ''}`.toUpperCase();
-          const compositeCodeMatch = refPatternStr.match(/\b(WIR|SDW|MAR|RFI|NCR|MIR|SOR|ABD)[-_ ](STR|ARC|ARCH|MEC|MECH|ELE|ELEC|MEP|INFRA|INF|LND|LAND|IRR)\b/);
-          if (compositeCodeMatch) {
-              const codeTradeToken = compositeCodeMatch[2];
-              const mappedRefCodeTrade = mapDiscToTrade(codeTradeToken);
-              if (mappedRefCodeTrade) return mappedRefCodeTrade;
-          }
-
-          // 1. Explicit Row Discipline (Highest priority for multi-trade row separation in generic registers)
-          if (explicitDisc && explicitDisc !== 'GEN' && explicitDisc !== 'GENERAL' && explicitDisc !== 'UNCLASSIFIED') {
-              const mappedExplicit = mapDiscToTrade(explicitDisc);
-              if (mappedExplicit) return mappedExplicit;
-          }
-
-          // 2. Explicit Trade Field
-          if (tradeField && tradeField !== 'GEN' && tradeField !== 'GENERAL' && tradeField !== 'UNCLASSIFIED') {
-              const mappedTrade = mapDiscToTrade(tradeField);
-              if (mappedTrade) return mappedTrade;
-          }
-
-          // 3. Container Composite Identity Fallback (from filename or worksheet level lock)
-          if (compDisc && compDisc !== 'UNCLASSIFIED') {
-              const mappedComp = mapDiscToTrade(compDisc);
-              if (mappedComp) return mappedComp;
-          }
-
-          // 4. LogType / Raw Source Identity string fallback
-          const mappedLog = mapDiscToTrade(logType);
-          if (mappedLog && mappedLog.tradeShort !== 'GEN') return mappedLog;
-
-          // 5. Zero-Invention Rule Fallback
-          if (explicitDisc === 'UNCLASSIFIED' || compDisc === 'UNCLASSIFIED') {
-              return { trade: 'UNCLASSIFIED', tradeShort: 'UNCLASS' };
-          }
-
-          return { trade: 'General', tradeShort: 'GEN' };
-      };
-
-      const { trade, tradeShort } = resolveTradeFromRow(r, docType);
-
-      docType = `${docType}-${tradeShort}`;
-      let finalDiscipline = (r.discipline && r.discipline !== 'GEN' && r.discipline !== 'GENERAL' && r.discipline !== 'UNCLASSIFIED') ? r.discipline : trade;
-
-      // DO NOT override GEN to HSE. The user explicitly requested to respect the parsed content.
-
-      const statusCategory = getStatusCodeCategory(r);
-      let workflowStage = 'Pending';
-      if (statusCategory === 'APPROVED') workflowStage = 'Approved';
-      else if (statusCategory === 'REJECTED_OPEN') workflowStage = 'Rejected';
-      else if (statusCategory === 'REJECTED_CLOSED') workflowStage = 'Returned';
-      else if (statusCategory === 'PENDING') workflowStage = 'Pending';
-      
-      const revUpper = r.rev.trim().toUpperCase();
-      const isRev0 = revUpper === '00' || revUpper === '0' || revUpper === '';
-      
-      const docNoUpper = r.docNo.trim().toUpperCase();
-      if (docNoUpper) {
-          if (!docHistory.has(docNoUpper)) docHistory.set(docNoUpper, []);
-          docHistory.get(docNoUpper)!.push(revUpper);
-      }
-
-      const delayDays = getDelayDays(r.submissionDate, r.responseDate, r.dueDate);
-      const overdue = delayDays > 0 && (workflowStage === 'Pending' || workflowStage === 'Rejected');
-
-      return {
-          ...r,
-          documentType: docType,
-          trade,
-          discipline: finalDiscipline,
-          workflowStage,
-          isRev0,
-          delayDays,
-          overdue,
-          isLatestRev: false, // Default to false, will solve in 2nd pass
-          
-          // Mapping Specification Fields
-          workflowFamily: mapped.workflowFamily,
-          displayDocType: mapped.display,
-          isUnknownWorkflow: mapped.isUnknown,
-          calculationEngine: mapped.engine,
-      };
-  });
-
-  // 2nd Pass: Determine isLatestRev
-  return normalized.map(r => {
-      const docNoUpper = r.docNo.trim().toUpperCase();
-      const revUpper = r.rev.trim().toUpperCase();
-      if (!docNoUpper) return { ...r, isLatestRev: true }; // If no doc NO, consider it unique
-      
-      const allRevs = docHistory.get(docNoUpper) || [];
-      // Quick way to find 'highest' revision: sort alphabetically in reverse. Generally "01" > "00", "B" > "A", "2" > "1"
-      // If rev format is messy, this works well enough for general log data.
-      allRevs.sort((a, b) => {
-          const numA = parseInt(a, 10);
-          const numB = parseInt(b, 10);
-          if (!isNaN(numA) && !isNaN(numB)) return numB - numA;
-          return b.localeCompare(a);
-      });
-      
-      const latestRev = allRevs[0];
-      const isLatestRev = revUpper === latestRev;
-      
-      return {
-          ...r,
-          isLatestRev
-      };
-  });
-};
-export const getDelayDays = (submission: string, response: string, due: string): number => {
-    if (!submission) return 0;
-    const start = new Date(submission).getTime();
-    
-    let target = 0;
-    if (response) {
-       target = new Date(response).getTime();
-    } else {
-       target = new Date().getTime(); // Today
-    }
-    
-    // We can calculate actual delay relative to due date if due date exists.
-    if (due) {
-        const dueTime = new Date(due).getTime();
-        const delay = (target - dueTime) / (1000 * 3600 * 24);
-        return delay > 0 ? Math.round(delay) : 0;
-    }
-
-    // Default 14 days if no due date specified
-    const expected = start + (14 * 24 * 3600 * 1000);
-    const delay = (target - expected) / (1000 * 3600 * 24);
-    return delay > 0 ? Math.round(delay) : 0;
-}
-
-export const classifyNcrStatus = (row: SubmittalRow) => {
-  const ref = (row.ncrRef || row.sorRef || row.docNo || '').trim().toUpperCase();
-  const statusRaw = (row.ncrStatus || row.sorStatus || row.status || '').toUpperCase().trim();
-  const actionRaw = (row.ncrAction || row.sorAction || row.action || '').toUpperCase().trim();
-
-  // Date variables
-  const receivedDateStr = row.submissionDate; // Received Date
-  const sentCorrectiveDateStr = row.ncrSentDateCorrectiveAction || row.sentDateCorrectiveAction; // Sent Date Corrective Action
-  const receivedCorrectiveDateStr = row.responseDate; // Received Date Corrective Action (Consultant Response Date)
-
-  // Explicit Mandatory Fixes to guarantee system-wide parity on legacy critical unit tests if any
-  if (ref === 'INN-ARC-NCR-ARC-00174') {
-     return { 
-       status: 'Rejected Open', 
-       isApproved: false, 
-       isRejected: true, 
-       isOpen: false, 
-       isClosed: false, 
-       isUnderReview: false,
-       isApprovedClosed: false,
-       isRejectedClosed: false,
-       isRejectedOpen: true,
-       isPending: false,
-       isWaiting: false
-     };
-  }
-  if (ref === 'INN-ARC-NCR-MEC-000034' || ref === 'INN-ARC-SOR-MEC-000034') {
-     return { 
-       status: 'Pending', 
-       isApproved: false, 
-       isRejected: false, 
-       isOpen: true, 
-       isClosed: false, 
-       isUnderReview: true,
-       isApprovedClosed: false,
-       isRejectedClosed: false,
-       isRejectedOpen: false,
-       isPending: true,
-       isWaiting: true
-     };
-  }
-
-  // Priority 1: Check explicit status and action status codes
-  const isApprovedClosedStatus = 
-    statusRaw === 'CLOSED' || statusRaw === 'CLOSE' || statusRaw === 'APPROVED' ||
-    actionRaw.includes('APPROVED') || actionRaw === 'APP';
-
-  const isRejectedOpenStatus = 
-    (statusRaw === 'OPEN' && actionRaw.includes('REJECTED')) ||
-    (statusRaw === 'OPEN' && actionRaw === 'REJ') ||
-    (actionRaw.includes('REJECTED') || actionRaw === 'REJ');
-
-  const isPendingUnderReviewStatus = 
-    statusRaw === 'W' || statusRaw === 'WAITING' || statusRaw === 'PENDING' || statusRaw === 'UNDER REVIEW' ||
-    actionRaw === 'UNDER REVIEW' || actionRaw === 'WAITING';
-
-  if (isApprovedClosedStatus) {
+export const classifyNcrStatus = (rowOrStatus?: any): any => {
+  if (!rowOrStatus) {
     return {
-      status: 'Approved Closed',
-      isApproved: true,
-      isRejected: false,
+      status: 'UNKNOWN',
       isOpen: false,
-      isClosed: true,
+      isClosed: false,
       isUnderReview: false,
-      isApprovedClosed: true,
+      isApprovedClosed: false,
       isRejectedClosed: false,
       isRejectedOpen: false,
       isPending: false,
-      isWaiting: false
+      isWaiting: false,
+      isApproved: false,
+      isRejected: false,
     };
   }
 
-  if (isRejectedOpenStatus) {
+  let code = '';
+  let action = '';
+  let status = '';
+
+  if (typeof rowOrStatus === 'object') {
+    code = (rowOrStatus.ncrStatus || rowOrStatus.sorStatus || rowOrStatus.status || rowOrStatus.recordStatus || '').toUpperCase().trim();
+    action = (rowOrStatus.ncrAction || rowOrStatus.sorAction || rowOrStatus.action || '').toUpperCase().trim();
+    status = (rowOrStatus.status || rowOrStatus.recordStatus || '').toUpperCase().trim();
+  } else {
+    code = String(rowOrStatus).toUpperCase().trim();
+  }
+
+  const isClosedStatus = code === 'CLOSED' || code === 'CLOSE' || status === 'CLOSED' || action === 'APPROVED' || code.includes('CLOSED');
+  const isOpenStatus = code === 'OPEN' || status === 'OPEN' || code.includes('OPEN');
+  const isPendingStatus = code === 'W' || code === 'CODE W' || code.includes('PEND') || code.includes('WAIT') || action === 'UNDER REVIEW';
+  const isApproved = action === 'APPROVED' || code === 'A' || code === 'B' || code === 'CODE A' || code === 'CODE B' || code.includes('APPROVED');
+  const isRejected = action === 'REJECTED' || code === 'C' || code === 'CODE C' || code === 'D' || code === 'CODE D' || code.includes('REJECT');
+
+  if (isPendingStatus || action === 'UNDER REVIEW') {
+    return {
+      status: 'Pending',
+      isOpen: true,
+      isClosed: false,
+      isUnderReview: true,
+      isApprovedClosed: false,
+      isRejectedClosed: false,
+      isRejectedOpen: false,
+      isPending: true,
+      isWaiting: true,
+      isApproved: false,
+      isRejected: false
+    };
+  }
+
+  if (isRejected && (isOpenStatus || (!isClosedStatus && !isApproved))) {
     return {
       status: 'Rejected Open',
-      isApproved: false,
-      isRejected: true,
       isOpen: false,
       isClosed: false,
       isUnderReview: false,
@@ -402,33 +81,47 @@ export const classifyNcrStatus = (row: SubmittalRow) => {
       isRejectedClosed: false,
       isRejectedOpen: true,
       isPending: false,
-      isWaiting: false
+      isWaiting: false,
+      isApproved: false,
+      isRejected: true
     };
   }
 
-  if (isPendingUnderReviewStatus) {
+  if (isApproved || (isClosedStatus && !isRejected)) {
     return {
-      status: 'Pending',
-      isApproved: false,
-      isRejected: false,
-      isOpen: true,
-      isClosed: false,
-      isUnderReview: true,
-      isApprovedClosed: false,
+      status: 'Approved Closed',
+      isOpen: false,
+      isClosed: true,
+      isUnderReview: false,
+      isApprovedClosed: true,
       isRejectedClosed: false,
       isRejectedOpen: false,
-      isPending: true,
-      isWaiting: true
+      isPending: false,
+      isWaiting: false,
+      isApproved: true,
+      isRejected: false
     };
   }
 
-  // Priority 2: Date-driven stage resolution if status/action are non-explicit
-  // 1. Sent Date is Blank -> Stage is OPEN (Internal Contractor Action)
-  if (!sentCorrectiveDateStr) {
+  if (isRejected && isClosedStatus) {
+    return {
+      status: 'Rejected Closed',
+      isOpen: false,
+      isClosed: true,
+      isUnderReview: false,
+      isApprovedClosed: false,
+      isRejectedClosed: true,
+      isRejectedOpen: false,
+      isPending: false,
+      isWaiting: false,
+      isApproved: false,
+      isRejected: true
+    };
+  }
+
+  if (isOpenStatus) {
     return {
       status: 'Open',
-      isApproved: false,
-      isRejected: false,
       isOpen: true,
       isClosed: false,
       isUnderReview: false,
@@ -436,537 +129,239 @@ export const classifyNcrStatus = (row: SubmittalRow) => {
       isRejectedClosed: false,
       isRejectedOpen: false,
       isPending: false,
-      isWaiting: false
-    };
-  }
-
-  // 2. Sent Date is Present but Received Date Corrective Action is Blank -> Stage is UNDER REVIEW
-  if (sentCorrectiveDateStr && !receivedCorrectiveDateStr) {
-    return {
-      status: 'Pending', // Pending / Under Review
+      isWaiting: false,
       isApproved: false,
-      isRejected: false,
-      isOpen: true,
-      isClosed: false,
-      isUnderReview: true,
-      isApprovedClosed: false,
-      isRejectedClosed: false,
-      isRejectedOpen: false,
-      isPending: true,
-      isWaiting: true
+      isRejected: false
     };
   }
 
-  // 3. Received Date Corrective Action is Present
-  if (receivedCorrectiveDateStr) {
-    if (statusRaw === 'CLOSED' || statusRaw === 'CLOSE') {
-      return {
-        status: 'Approved Closed',
-        isApproved: true,
-        isRejected: false,
-        isOpen: false,
-        isClosed: true,
-        isUnderReview: false,
-        isApprovedClosed: true,
-        isRejectedClosed: false,
-        isRejectedOpen: false,
-        isPending: false,
-        isWaiting: false
-      };
-    } else {
-      return {
-        status: 'Rejected Open',
-        isApproved: false,
-        isRejected: true,
-        isOpen: false,
-        isClosed: false,
-        isUnderReview: false,
-        isApprovedClosed: false,
-        isRejectedClosed: false,
-        isRejectedOpen: true,
-        isPending: false,
-        isWaiting: false
-      };
-    }
-  }
-
-  // Fallback
   return {
-    status: 'Open',
-    isApproved: false,
-    isRejected: false,
-    isOpen: true,
-    isClosed: false,
+    status: 'Closed',
+    isOpen: false,
+    isClosed: true,
     isUnderReview: false,
-    isApprovedClosed: false,
+    isApprovedClosed: true,
     isRejectedClosed: false,
     isRejectedOpen: false,
     isPending: false,
-    isWaiting: false
+    isWaiting: false,
+    isApproved: true,
+    isRejected: false
   };
 };
 
-export const getUniqueNCRs = (data: SubmittalRow[]): SubmittalRow[] => {
-   const ncrData = data.filter((d: SubmittalRow) => (d.documentType || '').startsWith('NCR-') || d.documentType === 'NCR' || d.logType?.toUpperCase().includes('NCR'));
-   const refMap = new Map<string, SubmittalRow>();
-   
-   ncrData.forEach(row => {
-        const ref = (row.ncrRef || row.docNo || '').trim().toUpperCase();
-        if (!refMap.has(ref)) {
-            refMap.set(ref, row);
-        } else {
-            const curr = refMap.get(ref)!;
-            const currLast = String(curr.ncrLastRev || '').toUpperCase().trim();
-            const newLast = String(row.ncrLastRev || '').toUpperCase().trim();
-            
-            if (newLast === 'YES' && currLast !== 'YES') {
-                refMap.set(ref, row);
-            } else if (newLast === 'YES' && currLast === 'YES') {
-                // Tie-breaker based on rev number
-                const cRev = Number((curr.rev || '').trim()) || 0;
-                const nRev = Number((row.rev || '').trim()) || 0;
-                if (nRev > cRev) refMap.set(ref, row);
-            } else if (currLast !== 'YES') {
-                // Neither is yes, fallback to rev number
-                const cRev = Number((curr.rev || '').trim()) || 0;
-                const nRev = Number((row.rev || '').trim()) || 0;
-                if (nRev > cRev) {
-                    refMap.set(ref, row);
-                }
-            }
-        }
-   });
-   
-   return Array.from(refMap.values());
+export const getUniqueNCRs = (rows: SubmittalRow[]): SubmittalRow[] => {
+  if (!rows || rows.length === 0) return [];
+  const map = new Map<string, SubmittalRow[]>();
+  rows.forEach(r => {
+    const ref = (r.ncrRef || (r as any).docNo || r.id || '').trim().toUpperCase();
+    if (!map.has(ref)) {
+      map.set(ref, []);
+    }
+    map.get(ref)!.push(r);
+  });
+  const result: SubmittalRow[] = [];
+  map.forEach((list) => {
+    list.sort((a, b) => compareRevisionsCanonical(a.rev, b.rev));
+    result.push(list[list.length - 1]);
+  });
+  return result;
 };
 
-export const getUniqueSORs = (data: SubmittalRow[]): SubmittalRow[] => {
-   const sorData = data.filter((d: SubmittalRow) => (d.documentType || '').startsWith('SOR-') || d.documentType === 'SOR' || d.logType?.toUpperCase().includes('SOR'));
-   const refMap = new Map<string, SubmittalRow>();
-   
-   sorData.forEach(row => {
-        const ref = (row.ncrRef || row.docNo || '').trim().toUpperCase();
-        if (!refMap.has(ref)) {
-            refMap.set(ref, row);
-        } else {
-            const curr = refMap.get(ref)!;
-            const currLast = String(curr.ncrLastRev || '').toUpperCase().trim();
-            const newLast = String(row.ncrLastRev || '').toUpperCase().trim();
-            
-            if (newLast === 'YES' && currLast !== 'YES') {
-                refMap.set(ref, row);
-            } else if (newLast === 'YES' && currLast === 'YES') {
-                const cRev = Number((curr.rev || '').trim()) || 0;
-                const nRev = Number((row.rev || '').trim()) || 0;
-                if (nRev > cRev) refMap.set(ref, row);
-            } else if (currLast !== 'YES') {
-                const cRev = Number((curr.rev || '').trim()) || 0;
-                const nRev = Number((row.rev || '').trim()) || 0;
-                if (nRev > cRev) refMap.set(ref, row);
-            }
-        }
-   });
-   
-   return Array.from(refMap.values());
+export const calculateStats = (rows: SubmittalRow[], fullDataset?: SubmittalRow[]): KPIStats & { totalUniqueDrawings: number } => {
+  return calcStatsFoundation(rows, fullDataset);
 };
 
-export const calculateLTRStats = (data: SubmittalRow[], isMonthly: boolean): KPIStats => {
-  let lettersIn = 0;
-  let lettersOut = 0;
-  let totalSubmittedSheets = 0;
+export const calculateNCRStats = (rows: SubmittalRow[], fullDataset?: SubmittalRow[] | boolean): any => {
+  return calcNCRStatsFoundation(rows, fullDataset);
+};
 
-  data.forEach(row => {
-    // If we only consider monthly vs cumulative based on some date sent logic maybe:
-    const hasSentDate = !!row.submissionDate;
+export const calculateSORStats = (rows: SubmittalRow[], fullDataset?: SubmittalRow[] | boolean): any => {
+  return calcSORStatsFoundation(rows, fullDataset);
+};
 
-    if (isMonthly) {
-      if (hasSentDate) {
-         totalSubmittedSheets++;
-         if (row.direction === 'IN') lettersIn++;
-         else if (row.direction === 'OUT') lettersOut++;
-      }
-    } else {
-       totalSubmittedSheets++;
-       if (row.direction === 'IN') lettersIn++;
-       else if (row.direction === 'OUT') lettersOut++;
+export const calculateLTRStats = (rows: SubmittalRow[], fullDataset?: SubmittalRow[] | boolean): any => {
+  return calcLTRStatsFoundation(rows, fullDataset);
+};
+
+export const normalizeData = (rows: SubmittalRow[]): SubmittalRow[] => {
+  if (!rows || rows.length === 0) return [];
+  
+  // Group rows by docNoUpper to find highest revision
+  const docHistory = new Map<string, string[]>();
+  rows.forEach(r => {
+    const docNoUpper = (r.docNo || (r as any).ncrRef || (r as any).sorRef || (r as any).rfiRef || r.id || '').trim().toUpperCase();
+    const revUpper = (r.rev || '').trim().toUpperCase();
+    if (!docHistory.has(docNoUpper)) {
+      docHistory.set(docNoUpper, []);
+    }
+    const list = docHistory.get(docNoUpper)!;
+    if (!list.includes(revUpper)) {
+      list.push(revUpper);
     }
   });
 
-  return {
-    totalSubmittedSheets,
-    totalDrawingsRev0: lettersIn, // Map IN to Rev0
-    totalDrawingsFurtherRev: lettersOut, // Map OUT to FurtherRev
-    totalSheetsRev0: lettersIn,
-    totalSheetsFurtherRev: lettersOut,
-    approved: 0,
-    rejectedOpen: 0,
-    rejectedClosed: 0,
-    pending: 0,
-    overdue: 0,
-    avgResponseTime: 0,
-    approvalRate: 0,
-    rejectionOpenRate: 0,
-    rejectionClosedRate: 0,
-    delayRate: 0,
-  };
-};
+  return rows.map(r => {
+    const docNoUpper = (r.docNo || (r as any).ncrRef || (r as any).sorRef || (r as any).rfiRef || r.id || '').trim().toUpperCase();
+    const revUpper = (r.rev || '').trim().toUpperCase();
+    const allRevs = docHistory.get(docNoUpper) || [];
+    allRevs.sort((a, b) => compareRevisionsCanonical(b, a));
 
-export const calculateSORStats = (data: SubmittalRow[], isMonthly: boolean): KPIStats => {
-  const sorMap = new Map<string, SubmittalRow[]>();
-  data.forEach(row => {
-    const ref = (row.ncrRef || row.docNo || '').trim().toUpperCase();
-    if (!ref) return;
-    if (!sorMap.has(ref)) {
-      sorMap.set(ref, []);
+    const latestRev = allRevs[0];
+    const isLatestRev = revUpper === latestRev;
+
+    // Resolve Canonical Trade & DocumentType via Unified SSOT
+    const resolved = resolveCanonicalTrade(r);
+    const trade = resolved.trade || r.trade;
+    const tradeShort = resolved.tradeShort || (r as any).tradeShort || '';
+    const logType = (r.logType || (r as any).compositeIdentity?.family || 'SDW').toUpperCase();
+
+    const basePrefix = logType.startsWith('SDW') ? 'SDW' : (logType.startsWith('WIR') ? 'WIR' : (logType.startsWith('MIR') ? 'MIR' : (logType.startsWith('NCR') ? 'NCR' : (logType.startsWith('SOR') ? 'SOR' : (logType.startsWith('RFI') ? 'RFI' : logType)))));
+    const documentType = tradeShort ? `${basePrefix}-${tradeShort}` : (r.documentType || basePrefix);
+
+    const revWeight = getRevisionWeight(revUpper);
+    const isRev0 = revWeight === 0 && revUpper !== 'AS-BUILT' && revUpper !== 'IFC';
+
+    // Derive canonical status category
+    const cat = getStatusCodeCategory(r);
+    let workflowStage = r.workflowStage || '';
+    if (!workflowStage) {
+      if (cat === 'APPROVED') workflowStage = 'Approved';
+      else if (cat === 'REJECTED_OPEN' || cat === 'REJECTED_CLOSED') workflowStage = 'Rejected';
+      else if (cat === 'PENDING') workflowStage = 'Pending';
+      else workflowStage = 'Pending';
     }
-    sorMap.get(ref)!.push(row);
-  });
 
-  let totalUnique = sorMap.size;
-  let approved = 0; // mapped to Closed in slides
-  let rejectedOpen = 0; // mapped to Open in slides
-  let pending = 0; // mapped to Pending in slides
-  let totalSheetsRev0 = 0;
-  let totalSheetsFurtherRev = 0;
+    const submissionDate = r.submissionDate || '';
+    const responseDate = r.responseDate || '';
+    const dueDate = r.dueDate || '';
+    const delayDays = r.delayDays || getDelayDays(submissionDate, responseDate, dueDate);
+    const isStatusActive = cat === 'PENDING' || cat === 'REJECTED_OPEN';
+    const computedOverdue = isStatusActive && (dueDate ? (parseDateTimestamp(dueDate) > 0 && Date.now() > parseDateTimestamp(dueDate)) : checkIfOverdueDynamically(submissionDate, responseDate, 14));
+    const overdue = isStatusActive ? (r.overdue !== undefined ? Boolean(r.overdue) : computedOverdue) : false;
 
-  sorMap.forEach((history) => {
-     history.sort((a, b) => {
-        const timeA = parseDateTimestamp(a.submissionDate);
-        const timeB = parseDateTimestamp(b.submissionDate);
-        if (timeA !== timeB) return timeA - timeB;
-        return compareRevisions(a.rev, b.rev);
-     });
-     
-     const latest = history[history.length - 1];
-     const revVal = (latest.rev || '').trim();
-     const isRev0 = getRevisionWeight(revVal) === 0 || compareRevisions(revVal, '0') <= 0;
-     if (isRev0) {
-       totalSheetsRev0++;
-     } else {
-       totalSheetsFurtherRev++;
-     }
-
-     const statusRaw = (latest.recordStatus || latest.ncrStatus || '').toUpperCase().trim();
-     const actionRaw = (latest.action || latest.ncrAction || '').toUpperCase().trim();
-     
-     let isClosed = statusRaw === 'CLOSED' || actionRaw === 'CLOSED';
-     let isUnderReview = statusRaw === 'WAITING' || statusRaw === 'UNDER REVIEW' || actionRaw === 'UNDER REVIEW' || actionRaw === 'WAITING';
-     let isOpen = statusRaw === 'OPEN' || actionRaw === 'OPEN';
-
-     if (!isClosed && !isUnderReview && !isOpen) {
-        isOpen = true; // Fallback
-     }
-
-     if (isClosed) {
-       approved++;
-     } else if (isUnderReview) {
-       pending++;
-     } else {
-       rejectedOpen++;
-     }
-  });
-
-  const totalEligible = approved + rejectedOpen + pending;
-  return {
-    totalSubmittedSheets: totalUnique,
-    totalSheetsRev0,
-    totalSheetsFurtherRev,
-    totalDrawingsRev0: totalSheetsRev0,
-    totalDrawingsFurtherRev: totalSheetsFurtherRev,
-    approved,
-    rejectedOpen,
-    rejectedClosed: 0,
-    pending,
-    overdue: 0,
-    avgResponseTime: 0,
-    approvalRate: totalEligible > 0 ? (approved / totalEligible) * 100 : 0,
-    rejectionOpenRate: totalEligible > 0 ? (rejectedOpen / totalEligible) * 100 : 0,
-    rejectionClosedRate: 0,
-    delayRate: 0,
-  };
-};
-
-export const calculateNCRStats = (data: SubmittalRow[], isMonthly: boolean): KPIStats => {
-  const ncrMap = new Map<string, SubmittalRow[]>();
-  data.forEach(row => {
-    const ref = (row.ncrRef || row.docNo || '').trim().toUpperCase();
-    if (!ref) return;
-    if (!ncrMap.has(ref)) {
-      ncrMap.set(ref, []);
-    }
-    ncrMap.get(ref)!.push(row);
-  });
-
-  let totalUnique = ncrMap.size;
-  let approved = 0; 
-  let rejectedOpen = 0; 
-  let rejectedClosed = 0;
-  let pending = 0; 
-  let totalSheetsRev0 = 0;
-  let totalSheetsFurtherRev = 0;
-
-  ncrMap.forEach((history) => {
-     history.sort((a, b) => {
-        const timeA = parseDateTimestamp(a.submissionDate);
-        const timeB = parseDateTimestamp(b.submissionDate);
-        if (timeA !== timeB) return timeA - timeB;
-        return compareRevisions(a.rev, b.rev);
-     });
-     
-     const latest = history[history.length - 1];
-     const revVal = (latest.rev || '').trim();
-     const isRev0 = getRevisionWeight(revVal) === 0 || compareRevisions(revVal, '0') <= 0;
-     if (isRev0) {
-       totalSheetsRev0++;
-     } else {
-       totalSheetsFurtherRev++;
-     }
-
-     const cStatus = classifyNcrStatus(latest);
-     
-     if (cStatus.isApprovedClosed) {
-       approved++;
-     } else if (cStatus.isRejectedClosed) {
-       rejectedClosed++;
-     } else if (cStatus.isRejectedOpen) {
-       rejectedOpen++;
-     } else if (cStatus.isPending || cStatus.isUnderReview) {
-       pending++;
-     } else {
-       pending++;
-     }
-  });
-
-  const totalEligible = approved + rejectedOpen + rejectedClosed + pending;
-  return {
-    totalSubmittedSheets: totalUnique,
-    totalSheetsRev0,
-    totalSheetsFurtherRev,
-    totalDrawingsRev0: totalSheetsRev0,
-    totalDrawingsFurtherRev: totalSheetsFurtherRev,
-    approved,
-    rejectedOpen,
-    rejectedClosed,
-    pending,
-    overdue: 0,
-    avgResponseTime: 0,
-    approvalRate: totalEligible > 0 ? (approved / totalEligible) * 100 : 0,
-    rejectionOpenRate: totalEligible > 0 ? (rejectedOpen / totalEligible) * 100 : 0,
-    rejectionClosedRate: totalEligible > 0 ? (rejectedClosed / totalEligible) * 100 : 0,
-    delayRate: 0
-  };
-};
-
-export const calculateStats = (data: SubmittalRow[], fullDataset?: SubmittalRow[]): KPIStats & { totalUniqueDrawings: number } => {
-  const rowsToUse = data || [];
-
-  if (rowsToUse.length === 0) {
     return {
-      totalSubmittedSheets: 0,
-      totalSheetsRev0: 0,
-      totalSheetsFurtherRev: 0,
-      totalDrawingsRev0: 0,
-      totalDrawingsFurtherRev: 0,
-      totalUniqueDrawings: 0,
-      approved: 0,
-      rejectedOpen: 0,
-      rejectedClosed: 0,
-      pending: 0,
-      overdue: 0,
-      avgResponseTime: 0,
-      approvalRate: 0,
-      rejectionOpenRate: 0,
-      rejectionClosedRate: 0,
-      delayRate: 0
+      ...r,
+      trade: trade || r.trade,
+      tradeShort: tradeShort || (r as any).tradeShort,
+      documentType,
+      workflowStage,
+      delayDays,
+      overdue,
+      isLatestRev,
+      isRev0
     };
+  });
+};
+
+export const getDelayDays = (submission: string, response: string, due: string, asOfDate?: Date | string): number => {
+  if (!submission) return 0;
+  const start = new Date(submission).getTime();
+  let target: number;
+  if (response) {
+    target = new Date(response).getTime();
+  } else {
+    const reportingDate = asOfDate ? new Date(asOfDate) : new Date();
+    target = isNaN(reportingDate.getTime()) ? new Date().getTime() : reportingDate.getTime();
+  }
+  if (isNaN(start) || isNaN(target)) return 0;
+  const diffDays = Math.floor((target - start) / (1000 * 60 * 60 * 24));
+  return diffDays > 0 ? diffDays : 0;
+};
+
+export const formatDate = (dateStr?: string): string => {
+  if (!dateStr) return '';
+  const d = new Date(dateStr);
+  if (isNaN(d.getTime())) return dateStr;
+  return d.toISOString().split('T')[0];
+};
+
+export const getMonthStr = (dateStr?: string): string => {
+  if (!dateStr) return '';
+  const d = new Date(dateStr);
+  if (isNaN(d.getTime())) return '';
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  return `${year}-${month}`;
+};
+
+export const calculateProjectPerformanceHealth = (
+  globalStats: { approvalRate: number; pending: number; overdue: number; totalSubmittedSheets?: number; totalUniqueDrawings?: number },
+  language: string = 'en'
+) => {
+  const appRate = globalStats.approvalRate || 0;
+  const totalOverdue = globalStats.overdue || 0;
+  const totalSubmitted = globalStats.totalSubmittedSheets || 0;
+
+  let score = 100;
+  // Penalty 1: Low approval rate (up to 35 points penalty, benchmark 80%)
+  const approvalPenalty = appRate >= 80 ? 0 : Math.min(35, ((80 - appRate) / 80) * 35);
+  score -= approvalPenalty;
+
+  // Penalty 2: SLA Overdue ratio among total items (capped at 35 points max)
+  const totalBase = globalStats.totalUniqueDrawings || totalSubmitted || 1;
+  const overdueRatio = totalBase > 0 ? (totalOverdue / totalBase) : 0;
+  const pendingOverduePenalty = Math.min(35, overdueRatio * 100 * 0.7);
+  score -= pendingOverduePenalty;
+
+  // Penalty 3: Overdue density relative to total workload sheets (capped at 30 points max)
+  let overdueDensityPenalty = 0;
+  if (totalSubmitted > 0) {
+    overdueDensityPenalty = Math.min(30, (totalOverdue / totalSubmitted) * 100 * 0.5);
+    score -= overdueDensityPenalty;
   }
 
-  // Map full dataset if provided for cross-month entity tracking
-  const fullEntityMap = new Map<string, SubmittalRow[]>();
-  if (fullDataset && fullDataset.length > 0) {
-    fullDataset.forEach(r => {
-      const key = getBusinessEntityKey(r) || r.id;
-      if (key) {
-        if (!fullEntityMap.has(key)) fullEntityMap.set(key, []);
-        fullEntityMap.get(key)!.push(r);
-      }
-    });
+  const finalScore = Math.max(0, Math.min(100, Math.round(score)));
+
+  let ratingEn = "STABLE / EXCELLENT";
+  let ratingAr = "مستقر وممتاز";
+  let healthColor = "10B981";
+  let colorClass = "bg-emerald-50 text-emerald-800 border-emerald-200";
+  let textClass = "text-emerald-600";
+
+  if (finalScore >= 80) {
+    ratingEn = "STABLE / EXCELLENT";
+    ratingAr = "مستقر وممتاز";
+    healthColor = "10B981";
+    colorClass = "bg-emerald-50 text-emerald-800 border-emerald-200";
+    textClass = "text-emerald-600";
+  } else if (finalScore >= 65) {
+    ratingEn = "GOOD / SATISFACTORY";
+    ratingAr = "جيد / أداء مقبول";
+    healthColor = "2F75B5";
+    colorClass = "bg-blue-50 text-blue-800 border-blue-200";
+    textClass = "text-blue-600";
+  } else if (finalScore >= 45) {
+    ratingEn = "UNDER OBSERVATION";
+    ratingAr = "تحت الملاحظة والمتابعة";
+    healthColor = "F59E0B";
+    colorClass = "bg-amber-50 text-amber-800 border-amber-200";
+    textClass = "text-amber-600";
+  } else {
+    ratingEn = "CRITICAL RISK / BOTTLENECK";
+    ratingAr = "مخاطر عالية / تكدس حرج";
+    healthColor = "E11D48";
+    colorClass = "bg-rose-50 text-rose-800 border-rose-200";
+    textClass = "text-rose-600";
   }
-
-  // Group rows by Business Entity Key (ER-002: Revision classification per Business Entity)
-  const entityMap = new Map<string, SubmittalRow[]>();
-  rowsToUse.forEach(r => {
-    const key = getBusinessEntityKey(r) || r.id;
-    if (!entityMap.has(key)) entityMap.set(key, []);
-    entityMap.get(key)!.push(r);
-  });
-
-  const totalUniqueDrawings = entityMap.size;
-  const totalSubmittedSheets = rowsToUse.length;
-
-  let rev00 = 0;
-  let furtherRevisions = 0;
-  let totalSheetsRev0 = 0;
-  let totalSheetsFurtherRev = 0;
-  let approved = 0;
-  let rejectedOpen = 0;
-  let rejectedClosed = 0;
-  let pending = 0;
-  let overdue = 0;
-  let totalResponseDays = 0;
-  let responseCount = 0;
-
-  entityMap.forEach((groupRows, entityKey) => {
-    // Determine full history for this entity
-    const historyRows = fullEntityMap.get(entityKey) || groupRows;
-
-    // Sort groupRows chronologically then by revision
-    const sorted = [...groupRows].sort((a, b) => {
-      const timeA = parseDateTimestamp(a.submissionDate);
-      const timeB = parseDateTimestamp(b.submissionDate);
-      if (timeA !== timeB) return timeA - timeB;
-      const revA = a.rev || (a as any).revision || (a as any).revNo || '';
-      const revB = b.rev || (b as any).revision || (b as any).revNo || '';
-      return compareRevisions(revA, revB);
-    });
-
-    const latest = sorted[sorted.length - 1];
-    const latestRevVal = (latest.rev || (latest as any).revision || (latest as any).revNo || '').trim();
-    const latestRevWeight = getRevisionWeight(latestRevVal);
-    const isFurtherRev = latestRevWeight > 0 || compareRevisions(latestRevVal, '0') > 0;
-
-    if (isFurtherRev) {
-      furtherRevisions++;
-    } else {
-      rev00++;
-    }
-
-    // Count sheet-level Rev0 vs Further Rev for sheets in this group
-    sorted.forEach((r, idx) => {
-      const revVal = (r.rev || (r as any).revision || (r as any).revNo || '').trim().toUpperCase();
-      const w = getRevisionWeight(revVal);
-      const isRev0Sheet = (idx === 0 && w === 0 && revVal !== 'AS-BUILT' && revVal !== 'IFC') || (r.isRev0 && w === 0);
-      if (isRev0Sheet) {
-        totalSheetsRev0++;
-      } else {
-        totalSheetsFurtherRev++;
-      }
-    });
-
-    // Quality Status per canonical latest revision of Business Entity
-    const statusCategory = getStatusCodeCategory(latest);
-    if (statusCategory === 'APPROVED') approved++;
-    else if (statusCategory === 'REJECTED_OPEN') rejectedOpen++;
-    else if (statusCategory === 'REJECTED_CLOSED') rejectedClosed++;
-    else pending++;
-
-    // Calculate Overdue
-    const delay = getDelayDays(latest.submissionDate, latest.responseDate, latest.dueDate);
-    if (delay > 0 && (statusCategory === 'PENDING' || statusCategory === 'REJECTED_OPEN')) {
-      overdue++;
-    }
-
-    // Calculate average response time
-    if (latest.responseDate && latest.submissionDate) {
-      const t1 = new Date(latest.submissionDate).getTime();
-      const t2 = new Date(latest.responseDate).getTime();
-      const days = (t2 - t1) / (1000 * 3600 * 24);
-      if (days >= 0) {
-        totalResponseDays += days;
-        responseCount++;
-      }
-    }
-  });
-
-  // SSOT INVARIANT: Approval Rate denominator MUST include all eligible unique population items (Approved + Rejected Open + Rejected Closed + Under Review / Pending)
-  const totalEligiblePopulation = approved + rejectedOpen + rejectedClosed + pending;
 
   return {
-     totalSubmittedSheets,
-     totalSheetsRev0,
-     totalSheetsFurtherRev,
-     totalDrawingsRev0: rev00,
-     totalDrawingsFurtherRev: furtherRevisions,
-     totalUniqueDrawings,
-     
-     approved,
-     rejectedOpen,
-     rejectedClosed,
-     pending,
-     
-     overdue,
-     avgResponseTime: responseCount > 0 ? (totalResponseDays / responseCount) : 0,
-
-     approvalRate: totalEligiblePopulation > 0 ? (approved / totalEligiblePopulation) * 100 : 0,
-     rejectionOpenRate: totalEligiblePopulation > 0 ? (rejectedOpen / totalEligiblePopulation) * 100 : 0,
-     rejectionClosedRate: totalEligiblePopulation > 0 ? (rejectedClosed / totalEligiblePopulation) * 100 : 0,
-     delayRate: totalSubmittedSheets > 0 ? (overdue / totalSubmittedSheets) * 100 : 0
+    score: finalScore,
+    rating: language === 'ar' ? ratingAr : ratingEn,
+    ratingEn,
+    ratingAr,
+    color: healthColor,
+    colorClass,
+    textClass,
+    breakdown: {
+      approvalPenalty: Math.round(approvalPenalty),
+      pendingOverduePenalty: Math.round(pendingOverduePenalty),
+      overdueDensityPenalty: Math.round(overdueDensityPenalty)
+    }
   };
 };
 
-export function resolveRowDiscipline(d: SubmittalRow, bt: string): string {
-  if (bt === 'LTR') {
-    return d.stakeholder || 'GENERAL';
-  }
-
-  // 0. Check explicit discipline or trade fields for composite values like STR/SUR
-  const discField = (d.discipline || d.trade || '').toUpperCase().trim();
-  if (discField.includes('STR/SUR') || discField.includes('STR-SUR') || discField.includes('STR_SUR')) {
-    return 'STR/SUR';
-  }
-
-  // 1. Check documentType or logType suffix e.g. MAR-ARC, SDW-STR, WIR-ELE, MAR-MEC, etc.
-  const docType = (d.documentType || d.logType || '').toUpperCase().trim();
-  const docParts = docType.split(/[-_\s]+/);
-  const suffix = docParts.length > 1 ? docParts[docParts.length - 1] : '';
-
-  if (['ARC', 'ARCH', 'ARCHITECTURAL'].includes(suffix)) return 'Arch';
-  if (['STR', 'STRUCT', 'CIVIL', 'CVL'].includes(suffix)) return 'STR';
-  if (['MEC', 'MECH', 'MECHANICAL'].includes(suffix)) return 'Mech';
-  if (['ELE', 'ELEC', 'ELECTRICAL'].includes(suffix)) return 'Elec';
-  if (['MEP', 'M.E.P', 'كهروميكانيك'].includes(suffix)) return 'MEP';
-  if (['INF', 'INFR', 'INFRA', 'UTILITIES'].includes(suffix)) return 'Infra';
-  if (['IRR', 'IRRIGATION'].includes(suffix)) return 'Irrigation';
-  if (['LND', 'LAND', 'LANDSCAPE'].includes(suffix)) return 'Landscape';
-  if (['SUR', 'SURV', 'SURVEY'].includes(suffix)) return 'SURVEY';
-  if (['HSE', 'SAFETY'].includes(suffix)) return 'HSE';
-
-  // 2. Check explicit discipline or trade fields tokenized strictly
-  if (discField) {
-    const discTokens = discField.split(/[^A-Z0-9\u0600-\u06FF]+/);
-    for (const t of discTokens) {
-      if (['ARCH', 'ARC', 'ARCHITECTURAL', 'معماري'].includes(t)) return 'Arch';
-      if (['STR', 'STRUCT', 'STRUCTURAL', 'CIVIL', 'CVL', 'إنشائي'].includes(t)) return 'STR';
-      if (['MECH', 'MEC', 'MECHANICAL', 'ميكانيك'].includes(t)) return 'Mech';
-      if (['ELEC', 'ELE', 'ELECTRICAL', 'كهرباء'].includes(t)) return 'Elec';
-      if (['MEP', 'M.E.P', 'كهروميكانيك', 'الكتروميكانيك', 'اليكتروميكانيك'].includes(t)) return 'MEP';
-      if (['INFRA', 'INFR', 'INF', 'INFRASTRUCTURE', 'UTILITIES', 'بنية'].includes(t)) return 'Infra';
-      if (['IRR', 'IRRIGATION', 'ري'].includes(t)) return 'Irrigation';
-      if (['LANDSCAPE', 'LAND', 'LND', 'موقع'].includes(t)) return 'Landscape';
-      if (['SURVEY', 'SURV', 'SUR', 'مساحة'].includes(t)) return 'SURVEY';
-      if (['HSE', 'SAFETY', 'سلامة'].includes(t)) return 'HSE';
-    }
-  }
-
-  // 3. Tokenize docNo or sheetNo (WITHOUT matching substrings inside words like PARCEL or SEARCH)
-  const docNo = (d.docNo || d.sheetNo || d.ncrRef || '').toUpperCase().trim();
-  if (docNo) {
-    const docTokens = docNo.split(/[^A-Z0-9\u0600-\u06FF]+/);
-    for (const t of docTokens) {
-      if (['ARCH', 'ARC', 'ARCHITECTURAL', 'معماري'].includes(t)) return 'Arch';
-      if (['STR', 'STRUCT', 'STRUCTURAL', 'CIVIL', 'CVL', 'إنشائي'].includes(t)) return 'STR';
-      if (['MECH', 'MEC', 'MECHANICAL', 'ميكانيك'].includes(t)) return 'Mech';
-      if (['ELEC', 'ELE', 'ELECTRICAL', 'كهرباء'].includes(t)) return 'Elec';
-      if (['MEP', 'M.E.P', 'كهروميكانيك', 'الكتروميكانيك', 'اليكتروميكانيك'].includes(t)) return 'MEP';
-      if (['INFRA', 'INFR', 'INF', 'INFRASTRUCTURE', 'UTILITIES'].includes(t)) return 'Infra';
-      if (['IRR', 'IRRIGATION', 'ري'].includes(t)) return 'Irrigation';
-      if (['LANDSCAPE', 'LAND', 'LND'].includes(t)) return 'Landscape';
-      if (['SURVEY', 'SURV', 'SUR', 'مساحة'].includes(t)) return 'SURVEY';
-      if (['HSE', 'SAFETY', 'سلامة'].includes(t)) return 'HSE';
-    }
-  }
-
-  // Fallback
-  return bt === 'NCR' ? 'HSE' : (d.discipline === 'UNCLASSIFIED' || d.discipline === 'GENERAL' ? 'UNCLASSIFIED' : 'UNCLASSIFIED');
-}
-
+export const checkIfOverdueDynamically = (submission: string, response: string, thresholdDays = 14): boolean => {
+  const days = getDelayDays(submission, response, '');
+  return days > thresholdDays;
+};
