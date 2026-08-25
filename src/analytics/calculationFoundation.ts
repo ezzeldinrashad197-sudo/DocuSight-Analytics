@@ -86,16 +86,9 @@ export function getBusinessEntityKey(row: SubmittalRow): string {
                 upperLog.includes('ABD') || upperLog.includes('AS-BUILT') || upperLog.includes('AS BUILT') || upperLog.includes('ASBUILT') ||
                 upperSrc.includes('ABD') || upperSrc.includes('AS-BUILT') || upperSrc.includes('AS BUILT') || upperSrc.includes('ASBUILT');
 
-  const rawRev = (row.rev || (row as any).revision || (row as any).revNo || '').trim();
   let baseRef = commonRef;
-  if (rawRev && baseRef) {
-    const revPattern = new RegExp(`[-_/\\s]+(?:REV|R)\\.?\\s*${rawRev}$`, 'i');
-    if (revPattern.test(baseRef)) {
-      baseRef = baseRef.replace(revPattern, '').trim();
-    }
-  }
-  // Strip trailing revision indicators if preceded by REV or R (e.g. -REV01, _R0)
-  baseRef = baseRef.replace(/[-_/\\s]+(?:REV|R)\\.?\\s*([0-9]{1,2}|[A-Z])$/i, '').trim() || commonRef;
+  // Only strip trailing revision indicators when explicitly prefixed by REV, REVISION, or R (e.g. -REV01, _R0, /REV-A)
+  baseRef = baseRef.replace(/[-_/\\s]+(?:REV|REVISION|R)\.?(?:[-_/\\s]*)([0-9]{1,2}|[A-Z])$/i, '').trim() || commonRef;
 
   if (isABD) {
     return `ABD:${baseRef.toUpperCase()}`;

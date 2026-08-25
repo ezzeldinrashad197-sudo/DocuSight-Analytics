@@ -1121,7 +1121,10 @@ export function runExecutiveAnalytics(data: SubmittalRow[]) {
         'Quality Issue': 0
     };
     
-    docs.filter(d => getStatusCodeCategory(d.status).includes('REJECTED')).forEach(d => {
+    docs.filter(d => {
+        const cat = getStatusCodeCategory(d.status);
+        return cat === 'REJECTED_OPEN' || cat === 'REJECTED_CLOSED';
+    }).forEach(d => {
         const remarks = (d.remarks || (d as any).comments || '').toLowerCase();
         if (remarks.includes('missing') || remarks.includes('attach')) rootCausesData['Missing Information']++;
         else if (remarks.includes('coord') || remarks.includes('clash')) rootCausesData['Drawing Coordination']++;

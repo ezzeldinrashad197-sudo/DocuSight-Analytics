@@ -306,9 +306,9 @@ export default function NCRAnalytics({ data, monthlyStart }: Props) {
                   <div className="flex flex-wrap gap-1.5">
                     {/* Stage Badge */}
                     <span className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold border ${
-                      item.stage.includes('Approved') ? 'bg-emerald-50 border-emerald-200 text-emerald-800' :
-                      item.stage.includes('Rejected') ? 'bg-rose-50 border-rose-200 text-rose-800' :
-                      item.stage.includes('Consultant') ? 'bg-indigo-50 border-indigo-200 text-indigo-800' :
+                      item.stage === 'Stage 3: Approved Closed' ? 'bg-emerald-50 border-emerald-200 text-emerald-800' :
+                      item.stage === 'Stage 3: Rejected Open' ? 'bg-rose-50 border-rose-200 text-rose-800' :
+                      item.stage === 'Stage 2: Waiting Consultant' ? 'bg-indigo-50 border-indigo-200 text-indigo-800' :
                       'bg-amber-50 border-amber-200 text-amber-800'
                     }`}>
                       {item.stage}

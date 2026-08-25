@@ -7,7 +7,7 @@ import {
   CheckCircle, HelpCircle, Eye, Cpu, Zap, Lock, Sparkles, Code
 } from 'lucide-react';
 import { SubmittalRow, ProjectSettings } from '../types';
-import { calculateStats, calculateNCRStats, calculateSORStats, parseDateTimestamp } from '../utils/calculations';
+import { calculateStats, calculateNCRStats, calculateSORStats, parseDateTimestamp, getStatusCodeCategory } from '../utils/calculations';
 import { compareRevisions, isValidRevision } from '../analytics/analyticsCore';
 import { getRevisionWeight } from '../analytics/revisionResolver';
 import { AuditIntegrityCenter } from './AuditIntegrityCenter';
@@ -217,20 +217,20 @@ export const CalculationAuditCenter: React.FC<CalculationAuditCenterProps> = ({
     return auditDataset.filter(item => {
       if (selectedKpiWf !== 'ALL' && item.logType !== selectedKpiWf) return false;
 
-      const code = item.approvalCode.toUpperCase();
-      const status = item.currentStatus.toUpperCase();
+      const cat = getStatusCodeCategory(item.approvalCode || item.currentStatus);
+      const code = (item.approvalCode || '').toUpperCase().trim();
 
       if (selectedKpiMetric === 'approved') {
-        return code.includes('A') || code.includes('APP') || status.includes('APPROVED');
+        return cat === 'APPROVED' && (code === 'A' || !code || code === 'APP' || code === 'APPROVED');
       }
       if (selectedKpiMetric === 'approved_comments') {
-        return code.includes('B') || status.includes('COMMENTS') || status.includes('APPROVED WITH COMMENTS');
+        return cat === 'APPROVED' && (code === 'B' || code.includes('COMMENTS'));
       }
       if (selectedKpiMetric === 'rejected') {
-        return code.includes('C') || code.includes('D') || status.includes('REJECTED');
+        return cat === 'REJECTED_OPEN' || cat === 'REJECTED_CLOSED';
       }
       if (selectedKpiMetric === 'pending') {
-        return code.includes('PENDING') || status.includes('UNDER REVIEW') || status.includes('AWAITING');
+        return cat === 'PENDING';
       }
       if (selectedKpiMetric === 'rev0') {
         return item.isRev0;
@@ -729,12 +729,12 @@ export const CalculationAuditCenter: React.FC<CalculationAuditCenterProps> = ({
                     {
                       auditDataset.filter(item => {
                         if (selectedKpiWf !== 'ALL' && item.logType !== selectedKpiWf) return false;
-                        const code = item.approvalCode.toUpperCase();
-                        const status = item.currentStatus.toUpperCase();
-                        if (m.id === 'approved') return code.includes('A') || code.includes('APP') || status.includes('APPROVED');
-                        if (m.id === 'approved_comments') return code.includes('B') || status.includes('COMMENTS') || status.includes('APPROVED WITH COMMENTS');
-                        if (m.id === 'rejected') return code.includes('C') || code.includes('D') || status.includes('REJECTED');
-                        if (m.id === 'pending') return code.includes('PENDING') || status.includes('UNDER REVIEW') || status.includes('AWAITING');
+                        const cat = getStatusCodeCategory(item.approvalCode || item.currentStatus);
+                        const code = (item.approvalCode || '').toUpperCase().trim();
+                        if (m.id === 'approved') return cat === 'APPROVED' && (code === 'A' || !code || code === 'APP' || code === 'APPROVED');
+                        if (m.id === 'approved_comments') return cat === 'APPROVED' && (code === 'B' || code.includes('COMMENTS'));
+                        if (m.id === 'rejected') return cat === 'REJECTED_OPEN' || cat === 'REJECTED_CLOSED';
+                        if (m.id === 'pending') return cat === 'PENDING';
                         if (m.id === 'rev0') return item.isRev0;
                         if (m.id === 'further_rev') return !item.isRev0;
                         return true;

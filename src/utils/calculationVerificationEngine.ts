@@ -685,7 +685,7 @@ export async function runCalculationVerificationSuite(): Promise<VerificationEvi
   // 5. REJECTION LIFECYCLE & SUPERSEDED CODE C AUDIT TRAIL
   const perfRows = getPerformanceValidationRows(goldenDataset);
   const rejectedItemAudits: RejectedItemAuditEntry[] = perfRows
-    .filter(e => e.resolvedStatus === 'REJECTED_OPEN' || e.resolvedStatus === 'REJECTED_CLOSED' || e.latestStatus.toUpperCase().includes('CODE C') || e.latestStatus.toUpperCase().includes('REJECT'))
+    .filter(e => e.resolvedStatus === 'REJECTED_OPEN' || e.resolvedStatus === 'REJECTED_CLOSED')
     .map(e => {
       const entityRows = canonical.filter(r => r.businessEntityKey === e.businessEntityKey);
       const hasApprovedHigherRev = entityRows.some(r => r.resolvedStatus === 'APPROVED');

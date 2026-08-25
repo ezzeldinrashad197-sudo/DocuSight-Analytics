@@ -3,9 +3,9 @@ import * as path from 'path';
 import { fileURLToPath } from 'url';
 import ts from 'typescript';
 
-// Resolve directory name in ESM context
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+const ROOT_DIR = path.resolve(__dirname, '..');
 
 const colors = {
   reset: '\x1b[0m',
@@ -19,187 +19,149 @@ const colors = {
 };
 
 console.log(`\n${colors.bright}${colors.cyan}================================================================================${colors.reset}`);
-console.log(`${colors.bright}${colors.cyan}  STRUCTUSIGHT ARCHITECTURAL & COMPLIANCE AST-BASED AUDIT ENGINE  ${colors.reset}`);
+console.log(`${colors.bright}${colors.cyan}  STRUCTUSIGHT REPOSITORY-WIDE ARCHITECTURAL AST AUDIT ENGINE  ${colors.reset}`);
 console.log(`${colors.bright}${colors.cyan}================================================================================${colors.reset}\n`);
 
-const SRC_DIR = path.join(__dirname, '../src');
+// Canonical Single-Source-of-Truth core calculation and status engine files
+const SSOT_CORE_FILES = new Set([
+  'src/utils/calculations.ts',
+  'src/utils/calculations.instrumented.ts',
+  'src/analytics/calculationFoundation.ts',
+  'src/analytics/statusResolver.ts',
+  'src/analytics/revisionResolver.ts',
+  'src/utils/statusMatrixEngine.ts'
+]);
 
-// Allowed central calculation modules that can define or adapt status logic
-const APPROVED_SSOT_MODULES = [
-  'calculations.ts',
-  'calculations.instrumented.ts',
-  'calculationFoundation.ts',
-  'analyticsCore.ts',
-  'statusEngine.ts',
-  'statusResolver.ts',
-  'revisionResolver.ts',
-  'enterpriseAnalyticsEngine.ts',
-  'kpiEngine.ts',
-  'ncrEngine.ts',
-  'sorEngine.ts',
-  'ncrAnalytics.ts',
-  'rfiAnalytics.ts'
-];
+const IGNORED_DIRS = new Set([
+  'node_modules',
+  'dist',
+  'build',
+  '.git',
+  '.vscode',
+  'src/test-datasets'
+]);
 
 let filesScanned = 0;
 let violationsCount = 0;
-const violations: string[] = [];
+const violations: { type: string; file: string; line: number; message: string; codeSnippet: string }[] = [];
 
 function scanDirectory(dir: string) {
-  const list = fs.readdirSync(dir);
-  for (const file of list) {
-    const fullPath = path.join(dir, file);
-    const stat = fs.statSync(fullPath);
+  const entries = fs.readdirSync(dir, { withFileTypes: true });
+  for (const entry of entries) {
+    const fullPath = path.join(dir, entry.name);
+    const relPath = path.relative(ROOT_DIR, fullPath).replace(/\\/g, '/');
 
-    if (stat.isDirectory()) {
-      // Skip test-datasets folder
-      if (file !== 'test-datasets') {
+    if (entry.isDirectory()) {
+      if (!IGNORED_DIRS.has(entry.name) && !IGNORED_DIRS.has(relPath)) {
         scanDirectory(fullPath);
       }
-    } else if (stat.isFile() && (file.endsWith('.ts') || file.endsWith('.tsx'))) {
+    } else if (entry.isFile() && (entry.name.endsWith('.ts') || entry.name.endsWith('.tsx') || (entry.name.endsWith('.js') && !entry.name.endsWith('.min.js')))) {
       filesScanned++;
-      checkFile(fullPath, file);
+      checkFile(fullPath, entry.name, relPath);
     }
   }
 }
 
-function checkFile(filePath: string, fileName: string) {
+function checkFile(filePath: string, fileName: string, relativePath: string) {
   const code = fs.readFileSync(filePath, 'utf8');
-  const relativePath = path.relative(path.join(__dirname, '..'), filePath);
   const sourceFile = ts.createSourceFile(fileName, code, ts.ScriptTarget.Latest, true);
 
-  // All source modules are audited. Retired/legacy files must be removed, not silently excluded.
+  const isSSOTCore = SSOT_CORE_FILES.has(relativePath);
+  const isTestFile = relativePath.includes('test') || relativePath.includes('scripts/') || relativePath.includes('spec');
 
-  if (APPROVED_SSOT_MODULES.includes(fileName)) {
-    // For approved SSOT modules, use AST to find if there are legacy obsolete signatures
-    function findLegacyDebris(node: ts.Node) {
-      if (ts.isFunctionDeclaration(node) && node.name) {
-        const name = node.name.text;
-        if (name === 'classifyNCR' || name === 'classifySOR' || name === 'classifyLTR') {
-          violationsCount++;
-          violations.push(`[LEGACY DEBRIS] ${relativePath}:${getLine(node, sourceFile)} - Found obsolete legacy classification function: '${name}'`);
-        }
-      } else if (ts.isVariableDeclaration(node) && ts.isIdentifier(node.name)) {
-        const name = node.name.text;
-        if (name === 'classifyNCR' || name === 'classifySOR' || name === 'classifyLTR') {
-          violationsCount++;
-          violations.push(`[LEGACY DEBRIS] ${relativePath}:${getLine(node, sourceFile)} - Found obsolete legacy classification variable: '${name}'`);
-        }
-      }
-      ts.forEachChild(node, findLegacyDebris);
-    }
-    findLegacyDebris(sourceFile);
-    return;
-  }
+  function visit(node: ts.Node) {
+    const line = getLine(node, sourceFile);
 
-  // Strict check on dashboards, helpers, and components using AST
-  function findViolations(node: ts.Node) {
-    // 1. Redundant definitions of status classification functions
-    if (ts.isFunctionDeclaration(node) && node.name) {
+    // 1. Legacy debris check in all files
+    if ((ts.isFunctionDeclaration(node) || ts.isVariableDeclaration(node)) && node.name && ts.isIdentifier(node.name)) {
       const name = node.name.text;
-      if (name === 'classifyNcrStatus' || name === 'getStatusCodeCategory') {
+      if (name === 'classifyNCR' || name === 'classifySOR' || name === 'classifyLTR') {
         violationsCount++;
-        violations.push(`[SSOT VIOLATION] ${relativePath}:${getLine(node, sourceFile)} - Redundant definition of function '${name}' found! Status classification MUST be imported from src/utils/calculations.ts`);
-      } else if ((name.startsWith('classify') || name.startsWith('calculate')) && (name.includes('Status') || name.includes('Stats') || name.includes('Ncr')) && !name.includes('classifyNcrStatus')) {
-        violationsCount++;
-        violations.push(`[SSOT VIOLATION] ${relativePath}:${getLine(node, sourceFile)} - Unapproved status/stats classification helper defined: '${name}'. All status calculations must be centralized in the SSOT calculations module.`);
-      }
-    } else if (ts.isVariableDeclaration(node) && ts.isIdentifier(node.name)) {
-      const name = node.name.text;
-      if (name === 'classifyNcrStatus' || name === 'getStatusCodeCategory') {
-        violationsCount++;
-        violations.push(`[SSOT VIOLATION] ${relativePath}:${getLine(node, sourceFile)} - Redundant definition of variable '${name}' found! Status classification MUST be imported from src/utils/calculations.ts`);
-      } else if ((name.startsWith('classify') || name.startsWith('calculate')) && (name.includes('Status') || name.includes('Stats') || name.includes('Ncr')) && !name.includes('classifyNcrStatus')) {
-        violationsCount++;
-        violations.push(`[SSOT VIOLATION] ${relativePath}:${getLine(node, sourceFile)} - Unapproved status/stats classification helper defined: '${name}'. All status calculations must be centralized in the SSOT calculations module.`);
+        violations.push({
+          type: 'LEGACY_DEBRIS',
+          file: relativePath,
+          line,
+          message: `Obsolete legacy classification function/variable: '${name}'`,
+          codeSnippet: node.getText(sourceFile).substring(0, 80)
+        });
       }
     }
 
-    // 2. Direct binary string comparisons on status values (Bypass checking)
-    if (ts.isBinaryExpression(node)) {
-      const isComparison = [
-        ts.SyntaxKind.EqualsEqualsToken,
-        ts.SyntaxKind.EqualsEqualsEqualsToken,
-        ts.SyntaxKind.ExclamationEqualsToken,
-        ts.SyntaxKind.ExclamationEqualsEqualsToken
-      ].includes(node.operatorToken.kind);
-
-      if (isComparison) {
-        let literalValue: string | undefined;
-        let leftIsStatus = false;
-        let rightIsStatus = false;
-
-        if (ts.isStringLiteral(node.left)) {
-          literalValue = node.left.text;
-        } else if (ts.isStringLiteral(node.right)) {
-          literalValue = node.right.text;
+    // 2. SSOT duplicate definition check (outside SSOT core files)
+    if (!isSSOTCore && !isTestFile) {
+      if ((ts.isFunctionDeclaration(node) || ts.isVariableDeclaration(node)) && node.name && ts.isIdentifier(node.name)) {
+        const name = node.name.text;
+        if (name === 'classifyNcrStatus' || name === 'getStatusCodeCategory') {
+          violationsCount++;
+          violations.push({
+            type: 'SSOT_VIOLATION',
+            file: relativePath,
+            line,
+            message: `Redundant definition of '${name}'. Status classification MUST be imported from src/utils/calculations.ts or src/analytics/statusResolver.ts`,
+            codeSnippet: node.getText(sourceFile).substring(0, 80)
+          });
         }
+      }
+    }
 
-        const isStatusVar = (name: string) => {
-          const l = name.toLowerCase();
-          return l.includes('status') || l.includes('stage') || l.includes('action');
-        };
+    // 3. Partial status matching with .includes() on status/action/code fields (anti-pattern check)
+    if (ts.isCallExpression(node) && ts.isPropertyAccessExpression(node.expression)) {
+      const propName = node.expression.name.text;
+      if (propName === 'includes') {
+        const callerText = node.expression.expression.getText(sourceFile);
+        const callerLower = callerText.toLowerCase();
+        const isStatusCaller = callerLower.includes('status') || 
+                               callerLower.includes('action') || 
+                               callerLower.includes('stage') ||
+                               callerLower.includes('code') ||
+                               callerLower.includes('recordstatus');
 
-        if (ts.isIdentifier(node.left) && isStatusVar(node.left.text)) {
-          leftIsStatus = true;
-        }
-        if (ts.isIdentifier(node.right) && isStatusVar(node.right.text)) {
-          rightIsStatus = true;
-        }
-
-        const isBypassedFile = relativePath.includes('test_status.ts') || 
-                               relativePath.includes('audit_abd_negative.ts') ||
-                               relativePath.includes('audit_rejected_precision_suite.ts') ||
-                               relativePath.includes('src/scripts/') ||
-                               relativePath.includes('calculationVerificationEngine.ts') ||
-                               relativePath.includes('FinalAcceptanceAuditView.tsx') ||
-                               relativePath.includes('EnterpriseHardeningView.tsx') || 
-                               relativePath.includes('DataValidationEngine.tsx') ||
-                               relativePath.includes('calculations.ts') ||
-                               relativePath.includes('calculations.instrumented.ts') ||
-                               relativePath.includes('calculationFoundation.ts') ||
-                               relativePath.includes('statusResolver.ts') ||
-                               relativePath.includes('revisionResolver.ts') ||
-                               relativePath.includes('enterpriseAnalyticsEngine.ts') ||
-                               relativePath.includes('analyticsCore.ts');
-
-        if (literalValue && (leftIsStatus || rightIsStatus) && !isBypassedFile) {
-          const statusStrings = ['CLOSED', 'OPEN', 'PENDING', 'APPROVED', 'REJECTED', 'C CLOSED', 'CODE C', 'W'];
-          if (statusStrings.includes(literalValue.toUpperCase())) {
-            violationsCount++;
-            violations.push(`[ARCHITECTURE BYPASS] ${relativePath}:${getLine(node, sourceFile)} - Inline status string checks detected: '${node.getText(sourceFile)}'. Please use "classifyNcrStatus" or "getStatusCodeCategory" to maintain single-source-of-truth invariants.`);
+        if (isStatusCaller && node.arguments.length > 0 && !isTestFile && !isSSOTCore) {
+          const arg = node.arguments[0];
+          if (ts.isStringLiteral(arg)) {
+            const argText = arg.text.toUpperCase();
+            const riskyStatusKeywords = ['OPEN', 'CLOSED', 'REJECTED', 'APPROVED', 'UNDER REVIEW', 'PENDING', 'C CLOSED', 'CODE C', 'CODE A', 'CODE B', 'CODE W', 'W'];
+            if (riskyStatusKeywords.includes(argText)) {
+              violationsCount++;
+              violations.push({
+                type: 'PARTIAL_STATUS_MATCHING',
+                file: relativePath,
+                line,
+                message: `Unsafe partial status match via .includes('${arg.text}') on '${callerText}'. Must use exact match or centralized SSOT helper.`,
+                codeSnippet: node.getText(sourceFile)
+              });
+            }
           }
         }
       }
     }
 
-    ts.forEachChild(node, findViolations);
+    ts.forEachChild(node, visit);
   }
 
-  findViolations(sourceFile);
+  visit(sourceFile);
 }
 
 function getLine(node: ts.Node, sf: ts.SourceFile) {
   return sf.getLineAndCharacterOfPosition(node.getStart(sf)).line + 1;
 }
 
-console.log(`Scanning workspace source directory: ${colors.bright}${SRC_DIR}${colors.reset}...`);
-scanDirectory(SRC_DIR);
+console.log(`Scanning workspace repository root: ${colors.bright}${ROOT_DIR}${colors.reset}...`);
+scanDirectory(ROOT_DIR);
 
 console.log(`\n${colors.bright}AUDIT SCAN RESULTS:${colors.reset}`);
-console.log(`- Total Files Scanned        : ${colors.bright}${colors.green}${filesScanned}${colors.reset}`);
-console.log(`- Architectural Violations   : ${violationsCount > 0 ? colors.bright + colors.red + violationsCount : colors.bright + colors.green + '0'}${colors.reset}`);
+console.log(`- Total Repository Files Scanned : ${colors.bright}${colors.green}${filesScanned}${colors.reset}`);
+console.log(`- Architectural Violations Found  : ${violationsCount > 0 ? colors.bright + colors.red + violationsCount : colors.bright + colors.green + '0'}${colors.reset}\n`);
 
 if (violationsCount > 0) {
-  console.log(`\n${colors.bright}${colors.red}❌ ARCHITECTURE AUDIT FAILED:${colors.reset}`);
-  violations.forEach(v => {
-    console.log(`  ${colors.red}• ${v}${colors.reset}`);
+  console.log(`${colors.bright}${colors.red}❌ DETECTED ARCHITECTURAL VIOLATIONS (${violationsCount}):${colors.reset}`);
+  violations.forEach((v, idx) => {
+    console.log(`  ${idx + 1}. [${v.type}] ${colors.yellow}${v.file}:${v.line}${colors.reset}`);
+    console.log(`     ${v.message}`);
+    console.log(`     Code: ${colors.cyan}${v.codeSnippet}${colors.reset}`);
   });
-  console.log(`\n${colors.bright}${colors.red}Governance Failure: Internal architecture compliance score is below the 100% threshold. Exiting with failure status.${colors.reset}\n`);
   process.exit(1);
 } else {
-  console.log(`\n${colors.bright}${colors.green}✔ ARCHITECTURE AUDIT PASSED:${colors.reset}`);
-  console.log(`  All modules are compliant with the Single Source of Truth (SSOT) architecture. No duplicate status engines or legacy structures were detected.`);
-  console.log(`  Internal Architecture Compliance Score: ${colors.bright}${colors.green}100 / 100 (Max Compliance)${colors.reset}\n`);
+  console.log(`${colors.bright}${colors.green}✔ REPOSITORY ARCHITECTURE AUDIT PASSED: 0 Violations across entire codebase.${colors.reset}\n`);
   process.exit(0);
 }

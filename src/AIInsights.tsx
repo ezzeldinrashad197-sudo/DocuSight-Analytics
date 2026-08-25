@@ -3,9 +3,9 @@ import { SubmittalRow, ProjectSettings } from './types';
 import { calculateStats, getStatusCodeCategory } from './utils/calculations';
 import { Sparkles, Loader2, Bot, AlertTriangle, TrendingUp, Lightbulb, TrendingDown, Target, Clock, Users, Flame } from 'lucide-react';
 import Markdown from 'react-markdown';
-import { auth } from './firebase';
 
 import { runExecutiveAnalytics } from './utils/enterpriseAnalyticsEngine';
+import { auth } from './firebase';
 
 interface AIInsightsProps {
   data: SubmittalRow[];
@@ -77,13 +77,15 @@ export default function AIInsights({ data, projectInfo }: AIInsightsProps) {
     setError('');
     
     try {
-      const token = await auth.currentUser?.getIdToken();
+      const idToken = auth.currentUser ? await auth.currentUser.getIdToken() : '';
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      if (idToken) {
+        headers['Authorization'] = `Bearer ${idToken}`;
+      }
+
       const response = await fetch('/api/insights', {
           method: 'POST',
-          headers: { 
-            'Content-Type': 'application/json',
-            ...(token ? { 'Authorization': `Bearer ${token}` } : {})
-          },
+          headers,
           body: JSON.stringify({ 
               stats, 
               totalRecords: data.length, 

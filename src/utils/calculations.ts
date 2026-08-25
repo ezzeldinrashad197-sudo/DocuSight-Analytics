@@ -49,11 +49,17 @@ export const classifyNcrStatus = (rowOrStatus?: any): any => {
     code = String(rowOrStatus).toUpperCase().trim();
   }
 
-  const isClosedStatus = code === 'CLOSED' || code === 'CLOSE' || status === 'CLOSED' || action === 'APPROVED' || code.includes('CLOSED');
-  const isOpenStatus = code === 'OPEN' || status === 'OPEN' || code.includes('OPEN');
-  const isPendingStatus = code === 'W' || code === 'CODE W' || code.includes('PEND') || code.includes('WAIT') || action === 'UNDER REVIEW';
-  const isApproved = action === 'APPROVED' || code === 'A' || code === 'B' || code === 'CODE A' || code === 'CODE B' || code.includes('APPROVED');
-  const isRejected = action === 'REJECTED' || code === 'C' || code === 'CODE C' || code === 'D' || code === 'CODE D' || code.includes('REJECT');
+  const closedSet = new Set(['CLOSED', 'CLOSE', 'C CLOSED', 'CODE C CLOSED', 'D CLOSED', 'APPROVED', 'ACCEPTED']);
+  const openSet = new Set(['OPEN', 'UNDER INVESTIGATION', 'CORRECTIVE ACTION SUBMITTED', 'REJECTED OPEN', 'C OPEN']);
+  const pendingSet = new Set(['W', 'CODE W', 'PENDING', 'WAITING', 'UNDER REVIEW', 'WAITING CONSULTANT']);
+  const approvedSet = new Set(['A', 'B', 'CODE A', 'CODE B', 'APPROVED', 'ACCEPTED', 'APPROVED WITH COMMENTS', 'CLOSED WITH COMMENTS']);
+  const rejectedSet = new Set(['C', 'CODE C', 'D', 'CODE D', 'REJECTED', 'RETURNED', 'REJECTED OPEN', 'REJECTED CLOSED', 'C CLOSED', 'C OPEN']);
+
+  const isClosedStatus = closedSet.has(code) || closedSet.has(status) || action === 'APPROVED';
+  const isOpenStatus = openSet.has(code) || openSet.has(status);
+  const isPendingStatus = pendingSet.has(code) || pendingSet.has(status) || action === 'UNDER REVIEW';
+  const isApproved = approvedSet.has(code) || approvedSet.has(status) || action === 'APPROVED';
+  const isRejected = rejectedSet.has(code) || rejectedSet.has(status) || action === 'REJECTED';
 
   if (isPendingStatus || action === 'UNDER REVIEW') {
     return {

@@ -25,32 +25,32 @@ export interface ProjectSettings {
 
 export interface SubmittalRow {
   id: string;
-  logType?: string;        // E.g. raw sheet name
+  logType: string;         // E.g. raw sheet name
   sourceFile?: string;     // The original filename this row came from
   
   // Normalized Standard Fields
-  documentType?: string;    // 'MIR', 'WIR', 'RFI', 'SHD', 'MAR', 'DOC', 'SNA'
-  trade?: string;           // 'Structural', 'Architectural', 'Mechanical', 'Electrical', 'Infrastructure', 'Civil', 'Landscape', 'General'
-  tradeShort?: string;
-  workflowStage?: string;   // 'Approved', 'Pending', 'Rejected', 'Returned', 'Waiting Consultant', 'Resubmit'
-  isLatestRev?: boolean;    // Used to filter duplicates
-  isRev0?: boolean;
-  delayDays?: number;
-  overdue?: boolean;
+  documentType: string;    // 'MIR', 'WIR', 'RFI', 'SHD', 'MAR', 'DOC', 'SNA'
+  trade: string;           // 'Structural', 'Architectural', 'Mechanical', 'Electrical', 'Infrastructure', 'Civil', 'Landscape', 'General'
+  tradeShort?: string;     // 'STR', 'ARC', 'MEC', 'ELE', 'INFRA', 'LAND', 'GEN'
+  workflowStage: string;   // 'Approved', 'Pending', 'Rejected', 'Returned', 'Waiting Consultant', 'Resubmit'
+  isLatestRev: boolean;    // Used to filter duplicates
+  isRev0: boolean;
+  delayDays: number;
+  overdue: boolean;
 
-  docNo?: string;
-  rev?: string;
-  sheetNo?: string;
-  discipline?: string;
-  contractor?: string;
-  consultant?: string;
-  submissionDate?: string; // YYYY-MM-DD
-  dueDate?: string;        // YYYY-MM-DD
-  responseDate?: string;   // YYYY-MM-DD
-  status?: string;         // Raw code A, B, C...
-  remarks?: string;
-  area?: string;
-  tradeSystem?: string;
+  docNo: string;
+  rev: string;
+  sheetNo: string;
+  discipline: string;
+  contractor: string;
+  consultant: string;
+  submissionDate: string; // YYYY-MM-DD
+  dueDate: string;        // YYYY-MM-DD
+  responseDate: string;   // YYYY-MM-DD
+  status: string;         // Raw code A, B, C...
+  remarks: string;
+  area: string;
+  tradeSystem: string;
 
   priority?: 'CRITICAL' | 'NORMAL' | string;
 

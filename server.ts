@@ -95,7 +95,7 @@ interface ClientRateRecord {
 }
 const userRequestRegistry = new Map<string, ClientRateRecord>();
 
-async function startServer() {
+export async function createApp(opts?: { skipVite?: boolean }) {
   // --- SECRETS & CONFIGURATION BOUNDS VALIDATION (Issue #9) ---
   if (!process.env.GEMINI_API_KEY) {
      console.warn("\n\x1b[43m\x1b[30m%s\x1b[0m", "  CONFIGURATION WARNING  ");
@@ -527,7 +527,7 @@ async function startServer() {
     });
   });
 
-  // --- CHAPTER 16 / ER-013 METRICS LAYER CALCULATION ENGINE ENDPOINT (SSOT Delegated) ---
+  // --- CHAPTER 16 / ER-013 METRICS LAYER CALCULATION ENGINE ENDPOINT (SSOT Delegated & Authenticated) ---
   app.post("/api/metrics/calculate", verifyAuthAndRole(), (req, res) => {
     try {
       const { filters, dataset } = req.body || {};
@@ -940,15 +940,15 @@ Keep the report concise, professional, and use Markdown headings and bullet poin
     }
   });
 
-  // Vite middleware for development
-  if (isDev) {
+  // Vite middleware for development (skipped during unit/integration tests)
+  if (isDev && !opts?.skipVite) {
     const { createServer: createViteServer } = await import("vite");
     const vite = await createViteServer({
       server: { middlewareMode: true },
       appType: "spa",
     });
     app.use(vite.middlewares);
-  } else {
+  } else if (!isDev) {
     const distPath = path.join(process.cwd(), 'dist');
     app.use(express.static(distPath));
     app.get('*', (req, res) => {
@@ -956,9 +956,20 @@ Keep the report concise, professional, and use Markdown headings and bullet poin
     });
   }
 
-  app.listen(PORT, "0.0.0.0", () => {
-    console.log(`Server running on http://0.0.0.0:${PORT}`);
+  return app;
+}
+
+export async function startServer() {
+  const app = await createApp();
+  const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
+  return new Promise<any>((resolve) => {
+    const s = app.listen(PORT, "0.0.0.0", () => {
+      console.log(`Server running on http://0.0.0.0:${PORT}`);
+      resolve(s);
+    });
   });
 }
 
-startServer();
+if (process.env.NODE_ENV !== 'test' && !process.env.SKIP_SERVER_AUTOSTART) {
+  startServer();
+}

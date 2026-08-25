@@ -1,6 +1,7 @@
 import { SubmittalRow } from "../types";
 import { compareRevisionsCanonical } from "../analytics/revisionResolver";
 import { getMonthStr } from "./rfiAnalytics";
+import { classifyNcrStatus } from "./calculations";
 
 export interface NCRStats {
   ncrRaised: number;
@@ -99,21 +100,17 @@ export const calculateNCRStats = (data: SubmittalRow[], targetMonth?: Date): NCR
     const issueDateStr = firstSubmission.submissionDate;
     const closureDateStr = latestSubmission.responseDate;
     
-    const rawStatus = (latestSubmission.status || latestSubmission.ncrStatus || '').toUpperCase();
-    const actionRaw = (latestSubmission.ncrAction || '').toUpperCase();
-
-    let statusType: keyof typeof stats.statusBreakdown = 'open';
-    if (rawStatus.includes('CLOSED')) statusType = 'closed';
-    else if (rawStatus.includes('UNDER REVIEW') || actionRaw.includes('UNDER REVIEW')) statusType = 'underReview';
-    else if (latestSubmission.ncrSentDateCorrectiveAction) statusType = 'correctiveActionSubmitted';
-    else if (rawStatus.includes('OPEN')) statusType = 'open';
-    // Fallback mapping could be added here
+    const ncrClassification = classifyNcrStatus(latestSubmission);
+    const isClosed = ncrClassification.isClosed;
+    const isUnderReview = ncrClassification.isUnderReview;
+    const isCorrectiveAction = Boolean(latestSubmission.ncrSentDateCorrectiveAction);
+    const isUnderInvestigation = ncrClassification.isOpen && !isUnderReview && !isCorrectiveAction;
     
     // Check target month for raised vs closed if applicable
     const issueMonth = getMonthStr(issueDateStr);
     const closureMonth = getMonthStr(closureDateStr);
 
-    if (statusType !== 'closed') {
+    if (!isClosed) {
       stats.ncrOpen++;
     }
 
@@ -135,13 +132,23 @@ export const calculateNCRStats = (data: SubmittalRow[], targetMonth?: Date): NCR
     }
 
     if (!targetMonthStr || closureMonth === targetMonthStr) {
-      if (statusType === 'closed') stats.ncrClosed++;
+      if (isClosed) stats.ncrClosed++;
     }
 
-    stats.statusBreakdown[statusType]++;
+    if (isClosed) {
+      stats.statusBreakdown.closed++;
+    } else if (isUnderReview) {
+      stats.statusBreakdown.underReview++;
+    } else if (isCorrectiveAction) {
+      stats.statusBreakdown.correctiveActionSubmitted++;
+    } else if (isUnderInvestigation) {
+      stats.statusBreakdown.underInvestigation++;
+    } else {
+      stats.statusBreakdown.open++;
+    }
 
     let daysOpen = 0;
-    if (statusType !== 'closed' && issueDateStr) {
+    if (!isClosed && issueDateStr) {
       daysOpen = Math.floor((new Date().getTime() - new Date(issueDateStr).getTime()) / (1000 * 3600 * 24));
       const targetSLA = 14; 
       if (daysOpen > targetSLA) stats.ncrOverdue++;
@@ -152,7 +159,7 @@ export const calculateNCRStats = (data: SubmittalRow[], targetMonth?: Date): NCR
       else stats.aging.daysMore90++;
     }
 
-    if (statusType === 'closed' && issueDateStr && closureDateStr) {
+    if (isClosed && issueDateStr && closureDateStr) {
       const clsTime = Math.floor((new Date(closureDateStr).getTime() - new Date(issueDateStr).getTime()) / (1000 * 3600 * 24));
       if (clsTime >= 0) {
          closureCount++;
@@ -160,7 +167,7 @@ export const calculateNCRStats = (data: SubmittalRow[], targetMonth?: Date): NCR
       }
     }
 
-    if (statusType !== 'closed' && issueDateStr) {
+    if (!isClosed && issueDateStr) {
        stats.trackingTable.push({
            ...latestSubmission,
            delayDays: daysOpen
