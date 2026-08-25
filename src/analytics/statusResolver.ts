@@ -163,14 +163,153 @@ export const getRecordNormalizedStatus = (row: SubmittalRow): RecordNormalizedSt
   return 'UNCLASSIFIED';
 };
 
-/** Deterministic NCR / Register status classifier */
-export const classifyNcrStatus = (rowOrStatus?: any): 'OPEN' | 'CLOSED' | 'UNKNOWN' => {
-  if (!rowOrStatus) return 'UNKNOWN';
-  const cat = getStatusCodeCategory(rowOrStatus);
-  if (cat === 'APPROVED' || cat === 'REJECTED_CLOSED') return 'CLOSED';
-  if (cat === 'REJECTED_OPEN' || cat === 'PENDING') return 'OPEN';
-  const raw = normalizeCanonicalString(typeof rowOrStatus === 'object' ? (rowOrStatus?.status || rowOrStatus?.recordStatus || rowOrStatus?.ncrStatus) : rowOrStatus);
-  if (raw === 'CLOSED' || raw === 'CLOSE') return 'CLOSED';
-  if (raw === 'OPEN') return 'OPEN';
-  return 'UNKNOWN';
+export interface NcrClassificationResult {
+  status: string;
+  isOpen: boolean;
+  isClosed: boolean;
+  isUnderReview: boolean;
+  isApprovedClosed: boolean;
+  isRejectedClosed: boolean;
+  isRejectedOpen: boolean;
+  isPending: boolean;
+  isWaiting: boolean;
+  isApproved: boolean;
+  isRejected: boolean;
+}
+
+/** Deterministic NCR / Register status classifier (SSOT Canonical Implementation) */
+export const classifyNcrStatus = (rowOrStatus?: any): NcrClassificationResult => {
+  if (!rowOrStatus) {
+    return {
+      status: 'UNKNOWN',
+      isOpen: false,
+      isClosed: false,
+      isUnderReview: false,
+      isApprovedClosed: false,
+      isRejectedClosed: false,
+      isRejectedOpen: false,
+      isPending: false,
+      isWaiting: false,
+      isApproved: false,
+      isRejected: false,
+    };
+  }
+
+  let code = '';
+  let action = '';
+  let status = '';
+
+  if (typeof rowOrStatus === 'object') {
+    code = (rowOrStatus.ncrStatus || rowOrStatus.sorStatus || rowOrStatus.status || rowOrStatus.recordStatus || '').toUpperCase().trim();
+    action = (rowOrStatus.ncrAction || rowOrStatus.sorAction || rowOrStatus.action || '').toUpperCase().trim();
+    status = (rowOrStatus.status || rowOrStatus.recordStatus || '').toUpperCase().trim();
+  } else {
+    code = String(rowOrStatus).toUpperCase().trim();
+  }
+
+  const closedSet = new Set(['CLOSED', 'CLOSE', 'C CLOSED', 'CODE C CLOSED', 'D CLOSED', 'APPROVED', 'ACCEPTED']);
+  const openSet = new Set(['OPEN', 'UNDER INVESTIGATION', 'CORRECTIVE ACTION SUBMITTED', 'REJECTED OPEN', 'C OPEN']);
+  const pendingSet = new Set(['W', 'CODE W', 'PENDING', 'WAITING', 'UNDER REVIEW', 'WAITING CONSULTANT']);
+  const approvedSet = new Set(['A', 'B', 'CODE A', 'CODE B', 'APPROVED', 'ACCEPTED', 'APPROVED WITH COMMENTS', 'CLOSED WITH COMMENTS']);
+  const rejectedSet = new Set(['C', 'CODE C', 'D', 'CODE D', 'REJECTED', 'RETURNED', 'REJECTED OPEN', 'REJECTED CLOSED', 'C CLOSED', 'C OPEN']);
+
+  const isClosedStatus = closedSet.has(code) || closedSet.has(status) || action === 'APPROVED';
+  const isOpenStatus = openSet.has(code) || openSet.has(status);
+  const isPendingStatus = pendingSet.has(code) || pendingSet.has(status) || action === 'UNDER REVIEW';
+  const isApproved = approvedSet.has(code) || approvedSet.has(status) || action === 'APPROVED';
+  const isRejected = rejectedSet.has(code) || rejectedSet.has(status) || action === 'REJECTED';
+
+  if (isPendingStatus || action === 'UNDER REVIEW') {
+    return {
+      status: 'Pending',
+      isOpen: true,
+      isClosed: false,
+      isUnderReview: true,
+      isApprovedClosed: false,
+      isRejectedClosed: false,
+      isRejectedOpen: false,
+      isPending: true,
+      isWaiting: true,
+      isApproved: false,
+      isRejected: false
+    };
+  }
+
+  if (isRejected && (isOpenStatus || (!isClosedStatus && !isApproved))) {
+    return {
+      status: 'Rejected Open',
+      isOpen: false,
+      isClosed: false,
+      isUnderReview: false,
+      isApprovedClosed: false,
+      isRejectedClosed: false,
+      isRejectedOpen: true,
+      isPending: false,
+      isWaiting: false,
+      isApproved: false,
+      isRejected: true
+    };
+  }
+
+  if (isApproved || (isClosedStatus && !isRejected)) {
+    return {
+      status: 'Approved Closed',
+      isOpen: false,
+      isClosed: true,
+      isUnderReview: false,
+      isApprovedClosed: true,
+      isRejectedClosed: false,
+      isRejectedOpen: false,
+      isPending: false,
+      isWaiting: false,
+      isApproved: true,
+      isRejected: false
+    };
+  }
+
+  if (isRejected && isClosedStatus) {
+    return {
+      status: 'Rejected Closed',
+      isOpen: false,
+      isClosed: true,
+      isUnderReview: false,
+      isApprovedClosed: false,
+      isRejectedClosed: true,
+      isRejectedOpen: false,
+      isPending: false,
+      isWaiting: false,
+      isApproved: false,
+      isRejected: true
+    };
+  }
+
+  if (isOpenStatus) {
+    return {
+      status: 'Open',
+      isOpen: true,
+      isClosed: false,
+      isUnderReview: false,
+      isApprovedClosed: false,
+      isRejectedClosed: false,
+      isRejectedOpen: false,
+      isPending: false,
+      isWaiting: false,
+      isApproved: false,
+      isRejected: false
+    };
+  }
+
+  return {
+    status: 'Closed',
+    isOpen: false,
+    isClosed: true,
+    isUnderReview: false,
+    isApprovedClosed: true,
+    isRejectedClosed: false,
+    isRejectedOpen: false,
+    isPending: false,
+    isWaiting: false,
+    isApproved: true,
+    isRejected: false
+  };
 };

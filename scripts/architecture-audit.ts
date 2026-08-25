@@ -32,13 +32,13 @@ const SSOT_CORE_FILES = new Set([
   'src/utils/statusMatrixEngine.ts'
 ]);
 
+// Only external dependencies, build outputs, and VCS directories are ignored
 const IGNORED_DIRS = new Set([
   'node_modules',
   'dist',
   'build',
   '.git',
-  '.vscode',
-  'src/test-datasets'
+  '.vscode'
 ]);
 
 let filesScanned = 0;
