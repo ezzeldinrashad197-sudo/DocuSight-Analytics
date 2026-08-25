@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect, useCallback } from 'react';
 import { SubmittalRow } from '../types';
+import { auth } from '../firebase';
 
 export interface FilterState {
   documentType: string;
@@ -47,9 +48,13 @@ export function useFilters(data: SubmittalRow[], startDate: string, endDate: str
     }
     setIsCalculatingBackend(true);
     try {
+      const token = await auth.currentUser?.getIdToken();
       const res = await fetch('/api/metrics/calculate', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        },
         body: JSON.stringify({ filters: activeFilters, dataset })
       });
       if (res.ok) {

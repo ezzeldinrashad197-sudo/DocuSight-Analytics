@@ -89,13 +89,13 @@ export function getBusinessEntityKey(row: SubmittalRow): string {
   const rawRev = (row.rev || (row as any).revision || (row as any).revNo || '').trim();
   let baseRef = commonRef;
   if (rawRev && baseRef) {
-    const revPattern = new RegExp(`[-_/\\s]+(?:REV\\.?)?\\s*${rawRev}$`, 'i');
+    const revPattern = new RegExp(`[-_/\\s]+(?:REV|R)\\.?\\s*${rawRev}$`, 'i');
     if (revPattern.test(baseRef)) {
       baseRef = baseRef.replace(revPattern, '').trim();
     }
   }
   // Strip trailing revision indicators if preceded by REV or R (e.g. -REV01, _R0)
-  baseRef = baseRef.replace(/[-_/\\s]+(?:REV|R)\.?\s*([0-9]{1,2}|[A-Z])$/i, '').trim() || commonRef;
+  baseRef = baseRef.replace(/[-_/\\s]+(?:REV|R)\\.?\\s*([0-9]{1,2}|[A-Z])$/i, '').trim() || commonRef;
 
   if (isABD) {
     return `ABD:${baseRef.toUpperCase()}`;

@@ -1,10 +1,10 @@
 {
-  "totalLines": 310,
-  "coveredLines": 204,
+  "totalLines": 368,
+  "coveredLines": 221,
   "totalStatements": 35,
-  "coveredStatements": 23,
-  "totalBranches": 34,
-  "coveredBranches": 15,
-  "totalFunctions": 17,
+  "coveredStatements": 21,
+  "totalBranches": 35,
+  "coveredBranches": 12,
+  "totalFunctions": 18,
   "coveredFunctions": 10
 }

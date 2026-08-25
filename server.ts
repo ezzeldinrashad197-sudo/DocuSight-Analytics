@@ -528,7 +528,7 @@ async function startServer() {
   });
 
   // --- CHAPTER 16 / ER-013 METRICS LAYER CALCULATION ENGINE ENDPOINT (SSOT Delegated) ---
-  app.post("/api/metrics/calculate", (req, res) => {
+  app.post("/api/metrics/calculate", verifyAuthAndRole(), (req, res) => {
     try {
       const { filters, dataset } = req.body || {};
       const rawData = Array.isArray(dataset) ? dataset : [];
@@ -685,7 +685,7 @@ async function startServer() {
     }
   });
 
-  app.post("/api/insights", aiLimiter, async (req, res) => {
+  app.post("/api/insights", verifyAuthAndRole(), aiLimiter, async (req, res) => {
     const jobId = 'JOB-' + Math.random().toString(36).substring(2, 10).toUpperCase();
     const { stats, totalRecords, projectName, healthScore, consultantAnalytics, contractorAnalytics, disciplineAnalytics, overdueAnalytics, reworkAnalytics, rootCauseAnalytics, forecastAnalytics, auditAnalytics } = req.body;
     

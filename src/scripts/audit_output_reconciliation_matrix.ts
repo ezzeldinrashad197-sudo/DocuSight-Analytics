@@ -242,7 +242,7 @@ const cumulativeMap: Record<string, LayerRow> = {};
 disciplines.forEach(d => {
   const row = reportTableRes.stats.find(s => s.discipline === (d === 'ARC' ? 'Arch' : d === 'MEC' ? 'Mech' : d === 'ELE' ? 'Elec' : d === 'INFRA' ? 'Infra' : d === 'LAND' ? 'Landscape' : d));
   cumulativeMap[d] = {
-    unique: row?.TotalSubmittals || 0,
+    unique: row?.Total || (row as any)?.TotalSubmittals || 0,
     approved: row?.Approved || 0,
     rejectedOpen: row?.RejectedOpen || 0,
     rejectedClosed: row?.RejectedClosed || 0,
@@ -252,7 +252,7 @@ disciplines.forEach(d => {
   };
 });
 cumulativeMap['TOTAL'] = {
-  unique: reportTableRes.totalRow.TotalSubmittals || 0,
+  unique: reportTableRes.totalRow.Total || (reportTableRes.totalRow as any).TotalSubmittals || 0,
   approved: reportTableRes.totalRow.Approved || 0,
   rejectedOpen: reportTableRes.totalRow.RejectedOpen || 0,
   rejectedClosed: reportTableRes.totalRow.RejectedClosed || 0,

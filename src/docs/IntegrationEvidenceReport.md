@@ -1,5 +1,5 @@
 # StructuSight E2E Integration Pipeline Verification Report
-*Generated on 2026-08-22T17:01:45.535Z | Deterministic Audit Evidence*
+*Generated on 2026-08-25T07:33:15.104Z | Deterministic Audit Evidence*
 
 > [!NOTE]
 > **AUDIT ENGINE DISCLAIMER & VERIFICATION NOTICE**
@@ -109,7 +109,7 @@ This trace represents the full travel of records from unstructured file ingestio
     {
       "docNo": "DOC-ST-001",
       "category": "PENDING",
-      "delayDays": 41,
+      "delayDays": 44,
       "isOverdue": true
     },
     {
@@ -121,7 +121,7 @@ This trace represents the full travel of records from unstructured file ingestio
     {
       "docNo": "DOC-ME-003",
       "category": "REJECTED_OPEN",
-      "delayDays": 48,
+      "delayDays": 51,
       "isOverdue": true
     },
     {
@@ -147,7 +147,22 @@ This trace represents the full travel of records from unstructured file ingestio
     "totalSheetsFurtherRev": 1,
     "totalDrawingsRev0": 4,
     "totalDrawingsFurtherRev": 1,
+    "totalRejectedRows": 2,
+    "rejectedOpenRows": 1,
+    "rejectedClosedRows": 1,
+    "rejectionEvents": 2,
+    "rejectionEventsOpen": 1,
+    "rejectionEventsClosed": 1,
+    "resolvedRejections": 0,
+    "rejectionResolutionRate": 0,
     "totalUniqueDrawings": 4,
+    "currentApproved": 1,
+    "currentRejectedOpen": 1,
+    "currentRejectedClosed": 1,
+    "currentRejected": 2,
+    "currentPending": 1,
+    "currentOpen": 2,
+    "currentClosed": 2,
     "approved": 1,
     "rejectedOpen": 1,
     "rejectedClosed": 1,
@@ -156,12 +171,7 @@ This trace represents the full travel of records from unstructured file ingestio
     "unclassified": 0,
     "activeItems": 2,
     "activeCurrentItems": 2,
-    "slaEligibleActiveItems": 2,
-    "rejectionEvents": 2,
-    "rejectionEventsOpen": 1,
-    "rejectionEventsClosed": 1,
-    "resolvedRejections": 0,
-    "rejectionResolutionRate": 0,
+    "slaEligibleActiveItems": 0,
     "overdue": 2,
     "overdueRateOnActive": 100,
     "avgResponseTime": 14,
