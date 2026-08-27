@@ -685,37 +685,38 @@ export async function createApp(opts?: { skipVite?: boolean }) {
     }
   });
 
-  app.post("/api/insights", verifyAuthAndRole(), aiLimiter, async (req, res) => {
+  app.post("/api/insights", aiLimiter, async (req, res, next) => {
+    // Fine-grained per-IP rate limiting
+    const clientIp = req.ip || "unmapped-gateway-client";
+    const timestampNow = Date.now();
+    const clientRateWindow = 60 * 1000;
+    const clientLimitMax = 20;
+
+    let clientRecord = userRequestRegistry.get(clientIp);
+    if (!clientRecord) {
+      clientRecord = { timestamps: [] };
+      userRequestRegistry.set(clientIp, clientRecord);
+    }
+
+    clientRecord.timestamps = clientRecord.timestamps.filter(t => timestampNow - t < clientRateWindow);
+
+    if (clientRecord.timestamps.length >= clientLimitMax) {
+      systemMetrics.rateLimitIncidentsCount++;
+      logSecurityEvent('AI_RATE_LIMIT_INCIDENT', 'WARN', `Rate limits exceeded for client gateway: ${clientIp}. Dropped request.`, { currentLimit: clientLimitMax });
+      const retryAfterSec = Math.round((clientRateWindow - (timestampNow - clientRecord.timestamps[0])) / 1000);
+      res.setHeader('Retry-After', retryAfterSec);
+      return res.status(429).json({
+        error: "Too many concurrent requests. Rate limits restrict users to 20 inquiries per minute.",
+        retryAfterSeconds: retryAfterSec
+      });
+    }
+    clientRecord.timestamps.push(timestampNow);
+    next();
+  }, verifyAuthAndRole(), async (req, res) => {
     const jobId = 'JOB-' + Math.random().toString(36).substring(2, 10).toUpperCase();
     const { stats, totalRecords, projectName, healthScore, consultantAnalytics, contractorAnalytics, disciplineAnalytics, overdueAnalytics, reworkAnalytics, rootCauseAnalytics, forecastAnalytics, auditAnalytics } = req.body;
     
     try {
-      // --- FINE-GRAINED USER AND IP RATE LIMITING ENGINE (Issue #6) ---
-      const clientIp = req.ip || "unmapped-gateway-client";
-      const timestampNow = Date.now();
-      const clientRateWindow = 60 * 1000; // 60 seconds rolling window
-      const clientLimitMax = 20; // Max 20 dynamic iterations in 60s
-      
-      let clientRecord = userRequestRegistry.get(clientIp);
-      if (!clientRecord) {
-        clientRecord = { timestamps: [] };
-        userRequestRegistry.set(clientIp, clientRecord);
-      }
-      
-      clientRecord.timestamps = clientRecord.timestamps.filter(t => timestampNow - t < clientRateWindow);
-      
-      if (clientRecord.timestamps.length >= clientLimitMax) {
-        systemMetrics.rateLimitIncidentsCount++;
-        logSecurityEvent('AI_RATE_LIMIT_INCIDENT', 'WARN', `Rate limits exceeded for client gateway: ${clientIp}. Dropped request.`, { currentLimit: clientLimitMax });
-        const retryAfterSec = Math.round((clientRateWindow - (timestampNow - clientRecord.timestamps[0])) / 1000);
-        res.setHeader('Retry-After', retryAfterSec);
-        return res.status(429).json({
-          error: "Too many concurrent requests. Rate limits restrict users to 20 inquiries per minute.",
-          retryAfterSeconds: retryAfterSec
-        });
-      }
-      clientRecord.timestamps.push(timestampNow);
-
       // --- CIRCUIT BREAKER SENTINEL GATEWAY (Issue #7) ---
       if (!aiCircuitBreaker.canExecute()) {
         systemMetrics.rateLimitIncidentsCount++;

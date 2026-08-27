@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-25T07:33:15.104Z",
+  "generatedAt": "2026-08-26T09:02:23.033Z",
   "overallStatus": "APPROVED",
   "steps": [
     {
@@ -52,7 +52,7 @@
           {
             "docNo": "DOC-ST-001",
             "category": "PENDING",
-            "delayDays": 44,
+            "delayDays": 45,
             "isOverdue": true
           },
           {
@@ -64,7 +64,7 @@
           {
             "docNo": "DOC-ME-003",
             "category": "REJECTED_OPEN",
-            "delayDays": 51,
+            "delayDays": 52,
             "isOverdue": true
           },
           {
@@ -83,10 +83,16 @@
       "metadata": {
         "kpiStats": {
           "totalSubmittedSheets": 5,
+          "totalRows": 5,
           "totalSheetsRev0": 4,
           "totalSheetsFurtherRev": 1,
           "totalDrawingsRev0": 4,
           "totalDrawingsFurtherRev": 1,
+          "rowApproved": 2,
+          "rowApprovedClosed": 3,
+          "rowRejectedOpen": 1,
+          "rowRejectedClosed": 1,
+          "rowPending": 1,
           "totalRejectedRows": 2,
           "rejectedOpenRows": 1,
           "rejectedClosedRows": 1,
@@ -96,6 +102,7 @@
           "resolvedRejections": 0,
           "rejectionResolutionRate": 0,
           "totalUniqueDrawings": 4,
+          "totalUniqueItems": 4,
           "currentApproved": 1,
           "currentRejectedOpen": 1,
           "currentRejectedClosed": 1,

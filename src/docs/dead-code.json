@@ -114,6 +114,14 @@
     },
     {
       "file": "src/analytics/calculationFoundation.ts",
+      "exportName": "normalizeCanonicalString",
+      "type": "Constant/Enum/Class",
+      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+      "reason": "No incoming imports of 'normalizeCanonicalString' detected in any active source modules.",
+      "referencedBy": []
+    },
+    {
+      "file": "src/analytics/calculationFoundation.ts",
       "exportName": "DataQualityIssue",
       "type": "Type/Interface",
       "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
@@ -158,6 +166,14 @@
       "type": "Type/Interface",
       "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
       "reason": "No incoming imports of 'PerformanceValidationRow' detected in any active source modules.",
+      "referencedBy": []
+    },
+    {
+      "file": "src/analytics/calculationFoundation.ts",
+      "exportName": "CanonicalTradeResolution",
+      "type": "Type/Interface",
+      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+      "reason": "No incoming imports of 'CanonicalTradeResolution' detected in any active source modules.",
       "referencedBy": []
     },
     {
@@ -937,6 +953,22 @@
       "referencedBy": []
     },
     {
+      "file": "src/utils/calculationVerificationEngine.ts",
+      "exportName": "generateExpandedGoldenDataset",
+      "type": "Function",
+      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+      "reason": "No incoming imports of 'generateExpandedGoldenDataset' detected in any active source modules.",
+      "referencedBy": []
+    },
+    {
+      "file": "src/utils/calculationVerificationEngine.ts",
+      "exportName": "runCalculationVerificationSuite",
+      "type": "Function",
+      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+      "reason": "No incoming imports of 'runCalculationVerificationSuite' detected in any active source modules.",
+      "referencedBy": []
+    },
+    {
       "file": "src/utils/calculations.ts",
       "exportName": "buildCanonicalDataset",
       "type": "Constant/Enum/Class",
@@ -978,6 +1010,14 @@
     },
     {
       "file": "src/utils/calculations.ts",
+      "exportName": "resolveCanonicalTrade",
+      "type": "Constant/Enum/Class",
+      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+      "reason": "No incoming imports of 'resolveCanonicalTrade' detected in any active source modules.",
+      "referencedBy": []
+    },
+    {
+      "file": "src/utils/calculations.ts",
       "exportName": "getStatusCategory",
       "type": "Constant/Enum/Class",
       "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
@@ -1010,18 +1050,18 @@
     },
     {
       "file": "src/utils/calculations.ts",
-      "exportName": "getRevisionWeight",
-      "type": "Constant/Enum/Class",
-      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
-      "reason": "No incoming imports of 'getRevisionWeight' detected in any active source modules.",
-      "referencedBy": []
-    },
-    {
-      "file": "src/utils/calculations.ts",
       "exportName": "mapDocumentToWorkflow",
       "type": "Constant/Enum/Class",
       "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
       "reason": "No incoming imports of 'mapDocumentToWorkflow' detected in any active source modules.",
+      "referencedBy": []
+    },
+    {
+      "file": "src/utils/calculations.ts",
+      "exportName": "NcrClassificationResult",
+      "type": "Component",
+      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+      "reason": "No incoming imports of 'NcrClassificationResult' detected in any active source modules.",
       "referencedBy": []
     },
     {
@@ -1062,6 +1102,14 @@
       "type": "Type/Interface",
       "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
       "reason": "No incoming imports of 'ClassificationResult' detected in any active source modules.",
+      "referencedBy": []
+    },
+    {
+      "file": "src/utils/classificationEngine.ts",
+      "exportName": "detectDisciplineFromText",
+      "type": "Function",
+      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+      "reason": "No incoming imports of 'detectDisciplineFromText' detected in any active source modules.",
       "referencedBy": []
     },
     {
@@ -1225,6 +1273,14 @@
       "referencedBy": []
     },
     {
+      "file": "src/utils/rfiAnalytics.ts",
+      "exportName": "calculateRFIStats",
+      "type": "Function",
+      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+      "reason": "No incoming imports of 'calculateRFIStats' detected in any active source modules.",
+      "referencedBy": []
+    },
+    {
       "file": "src/utils/securityRegressionSuite.ts",
       "exportName": "RegressionTestResult",
       "type": "Type/Interface",
@@ -1348,6 +1404,7 @@
     "src/analytics/recordTransformer.ts",
     "src/db/index.ts",
     "src/db/schema.ts",
+    "src/utils/calculationVerificationEngine.ts",
     "src/utils/loadTestingSuite.ts",
     "src/utils/ncrAnalytics.ts",
     "src/utils/securityRegressionSuite.ts"

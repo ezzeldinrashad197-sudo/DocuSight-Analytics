@@ -612,54 +612,71 @@ export const calculateExecutiveDashboardData = (
         .sort((a, b) => (b.delayDays || 0) - (a.delayDays || 0))
         .slice(0, 5);
 
+    const currentRejOpen = globalStats.currentRejectedOpen ?? globalStats.rejectedOpen;
+    const currentPending = globalStats.currentPending ?? globalStats.pending;
+    const currentRejClosed = globalStats.currentRejectedClosed ?? globalStats.rejectedClosed;
+
     const recs: { id: string; en: string; ar: string; priority: string; action: string; actionAr: string }[] = [];
-    if (appRate < 80) {
+    if (currentRejOpen > 0) {
         recs.push({
-            id: 'rec-1',
-            en: `Establish an internal pre-submission technical audit desk to filter out recurring defects, aiming to lift the current ${appRate.toFixed(1)}% approval rate back to the 80%+ benchmark.`,
-            ar: `تأسيس مكتب فني داخلي لتدقيق جودة المعاملات قبل تقديمها للاستشاري لتلافي الملاحظات المتكررة، بهدف رفع معدل الاعتماد البالغ حالياً ${appRate.toFixed(1)}% إلى النسبة المستهدفة 80%.`,
+            id: 'rec-rej-open',
+            en: `Prioritize immediate technical revision and resubmission for the ${currentRejOpen} unique items currently holding Rejected/Open status across project disciplines.`,
+            ar: `إعطاء الأولوية العاجلة للمراجعة الفنية وإعادة تقديم البنود الفريدة البالغ عددها ${currentRejOpen} بنداً والتي لا تزال بحالة مرفوض/مفتوح حالياً عبر التخصصات المختلفة.`,
             priority: 'CRITICAL',
-            action: 'Improve Pre-QA/QC Check',
-            actionAr: 'تطوير تدقيق الجودة الداخلي'
+            action: 'Resolve Open Rejections',
+            actionAr: 'معالجة المرفوض المفتوح'
         });
     }
     if (globalStats.overdue > 0) {
         recs.push({
-            id: 'rec-2',
-            en: `Deploy senior engineering task forces to specifically target and clear the ${globalStats.overdue} critical SLA overdue bottlenecks to unblock downstream procurement and site works.`,
-            ar: `توجيه مهندسين كبار لسرعة تصفية المعاملات المتأخرة والبالغ عددها ${globalStats.overdue} معاملة، لضمان عدم تأثر أعمال التوريدات والتركيبات الموقعية المرتبطة بها.`,
+            id: 'rec-overdue',
+            en: `Deploy senior engineering task forces to expedite clearance of the ${globalStats.overdue} unique pending items that have exceeded consultant SLA review turnaround times.`,
+            ar: `توجيه فرق هندسية متخصصة لسرعة مراجعة واعتماد البنود المعلقة المتأخرة والبالغ عددها ${globalStats.overdue} بنداً فريداً متجاوزة للمدد التعاقدية المحددة.`,
             priority: 'CRITICAL',
-            action: 'Resolve SLA Overdues',
+            action: 'Clear SLA Overdues',
             actionAr: 'تصفية المتأخرات الحرجة'
         });
     }
-    if (worstDocType && maxOverdue > 2) {
+    let worstActiveDocType = '';
+    let maxActiveUnique = 0;
+    byDocType.forEach(row => {
+        const rowActive = (row.stats.currentRejectedOpen ?? row.stats.rejectedOpen ?? 0) + (row.stats.currentPending ?? row.stats.pending ?? 0);
+        if (rowActive > maxActiveUnique) {
+            maxActiveUnique = rowActive;
+            worstActiveDocType = row.documentType;
+        }
+    });
+
+    if (worstActiveDocType && maxActiveUnique > 0) {
         recs.push({
-            id: 'rec-3',
-            en: `Convene a joint alignment workshop between contractor & consultant design managers specifically for ${worstDocType} submittals to settle disputed code interpretations.`,
-            ar: `عقد ورشة عمل فنية مشتركة بين مديري التصميم من المقاول والاستشاري لبحث سجلات الـ (${worstDocType}) والوصول لاتفاق حول تفسير الأكواد والمواصفات الفنية المختلفة لتقليل الرفض.`,
+            id: 'rec-doc-alignment',
+            en: `Convene a focused technical alignment session between Innovo & ACE teams specifically for ${worstActiveDocType} (which holds ${maxActiveUnique} active/open unique items) to align on submittal compliance.`,
+            ar: `عقد ورشة عمل فنية مشتركة بين المقاول والاستشاري لبحث سجلات (${worstActiveDocType}) التي تتضمن ${maxActiveUnique} بنداً فريداً نشطاً/معلقاً للاتفاق على معايير الجودة والامتثال الفني.`,
             priority: 'HIGH',
-            action: `Align on ${worstDocType} Code`,
-            actionAr: `تنسيق فني لسجلات ${worstDocType}`
-        });
-    } else {
-        recs.push({
-            id: 'rec-3',
-            en: 'Implement dynamic dashboard tracking to monitor response turnaround times on a daily basis to prevent any upcoming SLA backlogs.',
-            ar: 'تفعيل نظام متابعة يومي لمراقبة معدل استجابة الاستشاري لضمان سرعة الرد وتلافي تراكم أي مستندات جديدة مستقبلاً.',
-            priority: 'MEDIUM',
-            action: 'Monitor Daily Lead-times',
-            actionAr: 'مراقبة مدد الاستجابة اليومية'
+            action: `Align on ${worstActiveDocType} Quality`,
+            actionAr: `تنسيق جودة ${worstActiveDocType}`
         });
     }
-    recs.push({
-        id: 'rec-4',
-        en: 'Audit submittal logs to verify the closure and re-submission of rejected items within 10 working days of receipt.',
-        ar: 'جدولة أعمال تدقيق دورية للتأكد من مراجعة وإعادة تقديم كافة المستندات المرفوضة في غضون 10 أيام عمل من تاريخ تسلمها.',
-        priority: 'MEDIUM',
-        action: 'Audit Rejection Turnaround',
-        actionAr: 'تدقيق المستندات المعاد تقديمها'
-    });
+
+    if (currentPending > 0) {
+        recs.push({
+            id: 'rec-pending-queue',
+            en: `Monitor the consultant review pipeline daily to ensure the ${currentPending} currently pending unique submittals receive responses within the 14-day SLA benchmark.`,
+            ar: `متابعة مسار مراجعات الاستشاري بصورة يومية لضمان إصدار الردود على ${currentPending} بنداً فريداً معلقاً حالياً ضمن المهلة المحددة (14 يوماً).`,
+            priority: 'MEDIUM',
+            action: 'Track Pending Pipeline',
+            actionAr: 'متابعة مسار المعلق'
+        });
+    } else if (appRate < 80) {
+        recs.push({
+            id: 'rec-qa-audit',
+            en: `Strengthen internal QA/QC pre-submission checklists to improve first-time approval rates from ${appRate.toFixed(1)}% toward the 80%+ corporate target.`,
+            ar: `تعزيز قوائم تدقيق الجودة الداخلية قبل التقديم لرفع معدل الاعتماد من التقديم الأول من ${appRate.toFixed(1)}% نحو النسبة المستهدفة 80%.`,
+            priority: 'MEDIUM',
+            action: 'Enhance Pre-QA/QC',
+            actionAr: 'تطوير تدقيق الجودة الداخلي'
+        });
+    }
 
     return {
         globalStats,
@@ -1024,94 +1041,91 @@ export const addRegisterBreakdownSlide = (
     const headers = [
         { text: isArabic ? "نوع المعاملة" : "Log Type", options: { bold: true, fill: "203864", color: "FFFFFF", align: "left" } },
         { text: isArabic ? "الأولوية" : "Priority", options: { bold: true, fill: "203864", color: "FFFFFF", align: "center" } },
-        { text: isArabic ? "إجمالي الصفحات" : "Total Sheets", options: { bold: true, fill: "1E293B", color: "FFFFFF", align: "center" } },
-        { text: isArabic ? "مراجعة 00" : "Rev 0", options: { bold: true, fill: "334155", color: "FFFFFF", align: "center" } },
-        { text: isArabic ? "مراجعات لاحقة" : "Further Rev", options: { bold: true, fill: "334155", color: "FFFFFF", align: "center" } },
-        { text: isArabic ? "البنود الفريدة" : "Unique Items", options: { bold: true, fill: "1E3A8A", color: "FFFFFF", align: "center" } },
-        { text: isArabic ? "معتمد" : "Approved", options: { bold: true, fill: "047857", color: "FFFFFF", align: "center" } },
-        { text: isArabic ? "مرفوض مفتوح" : "Rej. Open", options: { bold: true, fill: "BE123C", color: "FFFFFF", align: "center" } },
-        { text: isArabic ? "مرفوض مغلق" : "Rej. Closed", options: { bold: true, fill: "881337", color: "FFFFFF", align: "center" } },
-        { text: isArabic ? "إجمالي المرفوض" : "Total Rej.", options: { bold: true, fill: "9F1239", color: "FFFFFF", align: "center" } },
-        { text: isArabic ? "معلق" : "Pending", options: { bold: true, fill: "D97706", color: "FFFFFF", align: "center" } },
-        { text: isArabic ? "نشط (قيد العمل)" : "Active Items", options: { bold: true, fill: "B45309", color: "FFFFFF", align: "center" } },
-        { text: isArabic ? "متأخر" : "Overdue", options: { bold: true, fill: "991B1B", color: "FFFFFF", align: "center" } },
-        { text: isArabic ? "نسبة التأخير %" : "Overdue %", options: { bold: true, fill: "991B1B", color: "FFFFFF", align: "center" } }
+        { text: isArabic ? "مراجعة 00" : "Rev 00", options: { bold: true, fill: "334155", color: "FFFFFF", align: "center" } },
+        { text: isArabic ? "مراجعات لاحقة" : "Rev >00", options: { bold: true, fill: "334155", color: "FFFFFF", align: "center" } },
+        { text: isArabic ? "إجمالي الصفوف" : "Total Rows", options: { bold: true, fill: "1E293B", color: "FFFFFF", align: "center" } },
+        { text: isArabic ? "معتمد/مغلق (صفوف)" : "Row App/Closed", options: { bold: true, fill: "065F46", color: "FFFFFF", align: "center" } },
+        { text: isArabic ? "مرفوض/مفتوح (صفوف)" : "Row Rej/Open", options: { bold: true, fill: "991B1B", color: "FFFFFF", align: "center" } },
+        { text: isArabic ? "معلق (صفوف)" : "Row Pending", options: { bold: true, fill: "92400E", color: "FFFFFF", align: "center" } },
+        { text: isArabic ? "إجمالي البنود الفريدة" : "Total Unique", options: { bold: true, fill: "1E3A8A", color: "FFFFFF", align: "center" } },
+        { text: isArabic ? "معتمد/مغلق حالي" : "Cur. App/Closed", options: { bold: true, fill: "047857", color: "FFFFFF", align: "center" } },
+        { text: isArabic ? "مرفوض مفتوح حالي" : "Cur. Rej Open", options: { bold: true, fill: "BE123C", color: "FFFFFF", align: "center" } },
+        { text: isArabic ? "مرفوض مغلق حالي" : "Cur. Rej Closed", options: { bold: true, fill: "881337", color: "FFFFFF", align: "center" } },
+        { text: isArabic ? "معلق حالي" : "Cur. Pending", options: { bold: true, fill: "D97706", color: "FFFFFF", align: "center" } }
     ];
     tableRows.push(headers);
 
-    let sumUnique = 0;
-    let sumSheets = 0;
     let sumRev0 = 0;
     let sumFurther = 0;
-    let sumApp = 0;
-    let sumRejOpen = 0;
-    let sumRejClosed = 0;
-    let sumPending = 0;
-    let sumActive = 0;
-    let sumOverdue = 0;
+    let sumSheets = 0;
+    let sumRowAppClosed = 0;
+    let sumRowRejOpen = 0;
+    let sumRowPending = 0;
+    let sumUnique = 0;
+    let sumCurApp = 0;
+    let sumCurRejOpen = 0;
+    let sumCurRejClosed = 0;
+    let sumCurPending = 0;
     let sumCritical = 0;
 
     dashData.byDocType.forEach((row, idx) => {
         const isEven = idx % 2 === 1;
         const bg = isEven ? "F8FAFC" : "FFFFFF";
-        const active = (row.stats.pending || 0) + (row.stats.rejectedOpen || 0);
-        const totalRej = (row.stats.rejectedOpen || 0) + (row.stats.rejectedClosed || 0);
-        const overduePct = active > 0 ? (((row.stats.overdue || 0) / active) * 100).toFixed(1) + "%" : "-";
         const crit = row.criticalCount || 0;
+        const rowAppClosed = row.stats.rowApprovedClosed ?? ((row.stats.rowApproved || 0) + (row.stats.rowRejectedClosed || 0));
+        const rowRejOpen = row.stats.rowRejectedOpen ?? (row.stats.rejectedOpenRows || 0);
+        const rowPending = row.stats.rowPending || 0;
 
-        sumUnique += (row.stats.totalUniqueDrawings || 0);
-        sumSheets += (row.stats.totalSubmittedSheets || 0);
         sumRev0 += (row.stats.totalSheetsRev0 || 0);
         sumFurther += (row.stats.totalSheetsFurtherRev || 0);
-        sumApp += (row.stats.approved || 0);
-        sumRejOpen += (row.stats.rejectedOpen || 0);
-        sumRejClosed += (row.stats.rejectedClosed || 0);
-        sumPending += (row.stats.pending || 0);
-        sumActive += active;
-        sumOverdue += (row.stats.overdue || 0);
+        sumSheets += (row.stats.totalSubmittedSheets || 0);
+        sumRowAppClosed += rowAppClosed;
+        sumRowRejOpen += rowRejOpen;
+        sumRowPending += rowPending;
+        sumUnique += (row.stats.totalUniqueDrawings || 0);
+        sumCurApp += (row.stats.currentApproved || 0);
+        sumCurRejOpen += (row.stats.currentRejectedOpen || 0);
+        sumCurRejClosed += (row.stats.currentRejectedClosed || 0);
+        sumCurPending += (row.stats.currentPending || 0);
         sumCritical += crit;
 
         tableRows.push([
             { text: row.documentType, options: { fill: bg, align: "left", bold: true, color: "203864" } },
             { text: crit > 0 ? `CRITICAL (${crit})` : "-", options: { fill: crit > 0 ? "FFF1F2" : bg, align: "center", bold: crit > 0, color: crit > 0 ? "BE123C" : "64748B" } },
-            { text: String(row.stats.totalSubmittedSheets || 0), options: { fill: "F1F5F9", align: "center", bold: true, color: "0F172A" } },
             { text: String(row.stats.totalSheetsRev0 || 0), options: { fill: bg, align: "center" } },
             { text: String(row.stats.totalSheetsFurtherRev || 0), options: { fill: bg, align: "center" } },
+            { text: String(row.stats.totalSubmittedSheets || 0), options: { fill: "F1F5F9", align: "center", bold: true, color: "0F172A" } },
+            { text: String(rowAppClosed), options: { fill: bg, align: "center", color: "065F46" } },
+            { text: String(rowRejOpen), options: { fill: bg, align: "center", color: "991B1B" } },
+            { text: String(rowPending), options: { fill: bg, align: "center", color: "92400E" } },
             { text: String(row.stats.totalUniqueDrawings || 0), options: { fill: "EFF6FF", align: "center", bold: true, color: "1E3A8A" } },
-            { text: String(row.stats.approved || 0), options: { fill: bg, align: "center", bold: true, color: "047857" } },
-            { text: String(row.stats.rejectedOpen || 0), options: { fill: bg, align: "center", color: "BE123C" } },
-            { text: String(row.stats.rejectedClosed || 0), options: { fill: bg, align: "center", color: "881337" } },
-            { text: String(totalRej), options: { fill: "FFE4E6", align: "center", bold: totalRej > 0, color: "9F1239" } },
-            { text: String(row.stats.pending || 0), options: { fill: bg, align: "center", color: "D97706" } },
-            { text: String(active), options: { fill: "FEF3C7", align: "center", bold: true, color: "B45309" } },
-            { text: String(row.stats.overdue || 0), options: { fill: bg, align: "center", bold: true, color: "991B1B" } },
-            { text: overduePct, options: { fill: bg, align: "center", bold: (row.stats.overdue || 0) > 0, color: (row.stats.overdue || 0) > 0 ? "991B1B" : "64748B" } }
+            { text: String(row.stats.currentApproved || 0), options: { fill: bg, align: "center", bold: true, color: "047857" } },
+            { text: String(row.stats.currentRejectedOpen || 0), options: { fill: bg, align: "center", color: "BE123C" } },
+            { text: String(row.stats.currentRejectedClosed || 0), options: { fill: bg, align: "center", color: "881337" } },
+            { text: String(row.stats.currentPending || 0), options: { fill: bg, align: "center", color: "D97706" } }
         ]);
     });
-
-    const totalOverduePct = sumActive > 0 ? ((sumOverdue / sumActive) * 100).toFixed(1) + "%" : "0.0%";
 
     // Total Row
     tableRows.push([
         { text: isArabic ? "الإجمالي الكلي" : "TOTAL", options: { fill: "DDEBF7", align: "left", bold: true, color: "203864" } },
         { text: sumCritical > 0 ? `CRITICAL (${sumCritical})` : "-", options: { fill: "DDEBF7", align: "center", bold: sumCritical > 0, color: sumCritical > 0 ? "BE123C" : "64748B" } },
-        { text: String(sumSheets), options: { fill: "CBD5E1", align: "center", bold: true, color: "0F172A" } },
         { text: String(sumRev0), options: { fill: "DDEBF7", align: "center", bold: true, color: "203864" } },
         { text: String(sumFurther), options: { fill: "DDEBF7", align: "center", bold: true, color: "203864" } },
+        { text: String(sumSheets), options: { fill: "CBD5E1", align: "center", bold: true, color: "0F172A" } },
+        { text: String(sumRowAppClosed), options: { fill: "DDEBF7", align: "center", bold: true, color: "065F46" } },
+        { text: String(sumRowRejOpen), options: { fill: "DDEBF7", align: "center", bold: true, color: "991B1B" } },
+        { text: String(sumRowPending), options: { fill: "DDEBF7", align: "center", bold: true, color: "92400E" } },
         { text: String(sumUnique), options: { fill: "BFDBFE", align: "center", bold: true, color: "1E3A8A" } },
-        { text: String(sumApp), options: { fill: "DDEBF7", align: "center", bold: true, color: "047857" } },
-        { text: String(sumRejOpen), options: { fill: "DDEBF7", align: "center", bold: true, color: "BE123C" } },
-        { text: String(sumRejClosed), options: { fill: "DDEBF7", align: "center", bold: true, color: "881337" } },
-        { text: String(sumRejOpen + sumRejClosed), options: { fill: "FECDD3", align: "center", bold: true, color: "9F1239" } },
-        { text: String(sumPending), options: { fill: "DDEBF7", align: "center", bold: true, color: "D97706" } },
-        { text: String(sumActive), options: { fill: "FDE68A", align: "center", bold: true, color: "B45309" } },
-        { text: String(sumOverdue), options: { fill: "DDEBF7", align: "center", bold: true, color: "991B1B" } },
-        { text: totalOverduePct, options: { fill: "DDEBF7", align: "center", bold: true, color: "991B1B" } }
+        { text: String(sumCurApp), options: { fill: "DDEBF7", align: "center", bold: true, color: "047857" } },
+        { text: String(sumCurRejOpen), options: { fill: "DDEBF7", align: "center", bold: true, color: "BE123C" } },
+        { text: String(sumCurRejClosed), options: { fill: "DDEBF7", align: "center", bold: true, color: "881337" } },
+        { text: String(sumCurPending), options: { fill: "DDEBF7", align: "center", bold: true, color: "D97706" } }
     ]);
 
     slide.addTable(tableRows, {
         x: 0.3, y: 1.0, w: 9.4,
-        colW: [1.1, 0.85, 0.7, 0.6, 0.7, 0.7, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.55, 0.5],
+        colW: [1.3, 0.85, 0.6, 0.65, 0.7, 0.7, 0.7, 0.65, 0.75, 0.65, 0.6, 0.6, 0.6],
         fontSize: 6.5,
         border: { type: "solid", pt: 0.5, color: "CBD5E1" }
     });

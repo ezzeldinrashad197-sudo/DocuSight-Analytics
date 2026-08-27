@@ -121,18 +121,25 @@ export interface CompositeIdentity {
 export interface KPIStats {
   // 1. Workload / Physical Row Metrics (Row / Record Grain)
   totalSubmittedSheets: number; // Total Rows / Sheets submitted
+  totalRows?: number;           // Alias for totalSubmittedSheets
   totalSheetsRev0: number;      // Rows with Rev = 0
   totalSheetsFurtherRev: number; // Rows with Rev > 0
   totalDrawingsRev0: number;    // Legacy alias
   totalDrawingsFurtherRev: number; // Legacy alias
 
-  // Row-Level Workload Rejection Metrics (Grain: Row / Physical Submission Event)
+  // Row-Level Workload Status Metrics (Grain: Row / Physical Submission Event)
+  rowApproved?: number;         // Total rows with Approved Status (Code A, Code B, etc.)
+  rowApprovedClosed?: number;   // Total rows with Approved/Closed Status (Approved + Closed Rejections)
+  rowRejectedOpen?: number;     // Total rows with Rejected Open Status (Alias for rejectedOpenRows)
+  rowRejectedClosed?: number;   // Total rows with Rejected Closed Status (Alias for rejectedClosedRows)
+  rowPending?: number;          // Total rows with Pending / No Response / Waiting Status
   totalRejectedRows: number;    // Total rows with Rejected Status (Open or Closed)
   rejectedOpenRows: number;     // Total rows with Rejected Open Status (e.g. Code C Open)
   rejectedClosedRows: number;   // Total rows with Rejected Closed Status (e.g. Code C Closed, Code D)
 
   // 2. Current State Metrics (Grain: Unique Entity / Latest Valid Revision)
   totalUniqueDrawings: number;  // Total Unique SUB Ref
+  totalUniqueItems?: number;    // Alias for totalUniqueDrawings
   currentApproved: number;      // Current Approved Items (Unique grain)
   currentRejectedOpen: number;  // Current Rejected Open Items (Unique grain)
   currentRejectedClosed: number;// Current Rejected Closed Items (Unique grain)

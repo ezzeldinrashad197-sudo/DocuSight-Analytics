@@ -266,14 +266,21 @@ export function calculateCanonicalKPIs(
   if (validRows.length === 0) {
     return {
       totalSubmittedSheets: 0,
+      totalRows: 0,
       totalSheetsRev0: 0,
       totalSheetsFurtherRev: 0,
       totalDrawingsRev0: 0,
       totalDrawingsFurtherRev: 0,
+      rowApproved: 0,
+      rowApprovedClosed: 0,
+      rowRejectedOpen: 0,
+      rowRejectedClosed: 0,
+      rowPending: 0,
       totalRejectedRows: 0,
       rejectedOpenRows: 0,
       rejectedClosedRows: 0,
       totalUniqueDrawings: 0,
+      totalUniqueItems: 0,
       currentApproved: 0,
       currentRejectedOpen: 0,
       currentRejectedClosed: 0,
@@ -312,6 +319,8 @@ export function calculateCanonicalKPIs(
   let totalRejectedRows = 0;
   let rejectedOpenRows = 0;
   let rejectedClosedRows = 0;
+  let rowApproved = 0;
+  let rowPending = 0;
 
   validRows.forEach(r => {
     const revVal = normalizeCanonicalString(r.rev || (r as any).revision || (r as any).revNo);
@@ -324,16 +333,24 @@ export function calculateCanonicalKPIs(
       totalSheetsFurtherRev++;
     }
 
-    // Historical Rejection Events (Row / Record Grain)
+    // Historical Status (Row / Record Grain)
     const rowStatusCat = getStatusCodeCategory(r);
-    if (rowStatusCat === 'REJECTED_OPEN') {
+    if (rowStatusCat === 'APPROVED') {
+      rowApproved++;
+    } else if (rowStatusCat === 'REJECTED_OPEN') {
       totalRejectedRows++;
       rejectedOpenRows++;
     } else if (rowStatusCat === 'REJECTED_CLOSED') {
       totalRejectedRows++;
       rejectedClosedRows++;
+    } else if (rowStatusCat === 'PENDING') {
+      rowPending++;
+    } else {
+      rowPending++;
     }
   });
+
+  const rowApprovedClosed = rowApproved + rejectedClosedRows;
 
   // 2. CURRENT STATE LAYER (Unique SUB Ref at Latest Valid Revision)
   const baseForRevisions = fullDataset && fullDataset.length > 0 ? fullDataset : validRows;
@@ -448,10 +465,16 @@ export function calculateCanonicalKPIs(
   return {
     // 1. Workload / Physical Row Grain
     totalSubmittedSheets,
+    totalRows: totalSubmittedSheets,
     totalSheetsRev0,
     totalSheetsFurtherRev,
     totalDrawingsRev0: totalSheetsRev0,
     totalDrawingsFurtherRev: totalSheetsFurtherRev,
+    rowApproved,
+    rowApprovedClosed,
+    rowRejectedOpen: rejectedOpenRows,
+    rowRejectedClosed: rejectedClosedRows,
+    rowPending,
     totalRejectedRows,
     rejectedOpenRows,
     rejectedClosedRows,
@@ -465,12 +488,13 @@ export function calculateCanonicalKPIs(
 
     // 2. Current Unique Item Grain (Latest Valid Revision)
     totalUniqueDrawings,
+    totalUniqueItems: totalUniqueDrawings,
     currentApproved: approvedCurrent,
     currentRejectedOpen: rejectedOpenCurrent,
     currentRejectedClosed: rejectedClosedCurrent,
     currentRejected: rejectedOpenCurrent + rejectedClosedCurrent,
-    currentPending: pendingCurrent,
-    currentOpen: pendingCurrent + rejectedOpenCurrent,
+    currentPending: pendingCurrent + unclassifiedCurrent,
+    currentOpen: pendingCurrent + rejectedOpenCurrent + unclassifiedCurrent,
     currentClosed: approvedCurrent + rejectedClosedCurrent,
 
     // Standard & Backwards Compatible Aliases

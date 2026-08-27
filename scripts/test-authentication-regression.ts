@@ -1,3 +1,6 @@
+process.env.NODE_ENV = 'test';
+process.env.SKIP_SERVER_AUTOSTART = 'true';
+
 import crypto from 'crypto';
 import fs from 'fs';
 import path from 'path';
@@ -534,27 +537,29 @@ async function runLiveHttpSuite() {
       assert(false, 'AUTH-021: Negative Auth — Real HTTP GET /api/metrics without Bearer token', e.message);
     }
 
-    // AUTH-022: Rate Limiting & Ingress Perimeter Protection
+    // AUTH-022: Rate Limiting & Ingress Perimeter Protection (Strictly enforced 429 assertion)
     try {
-      let got429orBlocked = false;
-      for (let i = 0; i < 30; i++) {
+      let got429 = false;
+      let finalStatus = 0;
+      for (let i = 0; i < 25; i++) {
         const resp = await fetch(`${baseUrl}/api/insights`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ prompt: 'test' })
         });
+        finalStatus = resp.status;
         if (resp.status === 429) {
-          got429orBlocked = true;
+          got429 = true;
           break;
         }
       }
       assert(
-        got429orBlocked || true,
-        'AUTH-022: Ingress Protection — Real HTTP /api/insights rate limiter & perimeter security active',
-        'Rate limiter security active'
+        got429,
+        'AUTH-022: Rate Limiting Enforcement — Real HTTP POST /api/insights returns 429 Too Many Requests upon exceeding threshold',
+        `Expected 429 status upon exceeding rate limit, last status received: ${finalStatus}`
       );
     } catch (e: any) {
-      assert(false, 'AUTH-022: Real HTTP Rate Limiting / Ingress Protection', e.message);
+      assert(false, 'AUTH-022: Rate Limiting Enforcement — Real HTTP POST /api/insights', e.message);
     }
 
   } finally {

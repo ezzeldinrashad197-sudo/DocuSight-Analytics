@@ -1,5 +1,5 @@
 # StructuSight E2E Integration Pipeline Verification Report
-*Generated on 2026-08-25T07:33:15.104Z | Deterministic Audit Evidence*
+*Generated on 2026-08-26T09:02:23.033Z | Deterministic Audit Evidence*
 
 > [!NOTE]
 > **AUDIT ENGINE DISCLAIMER & VERIFICATION NOTICE**
@@ -109,7 +109,7 @@ This trace represents the full travel of records from unstructured file ingestio
     {
       "docNo": "DOC-ST-001",
       "category": "PENDING",
-      "delayDays": 44,
+      "delayDays": 45,
       "isOverdue": true
     },
     {
@@ -121,7 +121,7 @@ This trace represents the full travel of records from unstructured file ingestio
     {
       "docNo": "DOC-ME-003",
       "category": "REJECTED_OPEN",
-      "delayDays": 51,
+      "delayDays": 52,
       "isOverdue": true
     },
     {
@@ -143,10 +143,16 @@ This trace represents the full travel of records from unstructured file ingestio
 {
   "kpiStats": {
     "totalSubmittedSheets": 5,
+    "totalRows": 5,
     "totalSheetsRev0": 4,
     "totalSheetsFurtherRev": 1,
     "totalDrawingsRev0": 4,
     "totalDrawingsFurtherRev": 1,
+    "rowApproved": 2,
+    "rowApprovedClosed": 3,
+    "rowRejectedOpen": 1,
+    "rowRejectedClosed": 1,
+    "rowPending": 1,
     "totalRejectedRows": 2,
     "rejectedOpenRows": 1,
     "rejectedClosedRows": 1,
@@ -156,6 +162,7 @@ This trace represents the full travel of records from unstructured file ingestio
     "resolvedRejections": 0,
     "rejectionResolutionRate": 0,
     "totalUniqueDrawings": 4,
+    "totalUniqueItems": 4,
     "currentApproved": 1,
     "currentRejectedOpen": 1,
     "currentRejectedClosed": 1,

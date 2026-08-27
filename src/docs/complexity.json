@@ -1,13 +1,5 @@
 [
   {
-    "functionName": "classifyNcrStatus",
-    "cyclomatic": 44,
-    "loc": 129,
-    "halsteadVolume": 2000.1,
-    "maintainabilityIndex": 113.48,
-    "normalizedMi": 66
-  },
-  {
     "functionName": "calculateStats",
     "cyclomatic": 1,
     "loc": 3,

@@ -261,38 +261,6 @@
       "layer": 3
     },
     {
-      "id": "src/scripts/audit_abd_negative.ts",
-      "layer": 3
-    },
-    {
-      "id": "src/scripts/audit_abd_populations.ts",
-      "layer": 3
-    },
-    {
-      "id": "src/scripts/audit_abd_suite.ts",
-      "layer": 3
-    },
-    {
-      "id": "src/scripts/audit_cumulative_wir_ssot_suite.ts",
-      "layer": 3
-    },
-    {
-      "id": "src/scripts/audit_doc_forensic_suite.ts",
-      "layer": 3
-    },
-    {
-      "id": "src/scripts/audit_multi_register_suite.ts",
-      "layer": 3
-    },
-    {
-      "id": "src/scripts/audit_rejected_precision_suite.ts",
-      "layer": 3
-    },
-    {
-      "id": "src/scripts/audit_wir_discipline_e2e_suite.ts",
-      "layer": 3
-    },
-    {
       "id": "src/types.ts",
       "layer": 0
     },
@@ -365,6 +333,10 @@
     {
       "source": "src/AIInsights.tsx",
       "target": "src/utils/enterpriseAnalyticsEngine.ts"
+    },
+    {
+      "source": "src/AIInsights.tsx",
+      "target": "src/firebase.ts"
     },
     {
       "source": "src/App.tsx",
@@ -1091,6 +1063,10 @@
       "target": "src/types.ts"
     },
     {
+      "source": "src/hooks/useFilters.ts",
+      "target": "src/firebase.ts"
+    },
+    {
       "source": "src/hooks/useUpload.ts",
       "target": "src/types.ts"
     },
@@ -1117,122 +1093,6 @@
     {
       "source": "src/main.tsx",
       "target": "src/utils/i18n.tsx"
-    },
-    {
-      "source": "src/scripts/audit_abd_negative.ts",
-      "target": "src/utils/calculations.ts"
-    },
-    {
-      "source": "src/scripts/audit_abd_negative.ts",
-      "target": "src/analytics/revisionResolver.ts"
-    },
-    {
-      "source": "src/scripts/audit_abd_negative.ts",
-      "target": "src/analytics/calculationFoundation.ts"
-    },
-    {
-      "source": "src/scripts/audit_abd_negative.ts",
-      "target": "src/types.ts"
-    },
-    {
-      "source": "src/scripts/audit_abd_populations.ts",
-      "target": "src/utils/calculationVerificationEngine.ts"
-    },
-    {
-      "source": "src/scripts/audit_abd_populations.ts",
-      "target": "src/utils/calculations.ts"
-    },
-    {
-      "source": "src/scripts/audit_abd_populations.ts",
-      "target": "src/analytics/revisionResolver.ts"
-    },
-    {
-      "source": "src/scripts/audit_abd_populations.ts",
-      "target": "src/analytics/calculationFoundation.ts"
-    },
-    {
-      "source": "src/scripts/audit_abd_suite.ts",
-      "target": "src/utils/calculationVerificationEngine.ts"
-    },
-    {
-      "source": "src/scripts/audit_abd_suite.ts",
-      "target": "src/utils/calculations.ts"
-    },
-    {
-      "source": "src/scripts/audit_abd_suite.ts",
-      "target": "src/analytics/revisionResolver.ts"
-    },
-    {
-      "source": "src/scripts/audit_abd_suite.ts",
-      "target": "src/analytics/calculationFoundation.ts"
-    },
-    {
-      "source": "src/scripts/audit_cumulative_wir_ssot_suite.ts",
-      "target": "src/analytics/calculationFoundation.ts"
-    },
-    {
-      "source": "src/scripts/audit_cumulative_wir_ssot_suite.ts",
-      "target": "src/utils/calculations.ts"
-    },
-    {
-      "source": "src/scripts/audit_cumulative_wir_ssot_suite.ts",
-      "target": "src/types.ts"
-    },
-    {
-      "source": "src/scripts/audit_doc_forensic_suite.ts",
-      "target": "src/analytics/calculationFoundation.ts"
-    },
-    {
-      "source": "src/scripts/audit_doc_forensic_suite.ts",
-      "target": "src/types.ts"
-    },
-    {
-      "source": "src/scripts/audit_multi_register_suite.ts",
-      "target": "src/analytics/calculationFoundation.ts"
-    },
-    {
-      "source": "src/scripts/audit_multi_register_suite.ts",
-      "target": "src/utils/calculations.ts"
-    },
-    {
-      "source": "src/scripts/audit_multi_register_suite.ts",
-      "target": "src/utils/rfiAnalytics.ts"
-    },
-    {
-      "source": "src/scripts/audit_multi_register_suite.ts",
-      "target": "src/utils/calculations.ts"
-    },
-    {
-      "source": "src/scripts/audit_multi_register_suite.ts",
-      "target": "src/types.ts"
-    },
-    {
-      "source": "src/scripts/audit_rejected_precision_suite.ts",
-      "target": "src/analytics/calculationFoundation.ts"
-    },
-    {
-      "source": "src/scripts/audit_rejected_precision_suite.ts",
-      "target": "src/utils/calculations.ts"
-    },
-    {
-      "source": "src/scripts/audit_rejected_precision_suite.ts",
-      "target": "src/types.ts"
-    },
-    {
-      "source": "src/scripts/audit_wir_discipline_e2e_suite.ts",
-      "target": "src/analytics/calculationFoundation.ts"
-    },
-    {
-      "source": "src/scripts/audit_wir_discipline_e2e_suite.ts",
-      "target": "src/utils/calculations.ts"
-    },
-    {
-      "source": "src/scripts/audit_wir_discipline_e2e_suite.ts",
-      "target": "src/utils/classificationEngine.ts"
-    },
-    {
-      "source": "src/scripts/audit_wir_discipline_e2e_suite.ts",
-      "target": "src/types.ts"
     },
     {
       "source": "src/utils/calculationVerificationEngine.ts",
@@ -1317,6 +1177,10 @@
     {
       "source": "src/utils/ncrAnalytics.ts",
       "target": "src/utils/rfiAnalytics.ts"
+    },
+    {
+      "source": "src/utils/ncrAnalytics.ts",
+      "target": "src/utils/calculations.ts"
     },
     {
       "source": "src/utils/parser.ts",
