@@ -1,6 +1,7 @@
 import { SubmittalRow, ProjectSettings } from '../types';
 import { getNormalizedStatus, checkIfOverdueDynamically } from '../utils/statusMatrixEngine';
 import { compareRevisionsCanonical, isValidRevision } from './revisionResolver';
+import { getStatusCodeCategory } from './statusResolver';
 
 export { isValidRevision };
 
