@@ -29,19 +29,82 @@ export const getStatusCategory = (
 };
 
 /**
- * 2. Deterministic Canonical Status Resolver (Section B & L of Master Prompt)
+ * 1. Single Row Classifier (SSOT)
+ * Evaluates row review outcome strictly from Code.
+ * Status is only used to distinguish whether an active Code C rejection is Open or Closed.
+ */
+export function classifyRow(code?: string, status?: string): 'APPROVED' | 'REJECTED_OPEN' | 'REJECTED_CLOSED' | 'PENDING' | 'UNCLASSIFIED' {
+  const c = normalizeCanonicalString(code);
+  const s = String(status || '').trim();
+  const sUpper = s.toUpperCase();
+
+  if (!c && !s) {
+    return 'UNCLASSIFIED';
+  }
+
+  let cleanCode = c;
+  if (cleanCode.startsWith('CODE ')) {
+    cleanCode = cleanCode.substring(5).trim();
+  }
+
+  // Code A or Code B -> Approved
+  if (cleanCode === 'A' || cleanCode === 'B' || cleanCode === 'APPROVED' || cleanCode === 'ACCEPTED') {
+    return 'APPROVED';
+  }
+
+  // Code D -> Rejected Closed (Final rejection, never resubmitted under this ref. ALWAYS closed)
+  if (cleanCode === 'D' || cleanCode === 'DISAPPROVED') {
+    return 'REJECTED_CLOSED';
+  }
+
+  // Code C -> "revise & resubmit". Status determines whether Open or Closed
+  if (cleanCode === 'C' || cleanCode === 'REJECTED' || cleanCode === 'RETURNED' || cleanCode === 'REJ') {
+    return (sUpper === 'OPEN' || s === 'Open') ? 'REJECTED_OPEN' : 'REJECTED_CLOSED';
+  }
+
+  // Pending / Under review / Waiting
+  if (cleanCode === 'W' || cleanCode === 'UNDER REVIEW' || cleanCode === 'PENDING' || cleanCode === 'WAITING' || sUpper === 'PENDING' || sUpper === 'UNDER REVIEW' || sUpper === 'WAITING') {
+    return 'PENDING';
+  }
+
+  if (!cleanCode) {
+    return 'UNCLASSIFIED';
+  }
+
+  // Fallback for unrecognized codes with review
+  return 'PENDING';
+}
+
+/**
+ * 2. Submission Resolver (Priority across sheets at latest revision)
+ */
+export function classifySubmission(
+  sheetsAtLatestRevision: ('APPROVED' | 'REJECTED_OPEN' | 'REJECTED_CLOSED' | 'PENDING' | 'approved' | 'rejected_open' | 'rejected_closed' | 'pending' | 'UNCLASSIFIED' | 'unclassified')[]
+): 'APPROVED' | 'REJECTED_OPEN' | 'REJECTED_CLOSED' | 'PENDING' | 'UNCLASSIFIED' {
+  const normalized = sheetsAtLatestRevision.map(s => s.toUpperCase());
+  if (normalized.includes('REJECTED_OPEN')) return 'REJECTED_OPEN';   // highest priority — needs action
+  if (normalized.includes('REJECTED_CLOSED')) return 'REJECTED_CLOSED';
+  if (normalized.includes('PENDING')) return 'PENDING';
+  if (normalized.includes('UNCLASSIFIED')) return 'UNCLASSIFIED';
+  return 'APPROVED'; // only if every sheet at the latest revision is approved
+}
+
+/**
+ * 3. Deterministic Canonical Status Resolver (Section B & L of Master Prompt)
  */
 export function getStatusCodeCategory(codeOrRow?: string | SubmittalRow): 'APPROVED' | 'REJECTED_OPEN' | 'REJECTED_CLOSED' | 'PENDING' | 'UNCLASSIFIED' {
   if (!codeOrRow) return 'UNCLASSIFIED';
 
-  let code = '';
+  let rawCode = '';
   let recordStatus = '';
   let workflowStage = '';
   let action = '';
+  let rawStatusCombined = '';
   let isWIR = false;
 
   if (typeof codeOrRow === 'object') {
-    code = normalizeCanonicalString(codeOrRow.status || (codeOrRow as any).ncrStatus || (codeOrRow as any).sorStatus);
+    rawCode = normalizeCanonicalString(codeOrRow.code);
+    rawStatusCombined = normalizeCanonicalString(codeOrRow.status || (codeOrRow as any).ncrStatus || (codeOrRow as any).sorStatus);
     recordStatus = normalizeCanonicalString(codeOrRow.recordStatus);
     workflowStage = normalizeCanonicalString(codeOrRow.workflowStage);
     action = normalizeCanonicalString(codeOrRow.action || (codeOrRow as any).ncrAction || (codeOrRow as any).sorAction);
@@ -62,22 +125,21 @@ export function getStatusCodeCategory(codeOrRow?: string | SubmittalRow): 'APPRO
       sourceFile.includes('WIR')
     );
   } else {
-    code = normalizeCanonicalString(codeOrRow);
+    rawStatusCombined = normalizeCanonicalString(codeOrRow);
   }
 
-  if (!code && !recordStatus && !workflowStage && !action) {
+  if (!rawCode && !rawStatusCombined && !recordStatus && !workflowStage && !action) {
     return 'UNCLASSIFIED';
   }
 
-  const normalized = code.replace(/["':\-\s]+/g, ' ').trim();
-  const hasWord = (word: string) => new RegExp(`(?:^| )${word}(?: |$)`).test(normalized);
-  const isClosed = recordStatus === 'CLOSED' || recordStatus === 'CLOSE' || workflowStage === 'CLOSED' || action === 'CLOSED' || hasWord('CLOSED') || hasWord('CLOSE');
-  const isOpen = recordStatus === 'OPEN' || workflowStage === 'OPEN' || action === 'OPEN' || hasWord('OPEN');
-
-  const isCodeD = normalized === 'D' || normalized === 'CODE D' || normalized.startsWith('D ') || normalized.endsWith(' D') || normalized.includes('CODE D') || normalized.includes('DISAPPROVED');
-
   // WIR Specific Formula (SSOT Excel Formula: Approved = A + B + D, Rejected = C, Pending = W)
   if (isWIR) {
+    const checkStr = rawCode || rawStatusCombined;
+    const normalized = checkStr.replace(/["':\-\s]+/g, ' ').trim();
+    const hasWord = (word: string) => new RegExp(`(?:^| )${word}(?: |$)`).test(normalized);
+    const isClosed = recordStatus === 'CLOSED' || recordStatus === 'CLOSE' || workflowStage === 'CLOSED' || action === 'CLOSED' || hasWord('CLOSED') || hasWord('CLOSE');
+    const isCodeD = normalized === 'D' || normalized === 'CODE D' || normalized.startsWith('D ') || normalized.endsWith(' D') || normalized.includes('CODE D') || normalized.includes('DISAPPROVED');
+
     // In WIR, Code A, B, and D are Approved
     if (['A', 'B', 'CODE A', 'CODE B'].includes(normalized) || 
         hasWord('A') || hasWord('B') ||
@@ -102,47 +164,51 @@ export function getStatusCodeCategory(codeOrRow?: string | SubmittalRow): 'APPRO
     return 'UNCLASSIFIED';
   }
 
-  // Non-WIR Document / Material Submittals Logic:
-  const isRejectedCode = ['C', 'CODE C', 'D', 'CODE D'].includes(normalized) ||
-                         action === 'REJECTED' || action.includes('REJECT') ||
-                         isCodeD || hasWord('C') || (hasWord('CODE') && hasWord('C')) ||
-                         hasWord('REJECTED') || hasWord('RETURNED') || hasWord('DISAPPROVED');
+  // Determine code and status for general / SDW / MAR / NCR / etc.
+  let effectiveCode = rawCode;
+  let effectiveStatus = recordStatus || workflowStage || (rawStatusCombined.includes('OPEN') ? 'OPEN' : rawStatusCombined.includes('CLOSED') ? 'CLOSED' : '');
 
-  // If it is a rejected code (Code C, Code D, Rejected, Disapproved):
-  if (isRejectedCode) {
-    // If explicitly marked or containing OPEN and NOT closed -> REJECTED_OPEN
-    if (isOpen && !isClosed) {
-      return 'REJECTED_OPEN';
-    }
-    // If explicitly marked CLOSED -> REJECTED_CLOSED
-    if (isClosed) {
-      return 'REJECTED_CLOSED';
-    }
-    // Default fallback when neither OPEN nor CLOSED is explicitly specified:
-    // Code D / Disapproved defaults to REJECTED_CLOSED
-    // Code C defaults to REJECTED_OPEN
-    if (isCodeD) {
-      return 'REJECTED_CLOSED';
-    }
-    return 'REJECTED_OPEN';
+  if (action.includes('REJECT')) {
+    effectiveCode = 'C';
+  } else if (action.includes('APPROV') || action.includes('ACCEPT')) {
+    effectiveCode = 'A';
+  } else if (action.includes('DISAPPROV')) {
+    effectiveCode = 'D';
   }
 
-  // 3. APPROVED (Code A, Code B, Approved, Accepted)
-  if (['A', 'B', 'CODE A', 'CODE B'].includes(normalized) ||
-      hasWord('A') || hasWord('B') || hasWord('APPROVED') || hasWord('ACCEPTED') || hasWord('SUPERSEDED') ||
-      workflowStage === 'APPROVED' || action === 'APPROVED' || action.includes('APPROV') ||
-      (isClosed && !isRejectedCode)) {
-    return 'APPROVED';
+  if (!effectiveCode && rawStatusCombined) {
+    if (rawStatusCombined.includes(' - ')) {
+      const parts = rawStatusCombined.split(' - ');
+      effectiveCode = parts[0].trim();
+      if (!effectiveStatus) effectiveStatus = parts.slice(1).join(' - ').trim();
+    } else if (rawStatusCombined.startsWith('CODE ') && rawStatusCombined.length > 5) {
+      const remaining = rawStatusCombined.substring(5).trim();
+      const firstToken = remaining.split(' ')[0];
+      effectiveCode = firstToken;
+      if (!effectiveStatus && remaining.length > firstToken.length) {
+        effectiveStatus = remaining.substring(firstToken.length).trim();
+      }
+    } else if (rawStatusCombined.includes('CLOSED')) {
+      effectiveStatus = 'CLOSED';
+      if (rawStatusCombined.includes('C') || rawStatusCombined.includes('REJECT')) {
+        effectiveCode = 'C';
+      } else if (rawStatusCombined.includes('D') || rawStatusCombined.includes('DISAPPROV')) {
+        effectiveCode = 'D';
+      } else if (rawStatusCombined.includes('APPROVED') || rawStatusCombined.includes('A') || rawStatusCombined.includes('B')) {
+        effectiveCode = 'A';
+      }
+    } else if (rawStatusCombined.includes('OPEN')) {
+      effectiveStatus = 'OPEN';
+      if (rawStatusCombined.includes('C') || rawStatusCombined.includes('REJECT')) {
+        effectiveCode = 'C';
+      }
+    } else {
+      effectiveCode = rawStatusCombined;
+    }
   }
 
-  // 4. PENDING (Code W, Waiting, Under Review, Pending)
-  if (['W', 'CODE W'].includes(normalized) || hasWord('W') ||
-      hasWord('PENDING') || hasWord('WAITING') || hasWord('REVIEW') || normalized === 'UNDER REVIEW' ||
-      workflowStage === 'PENDING' || workflowStage === 'WAITING' || action === 'UNDER REVIEW' || action.includes('REVIEW') || action.includes('WAIT')) {
-    return 'PENDING';
-  }
-
-  return 'UNCLASSIFIED';
+  const result = classifyRow(effectiveCode, effectiveStatus);
+  return result;
 }
 
 

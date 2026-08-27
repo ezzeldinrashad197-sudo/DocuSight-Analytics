@@ -1,9 +1,9 @@
 import { SubmittalRow, KPIStats } from '../types';
 import { compareRevisions, isValidRevision } from './analyticsCore';
 import { getRevisionWeight } from './revisionResolver';
-import { getStatusCodeCategory, classifyNcrStatus, normalizeCanonicalString } from './statusResolver';
+import { getStatusCodeCategory, classifyNcrStatus, normalizeCanonicalString, classifySubmission, classifyRow } from './statusResolver';
 
-export { getStatusCodeCategory, classifyNcrStatus, normalizeCanonicalString };
+export { getStatusCodeCategory, classifyNcrStatus, normalizeCanonicalString, classifySubmission, classifyRow };
 
 export interface DataQualityIssue {
   id: string;
@@ -138,7 +138,7 @@ export function getBusinessEntityKey(row: SubmittalRow): string {
 /**
  * 3. Revision & History Engine
  */
-export function processRevisionEngine(rows: SubmittalRow[], asOfDate?: string): Map<string, { latest: SubmittalRow; all: SubmittalRow[]; hasRejection: boolean; isResolved: boolean }> {
+export function processRevisionEngine(rows: SubmittalRow[], asOfDate?: string): Map<string, { latest: SubmittalRow; all: SubmittalRow[]; latestSheets: SubmittalRow[]; resolvedStatus: 'APPROVED' | 'REJECTED_OPEN' | 'REJECTED_CLOSED' | 'PENDING' | 'UNCLASSIFIED'; hasRejection: boolean; isResolved: boolean }> {
   const groups = new Map<string, SubmittalRow[]>();
   const cutoffTime = parseDateTimestamp(asOfDate);
 
@@ -156,9 +156,21 @@ export function processRevisionEngine(rows: SubmittalRow[], asOfDate?: string): 
     groups.get(key)!.push(row);
   });
 
-  const result = new Map<string, { latest: SubmittalRow; all: SubmittalRow[]; hasRejection: boolean; isResolved: boolean }>();
+  const result = new Map<string, { latest: SubmittalRow; all: SubmittalRow[]; latestSheets: SubmittalRow[]; resolvedStatus: 'APPROVED' | 'REJECTED_OPEN' | 'REJECTED_CLOSED' | 'PENDING' | 'UNCLASSIFIED'; hasRejection: boolean; isResolved: boolean }>();
 
   groups.forEach((groupRows, key) => {
+    // Find max revision weight among group rows
+    let maxWeight = -1;
+    groupRows.forEach(r => {
+      const w = getRevisionWeight(r.rev);
+      if (w > maxWeight) {
+        maxWeight = w;
+      }
+    });
+
+    // All sheets/rows at the latest revision
+    const latestSheets = groupRows.filter(r => getRevisionWeight(r.rev) === maxWeight);
+
     // Sort primarily by revision sequence (Rev 00 < Rev 01 < Rev 02), tie-broken by submission date
     const sorted = [...groupRows].sort((a, b) => {
       const revDiff = compareRevisions(a.rev, b.rev);
@@ -169,7 +181,7 @@ export function processRevisionEngine(rows: SubmittalRow[], asOfDate?: string): 
       return (a.id || '').localeCompare(b.id || '');
     });
 
-    const latest = sorted[sorted.length - 1];
+    const latest = latestSheets[0] || sorted[sorted.length - 1];
 
     let hasRejection = false;
     sorted.forEach(r => {
@@ -179,10 +191,12 @@ export function processRevisionEngine(rows: SubmittalRow[], asOfDate?: string): 
       }
     });
 
-    const latestCat = getStatusCodeCategory(latest);
-    const isResolved = hasRejection && latestCat === 'APPROVED';
+    // Classify all sheets at the latest revision and apply canonical submission resolution priority
+    const sheetClassifications = latestSheets.map(r => getStatusCodeCategory(r));
+    const resolvedStatus = classifySubmission(sheetClassifications);
+    const isResolved = hasRejection && resolvedStatus === 'APPROVED';
 
-    result.set(key, { latest, all: sorted, hasRejection, isResolved });
+    result.set(key, { latest, all: sorted, latestSheets, resolvedStatus, hasRejection, isResolved });
   });
 
   return result;
@@ -383,7 +397,7 @@ export function calculateCanonicalKPIs(
     }
 
     const latest = groupInfo.latest;
-    const cat = getStatusCodeCategory(latest);
+    const cat = groupInfo.resolvedStatus || getStatusCodeCategory(latest);
 
     switch (cat) {
       case 'APPROVED':

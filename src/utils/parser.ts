@@ -538,6 +538,7 @@ export const parseExcelFile = (file: File): Promise<SubmittalRow[]> => {
               dueDate: formatDate(colDueDate >= 0 ? r[colDueDate] : ""),
               responseDate,
               status: combinedStatus,
+              code: rawCode,
               remarks:
                 colRemarks >= 0 ? String(r[colRemarks] || "").trim() : "",
               area: colArea >= 0 ? String(r[colArea] || "").trim() : "",

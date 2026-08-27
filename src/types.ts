@@ -48,6 +48,7 @@ export interface SubmittalRow {
   dueDate: string;        // YYYY-MM-DD
   responseDate: string;   // YYYY-MM-DD
   status: string;         // Raw code A, B, C...
+  code?: string;           // Explicit review outcome code (A, B, C, D, etc.)
   remarks: string;
   area: string;
   tradeSystem: string;

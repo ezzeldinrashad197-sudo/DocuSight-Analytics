@@ -17,8 +17,8 @@ export { parseDateTimestamp, buildCanonicalDataset, evaluateSubmissionLayer, eva
 import { compareRevisions } from "../analytics/analyticsCore";
 import { compareRevisionsCanonical, getRevisionWeight } from "../analytics/revisionResolver";
 import { mapDocumentToWorkflow } from "./workflowMapping";
-import { getStatusCodeCategory, getStatusCategory, getRecordNormalizedStatus, classifyNcrStatus, NcrClassificationResult } from '../analytics/statusResolver';
-export { getStatusCodeCategory, getStatusCategory, getRecordNormalizedStatus, classifyNcrStatus, compareRevisions, compareRevisionsCanonical, getRevisionWeight, mapDocumentToWorkflow };
+import { getStatusCodeCategory, getStatusCategory, getRecordNormalizedStatus, classifyNcrStatus, NcrClassificationResult, classifyRow, classifySubmission } from '../analytics/statusResolver';
+export { getStatusCodeCategory, getStatusCategory, getRecordNormalizedStatus, classifyNcrStatus, compareRevisions, compareRevisionsCanonical, getRevisionWeight, mapDocumentToWorkflow, classifyRow, classifySubmission };
 export type { NcrClassificationResult };
 
 export const getUniqueNCRs = (rows: SubmittalRow[]): SubmittalRow[] => {
