@@ -236,3 +236,4 @@ export const checkIfOverdueDynamically = (submission: string, response: string, 
   const days = getDelayDays(submission, response, '');
   return days > thresholdDays;
 };
+export const getClosedOpenByDocType = (docType: string, s: { totalSubmittedSheets?: number; pending?: number; approved?: number; rejectedOpen?: number; rejectedClosed?: number }): { closed: number; open: number } => { const closed = docType === 'RFI' ? ((s.totalSubmittedSheets || 0) - (s.pending || 0)) : (docType === 'NCR' || docType === 'SOR' ? (s.approved || 0) : (s.approved || 0) + (s.rejectedClosed || 0)); const open = docType === 'NCR' || docType === 'SOR' ? (s.rejectedOpen || 0) : (docType === 'RFI' ? (s.pending || 0) : (s.rejectedOpen || 0) + (s.pending || 0)); return { closed, open }; };
