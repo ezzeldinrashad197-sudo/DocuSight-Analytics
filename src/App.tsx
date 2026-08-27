@@ -36,7 +36,7 @@ import FinalAcceptanceAuditView from './components/FinalAcceptanceAuditView';
 import WorkflowMappingCenter from './components/WorkflowMappingCenter';
 import { CalculationAuditCenter } from './components/CalculationAuditCenter';
 import { UniversalRegisterEngine } from './components/UniversalRegisterEngine';
-import { normalizeData, calculateStats } from './utils/calculations';
+import { normalizeData, calculateStats, calculateProjectPerformanceHealth } from './utils/calculations';
 
 export default function App() {
   const { t, language, setLanguage, isRtl } = useLanguage();
@@ -258,15 +258,17 @@ export default function App() {
   useEffect(() => {
     if (data.length > 0 && activeProjectId) {
        const timer = setTimeout(() => {
+                 // ARCHITECTURE FIX (F-01/F-07, 2026-08-25): reads approvalRate/overdue directly from
+         // the SSOT's calculateStats() output instead of re-deriving them locally, and gets
+         // health score from the same calculateProjectPerformanceHealth() used elsewhere in
+         // the app, instead of a different local formula.
          const generalData = data.filter(d => !isExcludedFromGeneralStats(d));
          const stats = calculateStats(generalData);
          const totalDocs = stats.totalSubmittedSheets;
-         const approved = stats.approved;
-         const overdue = generalData.filter(d => (d.delayDays || 0) > 0).length;
-         
-         const approvalRate = totalDocs > 0 ? (approved / totalDocs) * 100 : 0;
+         const approvalRate = stats.approvalRate;
+         const overdue = stats.overdue;
          const overdueRate = totalDocs > 0 ? (overdue / totalDocs) * 100 : 0;
-         const healthScore = Math.max(0, Math.min(100, Math.round(100 - overdueRate + (approvalRate * 0.5))));
+         const healthScore = calculateProjectPerformanceHealth(stats, language).score;
 
          syncProjectStats(activeProjectId, {
              totalDocs,
@@ -277,7 +279,7 @@ export default function App() {
        }, 1000);
        return () => clearTimeout(timer);
     }
-  }, [data, activeProjectId]);
+   }, [data, activeProjectId, language]);
 
   const { isExporting, setIsExporting, handleDownloadPPTX, handleDownloadPDF } = useExport({
       data,
