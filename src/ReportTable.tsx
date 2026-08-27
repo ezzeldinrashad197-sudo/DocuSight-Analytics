@@ -439,7 +439,7 @@ export default function ReportTable({ data, filterFn, title, projectInfo, rawDat
                     </span>
                 </div>
                 <span className="text-[10px] text-rose-600 font-semibold">
-                    {((globalStats.pending + globalStats.rejectedOpen) > 0 ? ((globalStats.overdue / (globalStats.pending + globalStats.rejectedOpen)) * 100).toFixed(1) : '0.0')}% {language === 'ar' ? 'نسبة التأخير من النشط' : 'overdue rate on active'}
+                                        {(globalStats.overdueRateOnActive ?? 0).toFixed(1)}% {language === 'ar' ? 'نسبة التأخير من النشط' : 'overdue rate on active'}
                 </span>
             </div>
 
@@ -955,7 +955,7 @@ export default function ReportTable({ data, filterFn, title, projectInfo, rawDat
 
                      {/* Grand Total Overdue Rate % */}
                      <td className="px-4 py-3.5 text-xs text-center font-bold text-rose-700">
-                         {((globalStats.pending + globalStats.rejectedOpen) > 0 ? ((globalStats.overdue / (globalStats.pending + globalStats.rejectedOpen)) * 100).toFixed(1) : '0.0')}%
+                         {(globalStats.overdueRateOnActive ?? 0).toFixed(1)}%
                      </td>
 
                      {/* Grand Avg Days */}
