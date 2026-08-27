@@ -85,8 +85,11 @@ export const validateLifecycle = (row: SubmittalRow): LifecycleValidationResult 
   const revDate = row.responseDate ? new Date(row.responseDate).getTime() : null;
   
   const statusStr = (row.status || '').toUpperCase().trim();
-  const isApproved = ['APPROVED', 'ACCEPTED', 'CODE A', 'A', 'B'].includes(statusStr);
-  const isClosed = ['CLOSED', 'APPROVED', 'ACCEPTED', 'CODE A', 'A', 'B'].includes(statusStr);
+  // ARCHITECTURE FIX (F-05, 2026-08-25): exact classification from the canonical SSOT
+  // instead of a hand-maintained literal array (which could silently drift out of sync
+  // with the real classification rules elsewhere in the app).
+  const isApproved = getStatusCodeCategory(row) === 'APPROVED';
+  const isClosed = isApproved || statusStr === 'CLOSED';
 
   // 1. Response after Issue
   if (subDate && revDate && revDate < subDate) {
