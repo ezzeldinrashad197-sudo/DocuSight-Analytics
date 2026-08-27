@@ -84,7 +84,7 @@ export default function Presentation({
   const monthlyData = useMemo(() => data.filter(filterMonthly), [data, filterMonthly]);
   const cumulativeData = useMemo(() => data.filter(filterCumulative), [data, filterCumulative]);
 
-  const overallMonthlyStats = useMemo(() => {
+    const overallMonthlyStats = useMemo(() => {
     const s = calculateStats(monthlyData, data);
     const respondedItems = monthlyData.filter(d => d.responseDate && d.submissionDate);
     const slaMet = respondedItems.filter(d => d.delayDays <= 0).length;
@@ -93,6 +93,9 @@ export default function Presentation({
     const delayedItems = monthlyData.filter(d => d.delayDays > 0);
     const avgDelay = delayedItems.length > 0 ? (delayedItems.reduce((acc, curr) => acc + curr.delayDays, 0) / delayedItems.length).toFixed(1) : "0.0";
     const overdueCount = s.overdue;
+    // ARCHITECTURE FIX (F-07, 2026-08-25): read the SSOT's own overdueRateOnActive instead
+    // of letting the JSX below recompute it independently.
+    const overdueRateOnActive = s.overdueRateOnActive ?? 0;
 
     const totalMonthlyVolume = s.totalSubmittedSheets !== undefined ? s.totalSubmittedSheets : monthlyData.length;
 
@@ -106,11 +109,12 @@ export default function Presentation({
       approvalRate: s.approvalRate,
       slaCompliance, 
       avgDelay, 
-      overdueCount 
+      overdueCount,
+      overdueRateOnActive
     };
   }, [monthlyData, data]);
 
-  const overallCumulativeStats = useMemo(() => {
+    const overallCumulativeStats = useMemo(() => {
     const s = calculateStats(cumulativeData, data);
     const respondedItems = cumulativeData.filter(d => d.responseDate && d.submissionDate);
     const slaMet = respondedItems.filter(d => d.delayDays <= 0).length;
@@ -119,6 +123,8 @@ export default function Presentation({
     const delayedItems = cumulativeData.filter(d => d.delayDays > 0);
     const avgDelay = delayedItems.length > 0 ? (delayedItems.reduce((acc, curr) => acc + curr.delayDays, 0) / delayedItems.length).toFixed(1) : "0.0";
     const overdueCount = s.overdue;
+    // ARCHITECTURE FIX (F-07, 2026-08-25): same fix as overallMonthlyStats above.
+    const overdueRateOnActive = s.overdueRateOnActive ?? 0;
 
     return { 
       total: s.totalUniqueDrawings || s.totalSubmittedSheets, 
@@ -129,7 +135,8 @@ export default function Presentation({
       approvalRate: s.approvalRate,
       slaCompliance, 
       avgDelay, 
-      overdueCount 
+      overdueCount,
+      overdueRateOnActive
     };
   }, [cumulativeData, data]);
 
@@ -308,8 +315,10 @@ export default function Presentation({
         Rejected: (s.rejectedOpen || 0) + (s.rejectedClosed || 0),
         Pending: s.pending,
         Total: countForType,
-        Closed: bt === 'RFI' ? ((s.totalSubmittedSheets || 0) - (s.pending || 0)) : (bt === 'NCR' || bt === 'SOR' ? s.approved : s.approved + s.rejectedClosed),
-        Open: bt === 'NCR' || bt === 'SOR' ? s.rejectedOpen : (bt === 'RFI' ? (s.pending || 0) : s.rejectedOpen + s.pending),
+              // ARCHITECTURE FIX (F-01/F-07, 2026-08-25): Closed/Open classification moved to
+        // calculations.ts (getClosedOpenByDocType) — same formula, single source of truth.
+        Closed: getClosedOpenByDocType(bt, s).closed,
+        Open: getClosedOpenByDocType(bt, s).open,
       };
     });
 
@@ -869,8 +878,8 @@ export default function Presentation({
                   </span>
                   <span className="text-[10px] text-slate-500 block mt-0.5 font-medium">
                     {language === 'ar' 
-                      ? `معدل التأخير: ${(overallMonthlyStats.pending + overallMonthlyStats.rejectedOpen) > 0 ? ((overallMonthlyStats.overdueCount / (overallMonthlyStats.pending + overallMonthlyStats.rejectedOpen)) * 100).toFixed(1) : 0}% من المعاملات النشطة (معلق + مرفوض مفتوح)` 
-                      : `Overdue Rate: ${(overallMonthlyStats.pending + overallMonthlyStats.rejectedOpen) > 0 ? ((overallMonthlyStats.overdueCount / (overallMonthlyStats.pending + overallMonthlyStats.rejectedOpen)) * 100).toFixed(1) : 0}% of Active (Pending + Rejected Open)`}
+                                            ? `معدل التأخير: ${overallMonthlyStats.overdueRateOnActive.toFixed(1)}% من المعاملات النشطة (معلق + مرفوض مفتوح)` 
+                      : `Overdue Rate: ${overallMonthlyStats.overdueRateOnActive.toFixed(1)}% of Active (Pending + Rejected Open)`}
                   </span>
                 </div>
               </div>
@@ -1203,8 +1212,8 @@ export default function Presentation({
                   </span>
                   <span className="text-[10px] text-slate-500 block mt-0.5 font-medium">
                     {language === 'ar' 
-                      ? `معدل التأخير: ${(overallCumulativeStats.pending + overallCumulativeStats.rejectedOpen) > 0 ? ((overallCumulativeStats.overdueCount / (overallCumulativeStats.pending + overallCumulativeStats.rejectedOpen)) * 100).toFixed(1) : 0}% من المعاملات النشطة (معلق + مرفوض مفتوح)` 
-                      : `Overdue Rate: ${(overallCumulativeStats.pending + overallCumulativeStats.rejectedOpen) > 0 ? ((overallCumulativeStats.overdueCount / (overallCumulativeStats.pending + overallCumulativeStats.rejectedOpen)) * 100).toFixed(1) : 0}% of Active (Pending + Rejected Open)`}
+                                            ? `معدل التأخير: ${overallCumulativeStats.overdueRateOnActive.toFixed(1)}% من المعاملات النشطة (معلق + مرفوض مفتوح)` 
+                      : `Overdue Rate: ${overallCumulativeStats.overdueRateOnActive.toFixed(1)}% of Active (Pending + Rejected Open)`}
                   </span>
                 </div>
               </div>
