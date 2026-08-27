@@ -123,7 +123,9 @@ export const calculateDocumentLifecycle = (docNo: string, revisions: SubmittalRo
     if (r.responseDate) respondedDate = r.responseDate;
     
     if (rawCat === 'CLOSED') {
-      const isApproved = ['A', 'APPROVED', 'CODE A'].includes((r.status || '').toUpperCase());
+           // ARCHITECTURE FIX (F-05, 2026-08-25): exact match instead of substring .includes().
+      const rStatusUpper = (r.status || '').toUpperCase().trim();
+      const isApproved = rStatusUpper === 'A' || rStatusUpper === 'APPROVED' || rStatusUpper === 'CODE A';
       if (isApproved && !approvedDate) approvedDate = r.responseDate || r.submissionDate;
       if (!closedDate) closedDate = r.responseDate || r.submissionDate;
     }
@@ -719,7 +721,11 @@ export const calculateContractorScorecards = (
     const rejections = rList.filter(r => getStatusCategory(r.status, statusMap) === 'REJECTED').length;
     const overdueCount = rList.filter(r => checkIfOverdueDynamically(r)).length;
 
-    const approvalRate = subs > 0 ? (closedDocs.filter(d => ['A', 'APPROVED', 'CODE A'].includes((d.status || '').toUpperCase())).length / subs) * 100 : 0;
+    // ARCHITECTURE FIX (F-05, 2026-08-25): exact match instead of substring .includes().
+    const approvalRate = subs > 0 ? (closedDocs.filter(d => {
+      const s = (d.status || '').toUpperCase().trim();
+      return s === 'A' || s === 'APPROVED' || s === 'CODE A';
+    }).length / subs) * 100 : 0;
     const overdueRate = subs > 0 ? (overdueCount / subs) * 100 : 0;
 
     let reviewDaysSum = 0;
@@ -928,7 +934,7 @@ export function runExecutiveAnalytics(data: SubmittalRow[]) {
     
     // NCRs
     const ncrs = data.filter(d => d.documentType?.includes('NCR'));
-    let ncrClosedCount = ncrs.filter(n => getStatusCodeCategory(n.status) === 'REJECTED_CLOSED' || n.status?.toUpperCase() === 'CLOSED' || n.recordStatus?.toUpperCase() === 'CLOSED').length;
+    // BEHAVIOR-RELEVANT FIX (F-05, 2026-08-25): removed raw-field fallback that could count     // a row as closed even when the canonical classifier disagreed.     let ncrClosedCount = ncrs.filter(n => getStatusCodeCategory(n.status) === 'REJECTED_CLOSED').length;
     let ncrResRate = ncrs.length > 0 ? (ncrClosedCount / ncrs.length) * 100 : 100;
 
     docs.forEach(d => {
@@ -936,7 +942,8 @@ export function runExecutiveAnalytics(data: SubmittalRow[]) {
         if (cat === 'APPROVED') approvedCount++;
         if (cat === 'REJECTED_OPEN' || cat === 'REJECTED_CLOSED') rejectedCount++;
         if (cat === 'PENDING') paddingCount++;
-        if (cat === 'REJECTED_CLOSED' || cat === 'APPROVED' || d.recordStatus?.toUpperCase() === 'CLOSED') closedCount++;
+                // BEHAVIOR-RELEVANT FIX (F-05, 2026-08-25): removed raw-field fallback, same reasoning as above.
+        if (cat === 'REJECTED_CLOSED' || cat === 'APPROVED') closedCount++;
 
         const subDate = safeParseDate(d.submissionDate);
         const resDate = safeParseDate(d.responseDate);
@@ -1084,7 +1091,8 @@ export function runExecutiveAnalytics(data: SubmittalRow[]) {
         if (cat === 'APPROVED') originators[originator].approved++;
         if (cat === 'REJECTED_OPEN' || cat === 'REJECTED_CLOSED') originators[originator].rejected++;
         if (cat === 'PENDING') originators[originator].pending++;
-        if (cat === 'APPROVED' || cat === 'REJECTED_CLOSED' || d.recordStatus?.toUpperCase() === 'CLOSED') originators[originator].closed++;
+        // BEHAVIOR-RELEVANT FIX (F-05, 2026-08-25): removed raw-field fallback, same reasoning as above.
+        if (cat === 'APPROVED' || cat === 'REJECTED_CLOSED') originators[originator].closed++;
         if (d.overdue) originators[originator].overdue++;
         const rev = getRevisionWeight(d.rev);
         if (rev > 0) originators[originator].rework++;
