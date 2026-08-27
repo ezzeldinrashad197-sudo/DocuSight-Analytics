@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from "react";
 import { SubmittalRow, ProjectSettings } from "./types";
-import { calculateStats, calculateNCRStats, calculateSORStats, calculateLTRStats, resolveRowDiscipline } from "./utils/calculations";
+import { calculateStats, calculateNCRStats, calculateSORStats, calculateLTRStats, resolveRowDiscipline, getClosedOpenByDocType } from "./utils/calculations";
 import { processNCRData } from "./analytics/ncr/ncrEngine";
 import { useLanguage } from "./utils/i18n";
 import {
