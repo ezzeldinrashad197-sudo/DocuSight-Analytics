@@ -934,7 +934,7 @@ export function runExecutiveAnalytics(data: SubmittalRow[]) {
     
     // NCRs
     const ncrs = data.filter(d => d.documentType?.includes('NCR'));
-    // BEHAVIOR-RELEVANT FIX (F-05, 2026-08-25): removed raw-field fallback.     let ncrClosedCount = ncrs.filter(n => getStatusCodeCategory(n.status) === 'REJECTED_CLOSED').length;
+    let ncrClosedCount = ncrs.filter(n => getStatusCodeCategory(n.status) === 'REJECTED_CLOSED').length;
     let ncrResRate = ncrs.length > 0 ? (ncrClosedCount / ncrs.length) * 100 : 100;
 
     docs.forEach(d => {
