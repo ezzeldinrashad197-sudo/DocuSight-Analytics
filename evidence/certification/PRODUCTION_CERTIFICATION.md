@@ -37,8 +37,20 @@ The following claims from the withdrawn July 24, 2026 certificate are **not reco
 
 ## 4. Known Open Items (Not Fixed)
 
-- `npm audit`: 25 vulnerabilities reported (10 high) as of this commit. Not investigated or patched.
-- CI gate configuration (`.github/workflows/ci.yml`) not re-verified in this pass.
+### Dependency vulnerabilities (`npm audit`)
+As of commit `ea786cc020cd7d948b7b38658e4fd8063030ad45`: 12 vulnerabilities (9 moderate, 3 high). Investigated but not patched — every suggested fix is a major-version downgrade with real regression risk:
+
+| Package | Current | npm audit's suggested fix | Why not applied |
+|---|---|---|---|
+| `firebase-admin` | 14.3.0 | 10.3.0 | 4 major versions back; would likely break server-side auth/Firestore calls |
+| `pptxgenjs` | 4.0.1 | 1.1.5 | 3 major versions back; would likely break PowerPoint export entirely |
+| `drizzle-kit` | 0.31.10 | 0.18.1 | Major downgrade; risks breaking DB tooling compatibility |
+| `xlsx` | 0.18.5 | none available | 0.18.5 is the latest version published to the public npm registry; the actual fix is only distributed via SheetJS's own site, not npm |
+
+**Do not run `npm audit fix --force`** — it will apply the downgrades above. These need a deliberate forward-upgrade path with full regression testing (auth flows, PPT export, DB migrations), which is a separate, dedicated task, not a one-line fix.
+
+### CI gate configuration
+`.github/workflows/ci.yml` not re-verified in this pass.
 
 ## 5. Reissuing This Document
 
