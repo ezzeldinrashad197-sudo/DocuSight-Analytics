@@ -117,13 +117,38 @@ export default function SmartExportModal({
 
     const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                setLogoUrl(reader.result as string);
-            };
-            reader.readAsDataURL(file);
+        if (!file) return;
+
+        // Validation: safe image format allowlist (PNG, JPEG, SVG) to mitigate image parser vulnerabilities
+        const allowedTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/svg+xml'];
+        if (!allowedTypes.includes(file.type.toLowerCase())) {
+            alert(isRtl ? 'صيغة الصورة غير مدعومة. يرجى تحميل صورة بصيغة PNG أو JPG أو SVG فقط.' : 'Unsupported image format. Please upload PNG, JPG, or SVG only.');
+            if (e.target) e.target.value = '';
+            return;
         }
+
+        // Limit logo size to 5MB
+        if (file.size > 5 * 1024 * 1024) {
+            alert(isRtl ? 'حجم الملف كبير جداً. الحد الأقصى المسموح به هو 5 ميجابايت.' : 'File too large. Maximum allowed size is 5MB.');
+            if (e.target) e.target.value = '';
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onloadend = () => {
+            const dataUrl = reader.result as string;
+            // Verify image decoding
+            const img = new Image();
+            img.onload = () => {
+                setLogoUrl(dataUrl);
+            };
+            img.onerror = () => {
+                alert(isRtl ? 'تعذر قراءة ملف الصورة. يرجى التأكد من سلامة الملف.' : 'Failed to decode image file. Please verify the file is not corrupted.');
+                if (e.target) e.target.value = '';
+            };
+            img.src = dataUrl;
+        };
+        reader.readAsDataURL(file);
     };
 
     const handleExecuteExport = async () => {
@@ -765,7 +790,7 @@ export default function SmartExportModal({
                                         <input 
                                             ref={fileInputRef}
                                             type="file" 
-                                            accept="image/*" 
+                                            accept="image/png,image/jpeg,image/svg+xml" 
                                             onChange={handleLogoUpload}
                                             className="hidden" 
                                         />
