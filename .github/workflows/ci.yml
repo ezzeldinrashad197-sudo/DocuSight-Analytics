@@ -37,7 +37,7 @@ jobs:
         run: npm run test:auth
 
       - name: 'Gate 5: End-to-End Integration & Golden Dataset Parity (0 Variance)'
-        run: npm run run-integration-tests
+        run: npx tsx scripts/run-integration-tests.ts
 
       - name: 'Gate 6: Production Build & Asset Verification'
         run: npm run build
