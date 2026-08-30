@@ -394,11 +394,13 @@ export function runCanonicalCalculationTests(): { name: string; passed: boolean;
 
     // 2. Current Unique Item Grain Assertions
     if (kpi.totalUniqueDrawings !== 3) throw new Error(`Expected 3 unique items, got ${kpi.totalUniqueDrawings}`);
-    if (kpi.currentApproved !== 2 || kpi.approved !== 2) throw new Error(`Expected 2 current approved items (ITEM-1 and ITEM-2 closed), got ${kpi.currentApproved}`);
-    if (kpi.currentRejectedClosed !== 0 || kpi.rejectedClosed !== 0) throw new Error(`Expected 0 current rejected closed items, got ${kpi.currentRejectedClosed}`);
+        // FIX (2026-08-30): ITEM-2 is Code C, closed at Rev 02 — it was rejected and closed,
+    // NEVER approved. It must count as REJECTED_CLOSED, not APPROVED. Only ITEM-1 (genuinely
+    // approved via Code A) belongs in currentApproved.
+    if (kpi.currentApproved !== 1 || kpi.approved !== 1) throw new Error(`Expected 1 current approved item (ITEM-1 only), got ${kpi.currentApproved}`);
+    if (kpi.currentRejectedClosed !== 1 || kpi.rejectedClosed !== 1) throw new Error(`Expected 1 current rejected closed item (ITEM-2), got ${kpi.currentRejectedClosed}`);
     if (kpi.currentRejectedOpen !== 0 || kpi.rejectedOpen !== 0) throw new Error(`Expected 0 current rejected open items, got ${kpi.currentRejectedOpen}`);
-    if (kpi.currentRejected !== 0) throw new Error(`Expected 0 current total rejected items, got ${kpi.currentRejected}`);
-    if (kpi.currentPending !== 1 || kpi.pending !== 1) throw new Error(`Expected 1 current pending item, got ${kpi.currentPending}`);
+    if (kpi.currentRejected !== 1) throw new Error(`Expected 1 current total rejected item, got ${kpi.currentRejected}`);
     
     // 3. Historical Rejection Resolution Assertions
     if (kpi.resolvedRejections !== 2) throw new Error(`Expected 2 resolved rejections, got ${kpi.resolvedRejections}`);
@@ -417,7 +419,9 @@ export function runCanonicalCalculationTests(): { name: string; passed: boolean;
     if (kpi.totalRejectedRows !== 2) throw new Error(`Expected 2 total rejected rows, got ${kpi.totalRejectedRows}`);
     if (kpi.rejectedOpenRows !== 1) throw new Error(`Expected 1 rejected open row, got ${kpi.rejectedOpenRows}`);
     if (kpi.rejectedClosedRows !== 1) throw new Error(`Expected 1 rejected closed row, got ${kpi.rejectedClosedRows}`);
-    if (kpi.approved !== 2) throw new Error(`Expected 2 approved items in unique current grain, got ${kpi.approved}`);
+        // FIX (2026-08-30): SUB-LOWER-2 is Code C, closed — rejected and closed, not approved.
+    if (kpi.approved !== 1) throw new Error(`Expected 1 approved item in unique current grain, got ${kpi.approved}`);
+    if (kpi.rejectedClosed !== 1) throw new Error(`Expected 1 rejected-closed item in unique current grain, got ${kpi.rejectedClosed}`);
     if (kpi.pending !== 1) throw new Error(`Expected 1 pending item, got ${kpi.pending}`);
   });
 
@@ -582,7 +586,12 @@ export function runCanonicalCalculationTests(): { name: string; passed: boolean;
 
     const kpiC = calculateCanonicalKPIs([rowCClsd]);
     if (kpiC.rejectedClosedRows !== 1) throw new Error(`Expected rejectedClosedRows=1 for Code C Closed in historical row grain, got ${kpiC.rejectedClosedRows}`);
-    if (kpiC.approved !== 1 || kpiC.currentApproved !== 1) throw new Error(`Expected Approved=1 for Code C Closed in unique item grain, got ${kpiC.approved}`);
+        // FIX (2026-08-30): this line previously contradicted the assertion right above it —
+    // getStatusCodeCategory correctly returns REJECTED_CLOSED for Code C + Closed, but this
+    // line wrongly expected the same item to ALSO count as Approved. A rejected item that was
+    // administratively closed was never approved; it must count as rejected-closed only.
+    if (kpiC.rejectedClosed !== 1 || kpiC.currentRejectedClosed !== 1) throw new Error(`Expected RejectedClosed=1 for Code C Closed in unique item grain, got ${kpiC.rejectedClosed}`);
+    if (kpiC.approved !== 0 || kpiC.currentApproved !== 0) throw new Error(`Expected Approved=0 for Code C Closed in unique item grain, got ${kpiC.approved}`);
     if (kpiC.rejectedClosed !== 0 || kpiC.currentRejectedClosed !== 0) throw new Error(`Expected RejectedClosed=0 for Code C Closed in unique item grain, got ${kpiC.rejectedClosed}`);
     if (kpiC.currentClosed !== 1) throw new Error(`Expected currentClosed=1 for Code C Closed, got ${kpiC.currentClosed}`);
   });
