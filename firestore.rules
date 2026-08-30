@@ -108,6 +108,14 @@ service cloud.firestore {
       allow update, delete: if false;
     }
 
+    // --- COLLECTION: security_test_history ---
+    // Immutable security evidence. Only authorized administrators can create evidence records, update/delete is strictly prohibited.
+    match /security_test_history/{historyId} {
+      allow read: if isSignedIn() && (isAdmin() || isEditor());
+      allow create: if isSignedIn() && isAdmin();
+      allow update, delete: if false;
+    }
+
     // --- COLLECTION: projects ---
     match /projects/{projectId} {
       allow read: if isAdminOrProjectMember(projectId);

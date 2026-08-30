@@ -75,6 +75,34 @@
         }
       },
       "required": ["userId", "action", "timestamp"]
+    },
+    "SecurityTestHistory": {
+      "title": "Security Test History",
+      "description": "Automated security test execution evidence record",
+      "type": "object",
+      "properties": {
+        "timestamp": {
+          "type": "string",
+          "description": "Timestamp of test execution"
+        },
+        "totalTests": {
+          "type": "number",
+          "description": "Total tests executed"
+        },
+        "passed": {
+          "type": "number",
+          "description": "Passed test count"
+        },
+        "failed": {
+          "type": "number",
+          "description": "Failed test count"
+        },
+        "suite": {
+          "type": "string",
+          "description": "Suite identifier"
+        }
+      },
+      "required": ["timestamp", "totalTests", "passed", "failed"]
     }
   },
   "firestore": {
@@ -89,6 +117,10 @@
     "/audit_logs/{logId}": {
       "schema": "AuditLog",
       "description": "Read-only logs tracking secure access indicators"
+    },
+    "/security_test_history/{historyId}": {
+      "schema": "SecurityTestHistory",
+      "description": "Immutable security test history records"
     }
   }
 }
