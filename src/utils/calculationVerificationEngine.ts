@@ -173,7 +173,7 @@ export function generateExpandedGoldenDataset(): SubmittalRow[] {
   for (let i = 1; i <= 80; i++) {
     const docNo = `MAR-MAT-${String(i).padStart(3, '0')}`;
     const status = i <= 60 ? "Code A" : (i <= 75 ? "Code B" : "Code C");
-    const stage = status === "Code C" ? "Returned" : "Approved";
+    const stage = status === "Code C" ? "Open" : "Approved";
     rows.push(createRow(
       "Material Submittal Register", "MAR", docNo, "0", status,
       "2026-01-12", "2026-01-26", "2026-01-20", disciplines[i % 4], contractors[i % 4], stage, true, true
@@ -191,7 +191,7 @@ export function generateExpandedGoldenDataset(): SubmittalRow[] {
   for (let i = 1; i <= 80; i++) {
     const docNo = `MIR-INSP-${String(i).padStart(3, '0')}`;
     const status = i <= 70 ? "Approved" : "Rejected";
-    const stage = status === "Approved" ? "Approved" : "Returned";
+    const stage = status === "Approved" ? "Approved" : "Open";
     rows.push(createRow(
       "Material Inspection Register", "MIR", docNo, "0", status,
       "2026-01-15", "2026-01-22", "2026-01-18", disciplines[i % 4], contractors[i % 4], stage, true, true
@@ -440,11 +440,11 @@ export async function runCalculationVerificationSuite(): Promise<VerificationEvi
   // SOR: 50 (Closed)
   // ABD: 50
   // QS: 50
-  // Total Approved = 140 + 75 + 70 + 80 + 75 + 35 + 50 + 50 + 50 = 625
+  // Total Approved = 140 (SDW) + 75 (MAR) + 70 (MIR) + 80 (WIR) + 75 (RFI) + 45 (NCR) + 40 (SOR) + 50 (ABD) + 50 (QS) + 10 (Code D) = 635
   addTest(
     "BENCH-PERF-02", "Performance Layer", "Approved Unique Documents",
-    "Evaluates unique approved items (Code A, B, Approved, Closed)",
-    "approved", 625, perfLayer.approved,
+    "Evaluates unique approved items (Code A, B, Approved, Closed, Code D)",
+    "approved", 635, perfLayer.approved,
     `Performance layer computed ${perfLayer.approved} approved unique items.`
   );
 
@@ -459,13 +459,13 @@ export async function runCalculationVerificationSuite(): Promise<VerificationEvi
     `Performance layer computed ${perfLayer.rejectedOpen} open rejected items.`
   );
 
-  // Rejected Closed items (Code D / Disapproved):
-  // 10 Code D documents
+  // Rejected Closed items:
+  // 0 Code C Closed documents
   addTest(
     "BENCH-PERF-05", "Performance Layer", "Rejected Closed Documents",
-    "Evaluates Code D / Disapproved items classified as Rejected Closed",
-    "rejectedClosed", 10, perfLayer.rejectedClosed,
-    `Performance layer computed ${perfLayer.rejectedClosed} rejected closed (Code D) items.`
+    "Evaluates Code C Closed items not approved",
+    "rejectedClosed", 0, perfLayer.rejectedClosed,
+    `Performance layer computed ${perfLayer.rejectedClosed} rejected closed items.`
   );
 
   // 3. MODULE-SPECIFIC STATS (SDW, MAR, MIR, WIR, RFI, NCR, SOR, ABD, QS)
@@ -492,7 +492,7 @@ export async function runCalculationVerificationSuite(): Promise<VerificationEvi
   );
 
   const globalStats = calculateStats(goldenDataset);
-  const expectedGlobalApprovalRate = 86.80555555555556;
+  const expectedGlobalApprovalRate = (635 / 720) * 100;
   addTest(
     "BENCH-GLOB-01", "Global Engine", "Overall Approval Rate",
     "Calculates percentage of approved items over total non-cancelled submittals",

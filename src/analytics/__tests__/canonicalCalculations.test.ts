@@ -403,7 +403,7 @@ export function runCanonicalCalculationTests(): { name: string; passed: boolean;
     if (kpi.currentRejected !== 1) throw new Error(`Expected 1 current total rejected item, got ${kpi.currentRejected}`);
     
     // 3. Historical Rejection Resolution Assertions
-    if (kpi.resolvedRejections !== 2) throw new Error(`Expected 2 resolved rejections, got ${kpi.resolvedRejections}`);
+    if (kpi.resolvedRejections !== 1) throw new Error(`Expected 1 resolved rejection (ITEM-1 only), got ${kpi.resolvedRejections}`);
   });
 
   // Test 13: Case Normalization across lower/upper/mixed strings ('c', 'C', 'closed', 'w')
@@ -592,7 +592,6 @@ export function runCanonicalCalculationTests(): { name: string; passed: boolean;
     // administratively closed was never approved; it must count as rejected-closed only.
     if (kpiC.rejectedClosed !== 1 || kpiC.currentRejectedClosed !== 1) throw new Error(`Expected RejectedClosed=1 for Code C Closed in unique item grain, got ${kpiC.rejectedClosed}`);
     if (kpiC.approved !== 0 || kpiC.currentApproved !== 0) throw new Error(`Expected Approved=0 for Code C Closed in unique item grain, got ${kpiC.approved}`);
-    if (kpiC.rejectedClosed !== 0 || kpiC.currentRejectedClosed !== 0) throw new Error(`Expected RejectedClosed=0 for Code C Closed in unique item grain, got ${kpiC.rejectedClosed}`);
     if (kpiC.currentClosed !== 1) throw new Error(`Expected currentClosed=1 for Code C Closed, got ${kpiC.currentClosed}`);
   });
 

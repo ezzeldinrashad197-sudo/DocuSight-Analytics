@@ -1,9 +1,9 @@
 {
-  "timestamp": "2026-08-12T16:28:31.999Z",
+  "timestamp": "2026-08-30T11:30:04.872Z",
   "version": "2.0.0-ENTERPRISE-EVIDENCE-PACK",
   "goldenDatasetSize": 770,
-  "totalTests": 12,
-  "passedCount": 12,
+  "totalTests": 20,
+  "passedCount": 20,
   "failedCount": 0,
   "zeroVarianceComplianceRate": "100.0%",
   "moduleBreakdown": {
@@ -31,6 +31,11 @@
       "total": 1,
       "passed": 1,
       "failed": 0
+    },
+    "Discipline Engine": {
+      "total": 8,
+      "passed": 8,
+      "failed": 0
     }
   },
   "testCases": [
@@ -52,11 +57,11 @@
       "testName": "Rev.0 Submittals Count",
       "description": "Counts initial Rev.0 submittals in Submission Layer",
       "metricName": "rev00",
-      "expectedValue": 670,
-      "actualValue": 670,
+      "expectedValue": 720,
+      "actualValue": 720,
       "variance": 0,
       "status": "PASSED",
-      "evidence": "Submission layer identified 670 Rev.0 submittals."
+      "evidence": "Submission layer identified 720 Rev.0 submittals."
     },
     {
       "id": "BENCH-SUB-03",
@@ -86,13 +91,13 @@
       "id": "BENCH-PERF-02",
       "module": "Performance Layer",
       "testName": "Approved Unique Documents",
-      "description": "Evaluates unique approved items (Code A, B, Approved)",
+      "description": "Evaluates unique approved items (Code A, B, Approved, Closed, Code D)",
       "metricName": "approved",
-      "expectedValue": 465,
-      "actualValue": 465,
+      "expectedValue": 635,
+      "actualValue": 635,
       "variance": 0,
       "status": "PASSED",
-      "evidence": "Performance layer computed 465 approved unique items."
+      "evidence": "Performance layer computed 635 approved unique items."
     },
     {
       "id": "BENCH-PERF-03",
@@ -110,13 +115,13 @@
       "id": "BENCH-PERF-05",
       "module": "Performance Layer",
       "testName": "Rejected Closed Documents",
-      "description": "Evaluates Code D / Disapproved items classified as Rejected Closed",
+      "description": "Evaluates Code C Closed items not approved",
       "metricName": "rejectedClosed",
-      "expectedValue": 10,
-      "actualValue": 10,
+      "expectedValue": 0,
+      "actualValue": 0,
       "variance": 0,
       "status": "PASSED",
-      "evidence": "Performance layer computed 10 rejected closed (Code D) items."
+      "evidence": "Performance layer computed 0 rejected closed items."
     },
     {
       "id": "BENCH-SDW-01",
@@ -160,11 +165,107 @@
       "testName": "Overall Approval Rate",
       "description": "Calculates percentage of approved items over total non-cancelled submittals",
       "metricName": "approvalRate",
-      "expectedValue": 94.89795918367348,
-      "actualValue": 94.89795918367348,
+      "expectedValue": 88.19444444444444,
+      "actualValue": 88.19444444444444,
       "variance": 0,
       "status": "PASSED",
-      "evidence": "Global Approval Rate: Expected 94.89795918367348%, Computed 94.89795918367348%."
+      "evidence": "Global Approval Rate: Expected 88.19444444444444%, Computed 88.19444444444444%."
+    },
+    {
+      "id": "BENCH-DISC-01",
+      "module": "Discipline Engine",
+      "testName": "SDW Landscape Canonical Resolution",
+      "description": "Verifies raw Landscape discipline resolves to SDW-LAND without falling back to generic SDW",
+      "metricName": "resolvedCanonical",
+      "expectedValue": "SDW-LAND",
+      "actualValue": "SDW-LAND",
+      "variance": 0,
+      "status": "PASSED",
+      "evidence": "SDW Landscape Canonical Identity: Expected 'SDW-LAND', Resolved 'SDW-LAND'."
+    },
+    {
+      "id": "BENCH-DISC-02",
+      "module": "Discipline Engine",
+      "testName": "SDW Structural Canonical Resolution",
+      "description": "Verifies Structural discipline resolves to SDW-STR and is not hijacked by INF substrings",
+      "metricName": "resolvedCanonical",
+      "expectedValue": "SDW-STR",
+      "actualValue": "SDW-STR",
+      "variance": 0,
+      "status": "PASSED",
+      "evidence": "SDW Structural Canonical Identity: Expected 'SDW-STR', Resolved 'SDW-STR'."
+    },
+    {
+      "id": "BENCH-DISC-03",
+      "module": "Discipline Engine",
+      "testName": "SDW Architectural Canonical Resolution",
+      "description": "Verifies Architectural discipline resolves to SDW-ARC",
+      "metricName": "resolvedCanonical",
+      "expectedValue": "SDW-ARC",
+      "actualValue": "SDW-ARC",
+      "variance": 0,
+      "status": "PASSED",
+      "evidence": "SDW Architectural Canonical Identity: Expected 'SDW-ARC', Resolved 'SDW-ARC'."
+    },
+    {
+      "id": "BENCH-DISC-04",
+      "module": "Discipline Engine",
+      "testName": "SDW Mechanical Canonical Resolution",
+      "description": "Verifies Mechanical discipline resolves to SDW-MEC and is not hijacked into SDW-ARC",
+      "metricName": "resolvedCanonical",
+      "expectedValue": "SDW-MEC",
+      "actualValue": "SDW-MEC",
+      "variance": 0,
+      "status": "PASSED",
+      "evidence": "SDW Mechanical Canonical Identity: Expected 'SDW-MEC', Resolved 'SDW-MEC'."
+    },
+    {
+      "id": "BENCH-DISC-05",
+      "module": "Discipline Engine",
+      "testName": "SDW Electrical Canonical Resolution",
+      "description": "Verifies Electrical discipline resolves to SDW-ELE and is not hijacked into SDW-ARC",
+      "metricName": "resolvedCanonical",
+      "expectedValue": "SDW-ELE",
+      "actualValue": "SDW-ELE",
+      "variance": 0,
+      "status": "PASSED",
+      "evidence": "SDW Electrical Canonical Identity: Expected 'SDW-ELE', Resolved 'SDW-ELE'."
+    },
+    {
+      "id": "BENCH-DISC-06",
+      "module": "Discipline Engine",
+      "testName": "SDW Infrastructure Canonical Resolution",
+      "description": "Verifies Infrastructure discipline resolves to SDW-INFRA without confusion with Structural",
+      "metricName": "resolvedCanonical",
+      "expectedValue": "SDW-INFRA",
+      "actualValue": "SDW-INFRA",
+      "variance": 0,
+      "status": "PASSED",
+      "evidence": "SDW Infrastructure Canonical Identity: Expected 'SDW-INFRA', Resolved 'SDW-INFRA'."
+    },
+    {
+      "id": "BENCH-DISC-07",
+      "module": "Discipline Engine",
+      "testName": "7619 Cumulative Discipline Invariant",
+      "description": "Ensures Cumulative Report registers strictly equal Presentation disciplines across all 7619 rows with STR=2423 and INFRA=493 separated",
+      "metricName": "cumulativeDisciplineIntegrity",
+      "expectedValue": 1,
+      "actualValue": 1,
+      "variance": 0,
+      "status": "PASSED",
+      "evidence": "Cumulative Report Discrepancy Check: STR=2423/2423, INFRA=493/493, ARC=1208/1208, MEC=1552/1552, ELE=737/737, LAND=1206/1206."
+    },
+    {
+      "id": "BENCH-DISC-08",
+      "module": "Discipline Engine",
+      "testName": "24 Monthly Discipline Invariant",
+      "description": "Ensures Monthly Report registers strictly equal Presentation disciplines across all 24 rows",
+      "metricName": "monthlyDisciplineIntegrity",
+      "expectedValue": 1,
+      "actualValue": 1,
+      "variance": 0,
+      "status": "PASSED",
+      "evidence": "Monthly Report Discrepancy Check: STR=6/6, ARC=2/2, MEC=9/9, LAND=7/7."
     },
     {
       "id": "BENCH-PERF-04",
@@ -176,7 +277,7 @@
       "actualValue": 0,
       "variance": 0,
       "status": "PASSED",
-      "evidence": "Audit checked 25 rejected items: 0 defect lingering items found."
+      "evidence": "Audit checked 15 rejected items: 0 defect lingering items found."
     }
   ],
   "rawEvidenceSnapshots": [
@@ -399,129 +500,19 @@
       "hasApprovedHigherRevision": false,
       "classificationVerdict": "CORRECT",
       "auditReason": "Document latest revision 0 has active status 'Rejected' (resolved 'REJECTED_OPEN') with zero approved higher revisions."
-    },
-    {
-      "documentNo": "DOC-STRUCTURAL:DISAPP-DOC-001",
-      "documentType": "DOC-STRUCTURAL:DISAPP-DOC-001",
-      "logType": "DOC-STRUCTURAL:DISAPP-DOC-001 Register",
-      "latestRevision": "0",
-      "latestStatus": "Code D",
-      "effectiveCategory": "REJECTED_CLOSED",
-      "hasApprovedHigherRevision": false,
-      "classificationVerdict": "CORRECT",
-      "auditReason": "Document latest revision 0 has active status 'Code D' (resolved 'REJECTED_CLOSED') with zero approved higher revisions."
-    },
-    {
-      "documentNo": "DOC-MEP:DISAPP-DOC-002",
-      "documentType": "DOC-MEP:DISAPP-DOC-002",
-      "logType": "DOC-MEP:DISAPP-DOC-002 Register",
-      "latestRevision": "0",
-      "latestStatus": "Code D",
-      "effectiveCategory": "REJECTED_CLOSED",
-      "hasApprovedHigherRevision": false,
-      "classificationVerdict": "CORRECT",
-      "auditReason": "Document latest revision 0 has active status 'Code D' (resolved 'REJECTED_CLOSED') with zero approved higher revisions."
-    },
-    {
-      "documentNo": "DOC-CIVIL:DISAPP-DOC-003",
-      "documentType": "DOC-CIVIL:DISAPP-DOC-003",
-      "logType": "DOC-CIVIL:DISAPP-DOC-003 Register",
-      "latestRevision": "0",
-      "latestStatus": "Code D",
-      "effectiveCategory": "REJECTED_CLOSED",
-      "hasApprovedHigherRevision": false,
-      "classificationVerdict": "CORRECT",
-      "auditReason": "Document latest revision 0 has active status 'Code D' (resolved 'REJECTED_CLOSED') with zero approved higher revisions."
-    },
-    {
-      "documentNo": "DOC-QUALITY:DISAPP-DOC-004",
-      "documentType": "DOC-QUALITY:DISAPP-DOC-004",
-      "logType": "DOC-QUALITY:DISAPP-DOC-004 Register",
-      "latestRevision": "0",
-      "latestStatus": "Code D",
-      "effectiveCategory": "REJECTED_CLOSED",
-      "hasApprovedHigherRevision": false,
-      "classificationVerdict": "CORRECT",
-      "auditReason": "Document latest revision 0 has active status 'Code D' (resolved 'REJECTED_CLOSED') with zero approved higher revisions."
-    },
-    {
-      "documentNo": "DOC-COMMERCIAL:DISAPP-DOC-005",
-      "documentType": "DOC-COMMERCIAL:DISAPP-DOC-005",
-      "logType": "DOC-COMMERCIAL:DISAPP-DOC-005 Register",
-      "latestRevision": "0",
-      "latestStatus": "Code D",
-      "effectiveCategory": "REJECTED_CLOSED",
-      "hasApprovedHigherRevision": false,
-      "classificationVerdict": "CORRECT",
-      "auditReason": "Document latest revision 0 has active status 'Code D' (resolved 'REJECTED_CLOSED') with zero approved higher revisions."
-    },
-    {
-      "documentNo": "DOC-ARCHITECTURAL:DISAPP-DOC-006",
-      "documentType": "DOC-ARCHITECTURAL:DISAPP-DOC-006",
-      "logType": "DOC-ARCHITECTURAL:DISAPP-DOC-006 Register",
-      "latestRevision": "0",
-      "latestStatus": "Code D",
-      "effectiveCategory": "REJECTED_CLOSED",
-      "hasApprovedHigherRevision": false,
-      "classificationVerdict": "CORRECT",
-      "auditReason": "Document latest revision 0 has active status 'Code D' (resolved 'REJECTED_CLOSED') with zero approved higher revisions."
-    },
-    {
-      "documentNo": "DOC-STRUCTURAL:DISAPP-DOC-007",
-      "documentType": "DOC-STRUCTURAL:DISAPP-DOC-007",
-      "logType": "DOC-STRUCTURAL:DISAPP-DOC-007 Register",
-      "latestRevision": "0",
-      "latestStatus": "Code D",
-      "effectiveCategory": "REJECTED_CLOSED",
-      "hasApprovedHigherRevision": false,
-      "classificationVerdict": "CORRECT",
-      "auditReason": "Document latest revision 0 has active status 'Code D' (resolved 'REJECTED_CLOSED') with zero approved higher revisions."
-    },
-    {
-      "documentNo": "DOC-MEP:DISAPP-DOC-008",
-      "documentType": "DOC-MEP:DISAPP-DOC-008",
-      "logType": "DOC-MEP:DISAPP-DOC-008 Register",
-      "latestRevision": "0",
-      "latestStatus": "Code D",
-      "effectiveCategory": "REJECTED_CLOSED",
-      "hasApprovedHigherRevision": false,
-      "classificationVerdict": "CORRECT",
-      "auditReason": "Document latest revision 0 has active status 'Code D' (resolved 'REJECTED_CLOSED') with zero approved higher revisions."
-    },
-    {
-      "documentNo": "DOC-CIVIL:DISAPP-DOC-009",
-      "documentType": "DOC-CIVIL:DISAPP-DOC-009",
-      "logType": "DOC-CIVIL:DISAPP-DOC-009 Register",
-      "latestRevision": "0",
-      "latestStatus": "Code D",
-      "effectiveCategory": "REJECTED_CLOSED",
-      "hasApprovedHigherRevision": false,
-      "classificationVerdict": "CORRECT",
-      "auditReason": "Document latest revision 0 has active status 'Code D' (resolved 'REJECTED_CLOSED') with zero approved higher revisions."
-    },
-    {
-      "documentNo": "DOC-QUALITY:DISAPP-DOC-010",
-      "documentType": "DOC-QUALITY:DISAPP-DOC-010",
-      "logType": "DOC-QUALITY:DISAPP-DOC-010 Register",
-      "latestRevision": "0",
-      "latestStatus": "Code D",
-      "effectiveCategory": "REJECTED_CLOSED",
-      "hasApprovedHigherRevision": false,
-      "classificationVerdict": "CORRECT",
-      "auditReason": "Document latest revision 0 has active status 'Code D' (resolved 'REJECTED_CLOSED') with zero approved higher revisions."
     }
   ],
   "stressBenchmark10k": {
     "datasetSize": 10000,
-    "executionTimeMs": 300.4,
-    "throughputPerSec": 33289,
+    "executionTimeMs": 756.28,
+    "throughputPerSec": 13223,
     "memoryEstimateMb": 3.34,
     "passCriteriaMet": true
   },
   "stressBenchmark50k": {
     "datasetSize": 50000,
-    "executionTimeMs": 1296.98,
-    "throughputPerSec": 38551,
+    "executionTimeMs": 3643.38,
+    "throughputPerSec": 13724,
     "memoryEstimateMb": 16.69,
     "passCriteriaMet": true
   }

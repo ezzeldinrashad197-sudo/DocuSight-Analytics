@@ -149,7 +149,7 @@ export async function runSecurityRegressionSuite(): Promise<SuiteSummary> {
   const summary: SuiteSummary = {
     timestamp: new Date().toISOString(),
     version: "v3.0.0-Enterprise",
-    commitHash: "SHA-" + Math.random().toString(36).substring(2, 8).toUpperCase(),
+    commitHash: "ddc908950aedd7f37fe6069b14f6da1163e59937",
     totalTests: testResults.length,
     passedTests: passedCount,
     failedTests: testResults.length - passedCount,

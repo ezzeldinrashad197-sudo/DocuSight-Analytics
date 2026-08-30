@@ -27,7 +27,7 @@ const getEnvVar = (key: string) => {
 const databaseId = 
   (firebaseConfig as any).firestoreDatabaseId || 
   getEnvVar('VITE_FIRESTORE_DATABASE_ID') || 
-  'ai-studio-b1fedb55-c17f-4221-b883-f1ee17f1362f';
+  '(default)';
 export const db = initializeFirestore(app, { 
   experimentalForceLongPolling: true,
   localCache: persistentLocalCache({
@@ -101,13 +101,14 @@ export const logAuditContext = async (actionType: string, resource: string, deta
                 const hashArray = Array.from(new Uint8Array(hashBuffer));
                 return 'LGR-' + hashArray.map(b => b.toString(16).padStart(2, '0')).join('').toUpperCase().substring(0, 32);
             }
-            // Fallback deterministic 64-char hex format
-            let hash = 0;
-            for (let i = 0; i < seed.length; i++) {
-                hash = ((hash << 5) - hash) + seed.charCodeAt(i);
-                hash |= 0;
+            // Node.js crypto fallback
+            try {
+                const nodeCrypto = await import('crypto');
+                const digest = nodeCrypto.createHash('sha256').update(seed).digest('hex').toUpperCase().substring(0, 32);
+                return 'LGR-' + digest;
+            } catch {
+                throw new Error('Cryptographic SHA-256 implementation is required for ledger integrity hash generation.');
             }
-            return 'LGR-' + Math.abs(hash).toString(16).padStart(16, '0').repeat(2).toUpperCase();
         };
 
         const integrityHash = await computeLedgerHashAsync(user.uid, actionType, resource, correlationId);

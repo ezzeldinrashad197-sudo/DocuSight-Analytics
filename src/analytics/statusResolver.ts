@@ -47,8 +47,8 @@ export function classifyRow(code?: string, status?: string): CanonicalStatus {
     cleanCode = cleanCode.substring(5).trim();
   }
 
-  // Code A or Code B or Code D -> Approved (Code D = Disapproved / Final Closed = No Further Submission)
-  if (cleanCode === 'A' || cleanCode === 'B' || cleanCode === 'D' || cleanCode === 'APPROVED' || cleanCode === 'ACCEPTED' || cleanCode === 'DISAPPROVED') {
+  // Code A or Code B or Code D or Closed -> Approved (Code D = Disapproved / Final Closed = No Further Submission)
+  if (cleanCode === 'A' || cleanCode === 'B' || cleanCode === 'D' || cleanCode === 'APPROVED' || cleanCode === 'ACCEPTED' || cleanCode === 'DISAPPROVED' || cleanCode === 'CLOSED' || cleanCode === 'CLOSE') {
     return 'APPROVED';
   }
 
@@ -57,8 +57,8 @@ export function classifyRow(code?: string, status?: string): CanonicalStatus {
     return (sUpper === 'OPEN' || s === 'Open') ? 'REJECTED_OPEN' : 'REJECTED_CLOSED';
   }
 
-  // Pending / Under review / Waiting
-  if (cleanCode === 'W' || cleanCode === 'UNDER REVIEW' || cleanCode === 'PENDING' || cleanCode === 'WAITING' || sUpper === 'PENDING' || sUpper === 'UNDER REVIEW' || sUpper === 'WAITING') {
+  // Pending / Under review / Waiting / Open
+  if (cleanCode === 'W' || cleanCode === 'UNDER REVIEW' || cleanCode === 'PENDING' || cleanCode === 'WAITING' || cleanCode === 'OPEN' || sUpper === 'PENDING' || sUpper === 'UNDER REVIEW' || sUpper === 'WAITING') {
     return 'PENDING';
   }
 
@@ -185,17 +185,25 @@ export function getStatusCodeCategory(codeOrRow?: string | SubmittalRow): Canoni
       }
     } else if (rawStatusCombined.includes('CLOSED')) {
       effectiveStatus = 'CLOSED';
-      if (rawStatusCombined.includes('C') || rawStatusCombined.includes('REJECT')) {
+      const isCodeC = rawStatusCombined === 'C' || rawStatusCombined.startsWith('C ') || rawStatusCombined.endsWith(' C') || rawStatusCombined.includes(' C ') || rawStatusCombined.includes('CODE C') || rawStatusCombined.includes('REJECT');
+      const isCodeD = rawStatusCombined === 'D' || rawStatusCombined.startsWith('D ') || rawStatusCombined.endsWith(' D') || rawStatusCombined.includes(' D ') || rawStatusCombined.includes('CODE D') || rawStatusCombined.includes('DISAPPROV');
+      const isCodeAB = rawStatusCombined.includes('APPROVED') || rawStatusCombined.includes('ACCEPTED') || rawStatusCombined === 'A' || rawStatusCombined === 'B' || rawStatusCombined.startsWith('A ') || rawStatusCombined.startsWith('B ') || rawStatusCombined.includes('CODE A') || rawStatusCombined.includes('CODE B');
+      if (isCodeC) {
         effectiveCode = 'C';
-      } else if (rawStatusCombined.includes('D') || rawStatusCombined.includes('DISAPPROV')) {
+      } else if (isCodeD) {
         effectiveCode = 'D';
-      } else if (rawStatusCombined.includes('APPROVED') || rawStatusCombined.includes('A') || rawStatusCombined.includes('B')) {
+      } else if (isCodeAB) {
         effectiveCode = 'A';
+      } else {
+        effectiveCode = 'CLOSED';
       }
     } else if (rawStatusCombined.includes('OPEN')) {
       effectiveStatus = 'OPEN';
-      if (rawStatusCombined.includes('C') || rawStatusCombined.includes('REJECT')) {
+      const isCodeC = rawStatusCombined === 'C' || rawStatusCombined.startsWith('C ') || rawStatusCombined.endsWith(' C') || rawStatusCombined.includes(' C ') || rawStatusCombined.includes('CODE C') || rawStatusCombined.includes('REJECT');
+      if (isCodeC) {
         effectiveCode = 'C';
+      } else {
+        effectiveCode = 'OPEN';
       }
     } else {
       effectiveCode = rawStatusCombined;

@@ -631,21 +631,14 @@
   },
   {
     "callerFile": "src/analytics/__tests__/canonicalCalculations.test.ts",
-    "line": 416,
+    "line": 418,
     "context": "calculateCanonicalKPIs(rows)",
     "destination": "src/utils/calculations.ts::calculateCanonicalKPIs",
     "functionName": "calculateCanonicalKPIs"
   },
   {
     "callerFile": "src/analytics/__tests__/canonicalCalculations.test.ts",
-    "line": 428,
-    "context": "getStatusCodeCategory(ncrRow)",
-    "destination": "src/utils/calculations.ts::getStatusCodeCategory",
-    "functionName": "getStatusCodeCategory"
-  },
-  {
-    "callerFile": "src/analytics/__tests__/canonicalCalculations.test.ts",
-    "line": 428,
+    "line": 432,
     "context": "getStatusCodeCategory(ncrRow)",
     "destination": "src/utils/calculations.ts::getStatusCodeCategory",
     "functionName": "getStatusCodeCategory"
@@ -653,13 +646,13 @@
   {
     "callerFile": "src/analytics/__tests__/canonicalCalculations.test.ts",
     "line": 432,
-    "context": "getStatusCodeCategory(mirRow)",
+    "context": "getStatusCodeCategory(ncrRow)",
     "destination": "src/utils/calculations.ts::getStatusCodeCategory",
     "functionName": "getStatusCodeCategory"
   },
   {
     "callerFile": "src/analytics/__tests__/canonicalCalculations.test.ts",
-    "line": 432,
+    "line": 436,
     "context": "getStatusCodeCategory(mirRow)",
     "destination": "src/utils/calculations.ts::getStatusCodeCategory",
     "functionName": "getStatusCodeCategory"
@@ -667,13 +660,13 @@
   {
     "callerFile": "src/analytics/__tests__/canonicalCalculations.test.ts",
     "line": 436,
-    "context": "getStatusCodeCategory(wirRow)",
+    "context": "getStatusCodeCategory(mirRow)",
     "destination": "src/utils/calculations.ts::getStatusCodeCategory",
     "functionName": "getStatusCodeCategory"
   },
   {
     "callerFile": "src/analytics/__tests__/canonicalCalculations.test.ts",
-    "line": 436,
+    "line": 440,
     "context": "getStatusCodeCategory(wirRow)",
     "destination": "src/utils/calculations.ts::getStatusCodeCategory",
     "functionName": "getStatusCodeCategory"
@@ -681,13 +674,13 @@
   {
     "callerFile": "src/analytics/__tests__/canonicalCalculations.test.ts",
     "line": 440,
-    "context": "getStatusCodeCategory(rfiRow)",
+    "context": "getStatusCodeCategory(wirRow)",
     "destination": "src/utils/calculations.ts::getStatusCodeCategory",
     "functionName": "getStatusCodeCategory"
   },
   {
     "callerFile": "src/analytics/__tests__/canonicalCalculations.test.ts",
-    "line": 440,
+    "line": 444,
     "context": "getStatusCodeCategory(rfiRow)",
     "destination": "src/utils/calculations.ts::getStatusCodeCategory",
     "functionName": "getStatusCodeCategory"
@@ -695,97 +688,104 @@
   {
     "callerFile": "src/analytics/__tests__/canonicalCalculations.test.ts",
     "line": 444,
+    "context": "getStatusCodeCategory(rfiRow)",
+    "destination": "src/utils/calculations.ts::getStatusCodeCategory",
+    "functionName": "getStatusCodeCategory"
+  },
+  {
+    "callerFile": "src/analytics/__tests__/canonicalCalculations.test.ts",
+    "line": 448,
     "context": "getStatusCodeCategory(sorRow)",
     "destination": "src/utils/calculations.ts::getStatusCodeCategory",
     "functionName": "getStatusCodeCategory"
   },
   {
     "callerFile": "src/analytics/__tests__/canonicalCalculations.test.ts",
-    "line": 444,
+    "line": 448,
     "context": "getStatusCodeCategory(sorRow)",
     "destination": "src/utils/calculations.ts::getStatusCodeCategory",
     "functionName": "getStatusCodeCategory"
   },
   {
     "callerFile": "src/analytics/__tests__/canonicalCalculations.test.ts",
-    "line": 455,
+    "line": 459,
     "context": "calculateCanonicalKPIs(rows)",
     "destination": "src/utils/calculations.ts::calculateCanonicalKPIs",
     "functionName": "calculateCanonicalKPIs"
   },
   {
     "callerFile": "src/analytics/__tests__/canonicalCalculations.test.ts",
-    "line": 479,
+    "line": 483,
     "context": "calculateCanonicalKPIs(rows)",
     "destination": "src/utils/calculations.ts::calculateCanonicalKPIs",
     "functionName": "calculateCanonicalKPIs"
   },
   {
     "callerFile": "src/analytics/__tests__/canonicalCalculations.test.ts",
-    "line": 497,
+    "line": 501,
     "context": "classifyRow('A', 'CLOSED')",
     "destination": "src/utils/calculations.ts::classifyRow",
     "functionName": "classifyRow"
   },
   {
     "callerFile": "src/analytics/__tests__/canonicalCalculations.test.ts",
-    "line": 498,
+    "line": 502,
     "context": "classifyRow('B', 'CLOSED')",
     "destination": "src/utils/calculations.ts::classifyRow",
     "functionName": "classifyRow"
   },
   {
     "callerFile": "src/analytics/__tests__/canonicalCalculations.test.ts",
-    "line": 499,
+    "line": 503,
     "context": "classifyRow('C', 'OPEN')",
     "destination": "src/utils/calculations.ts::classifyRow",
     "functionName": "classifyRow"
   },
   {
     "callerFile": "src/analytics/__tests__/canonicalCalculations.test.ts",
-    "line": 500,
+    "line": 504,
     "context": "classifyRow('C', 'CLOSED')",
     "destination": "src/utils/calculations.ts::classifyRow",
     "functionName": "classifyRow"
   },
   {
     "callerFile": "src/analytics/__tests__/canonicalCalculations.test.ts",
-    "line": 501,
+    "line": 505,
     "context": "classifyRow('D', 'CLOSED')",
     "destination": "src/utils/calculations.ts::classifyRow",
     "functionName": "classifyRow"
   },
   {
     "callerFile": "src/analytics/__tests__/canonicalCalculations.test.ts",
-    "line": 502,
+    "line": 506,
     "context": "classifyRow('DISAPPROVED', 'CLOSED')",
     "destination": "src/utils/calculations.ts::classifyRow",
     "functionName": "classifyRow"
   },
   {
     "callerFile": "src/analytics/__tests__/canonicalCalculations.test.ts",
-    "line": 538,
+    "line": 542,
     "context": "getStatusCodeCategory(rowD)",
     "destination": "src/utils/calculations.ts::getStatusCodeCategory",
     "functionName": "getStatusCodeCategory"
   },
   {
     "callerFile": "src/analytics/__tests__/canonicalCalculations.test.ts",
-    "line": 541,
+    "line": 545,
     "context": "calculateCanonicalKPIs([rowD])",
     "destination": "src/utils/calculations.ts::calculateCanonicalKPIs",
     "functionName": "calculateCanonicalKPIs"
   },
   {
     "callerFile": "src/analytics/__tests__/canonicalCalculations.test.ts",
-    "line": 580,
+    "line": 584,
     "context": "getStatusCodeCategory(rowCClsd)",
     "destination": "src/utils/calculations.ts::getStatusCodeCategory",
     "functionName": "getStatusCodeCategory"
   },
   {
     "callerFile": "src/analytics/__tests__/canonicalCalculations.test.ts",
-    "line": 583,
+    "line": 587,
     "context": "calculateCanonicalKPIs([rowCClsd])",
     "destination": "src/utils/calculations.ts::calculateCanonicalKPIs",
     "functionName": "calculateCanonicalKPIs"
@@ -2087,105 +2087,105 @@
   },
   {
     "callerFile": "src/analytics/statusResolver.ts",
-    "line": 102,
+    "line": 101,
     "context": "normalizeCanonicalString(codeOrRow.code)",
     "destination": "src/utils/calculations.ts::normalizeCanonicalString",
     "functionName": "normalizeCanonicalString"
   },
   {
     "callerFile": "src/analytics/statusResolver.ts",
-    "line": 103,
+    "line": 102,
     "context": "normalizeCanonicalString(codeOrRow.status || (codeOrRow as any).ncrStatus || (codeOrRow as any).sorStatus)",
     "destination": "src/utils/calculations.ts::normalizeCanonicalString",
     "functionName": "normalizeCanonicalString"
   },
   {
     "callerFile": "src/analytics/statusResolver.ts",
-    "line": 104,
+    "line": 103,
     "context": "normalizeCanonicalString(codeOrRow.recordStatus)",
     "destination": "src/utils/calculations.ts::normalizeCanonicalString",
     "functionName": "normalizeCanonicalString"
   },
   {
     "callerFile": "src/analytics/statusResolver.ts",
-    "line": 105,
+    "line": 104,
     "context": "normalizeCanonicalString(codeOrRow.workflowStage)",
     "destination": "src/utils/calculations.ts::normalizeCanonicalString",
     "functionName": "normalizeCanonicalString"
   },
   {
     "callerFile": "src/analytics/statusResolver.ts",
-    "line": 106,
+    "line": 105,
     "context": "normalizeCanonicalString(codeOrRow.action || (codeOrRow as any).ncrAction || (codeOrRow as any).sorAction)",
     "destination": "src/utils/calculations.ts::normalizeCanonicalString",
     "functionName": "normalizeCanonicalString"
   },
   {
     "callerFile": "src/analytics/statusResolver.ts",
-    "line": 108,
+    "line": 107,
     "context": "normalizeCanonicalString(codeOrRow.workflowFamily)",
     "destination": "src/utils/calculations.ts::normalizeCanonicalString",
     "functionName": "normalizeCanonicalString"
   },
   {
     "callerFile": "src/analytics/statusResolver.ts",
-    "line": 109,
+    "line": 108,
     "context": "normalizeCanonicalString(codeOrRow.documentType)",
     "destination": "src/utils/calculations.ts::normalizeCanonicalString",
     "functionName": "normalizeCanonicalString"
   },
   {
     "callerFile": "src/analytics/statusResolver.ts",
-    "line": 110,
+    "line": 109,
     "context": "normalizeCanonicalString(codeOrRow.logType)",
     "destination": "src/utils/calculations.ts::normalizeCanonicalString",
     "functionName": "normalizeCanonicalString"
   },
   {
     "callerFile": "src/analytics/statusResolver.ts",
-    "line": 111,
+    "line": 110,
     "context": "normalizeCanonicalString(codeOrRow.docNo)",
     "destination": "src/utils/calculations.ts::normalizeCanonicalString",
     "functionName": "normalizeCanonicalString"
   },
   {
     "callerFile": "src/analytics/statusResolver.ts",
-    "line": 112,
+    "line": 111,
     "context": "normalizeCanonicalString((codeOrRow as any).rawSourceIdentity)",
     "destination": "src/utils/calculations.ts::normalizeCanonicalString",
     "functionName": "normalizeCanonicalString"
   },
   {
     "callerFile": "src/analytics/statusResolver.ts",
-    "line": 113,
+    "line": 112,
     "context": "normalizeCanonicalString((codeOrRow as any).sourceFile)",
     "destination": "src/utils/calculations.ts::normalizeCanonicalString",
     "functionName": "normalizeCanonicalString"
   },
   {
     "callerFile": "src/analytics/statusResolver.ts",
-    "line": 124,
+    "line": 123,
     "context": "normalizeCanonicalString(codeOrRow)",
     "destination": "src/utils/calculations.ts::normalizeCanonicalString",
     "functionName": "normalizeCanonicalString"
   },
   {
     "callerFile": "src/analytics/statusResolver.ts",
-    "line": 206,
+    "line": 205,
     "context": "classifyRow(effectiveCode, effectiveStatus)",
     "destination": "src/utils/calculations.ts::classifyRow",
     "functionName": "classifyRow"
   },
   {
     "callerFile": "src/analytics/statusResolver.ts",
-    "line": 216,
+    "line": 215,
     "context": "getStatusCodeCategory(row)",
     "destination": "src/utils/calculations.ts::getStatusCodeCategory",
     "functionName": "getStatusCodeCategory"
   },
   {
     "callerFile": "src/analytics/statusResolver.ts",
-    "line": 223,
+    "line": 222,
     "context": "normalizeCanonicalString(row.status || row.recordStatus || row.workflowStage || row.action)",
     "destination": "src/utils/calculations.ts::normalizeCanonicalString",
     "functionName": "normalizeCanonicalString"
