@@ -1,5 +1,5 @@
 # StructuSight Mathematical & Architecture Evidence Log
-*Generated on 2026-08-30T13:23:21.295Z via StructuSight Custom AST Compliance Engine*
+*Generated on 2026-08-30T14:44:08.454Z via StructuSight Custom AST Compliance Engine*
 
 > [!NOTE]
 > **AUDIT ENGINE DISCLAIMER & VERIFICATION NOTICE**
@@ -12,24 +12,24 @@ To guarantee absolute reproducibility and transparency under independent review,
 
 | Metric | System Signature Value | Description |
 | :--- | :--- | :--- |
-| **Audit Timestamp** | `2026-08-30T13:23:21.295Z` | Universal Coordinated Time (UTC) of verification run |
+| **Audit Timestamp** | `2026-08-30T14:44:08.454Z` | Universal Coordinated Time (UTC) of verification run |
 | **Node.js Engine** | `v22.23.2` | Active Node runtime engine executing verification |
 | **TypeScript Version** | `v5.8.3` | Version of TypeScript Compiler API used for parsing |
 | **System Platform** | `linux (x64)` | Host kernel and architecture fingerprint |
 | **Build Project ID** | `b1fedb55-c17f-4221-b883-f1ee17f1362f` | Unique platform identifier of active workspace |
 | **Report Schema Version** | `1.4.0` | Schema specification version for exported JSON and reporting layers |
 | **Verification Engine** | `2.4.1-Prod` | Release build version of custom AST scanner |
-| **Total Pipeline Wall Time**| `**1.370 seconds**` | Combined execution duration of AST scanning and verification pipeline |
+| **Total Pipeline Wall Time**| `**3.791 seconds**` | Combined execution duration of AST scanning and verification pipeline |
 
 ### ⏱️ VERIFICATION RUNTIME METRIC SPLIT
 
 | Verification Stage | Processed Task | Measured Duration | Percentage (%) | Status |
 | :--- | :--- | :--- | :--- | :--- |
-| **AST Parsing & Codebase Scan** | Recursive scan of all source directories, reading file ASTs | `1.350 seconds` | `98.5%` | COMPLETED ✅ |
-| **Call Graph Tracing** | AST path exploration, extracting import/export and call edges | `0.001 seconds` | `0.1%` | COMPLETED ✅ |
-| **Rule & Complexity Evaluation** | Execution of circular dependency checks, layer compliance, dead code analysis, Halstead, cyclomatic metrics | `0.009 seconds` | `0.7%` | COMPLETED ✅ |
-| **Artifact & Report Generation** | Compilation and serialization of JSON, DOT, Mermaid, and MD files | `0.010 seconds` | `0.7%` | COMPLETED ✅ |
-| **Total Pipeline Wall Time** | Integrated end-to-end execution of verification sequence | `**1.370 seconds**` | `100.0%` | **SUCCESS** ✅ |
+| **AST Parsing & Codebase Scan** | Recursive scan of all source directories, reading file ASTs | `3.758 seconds` | `99.1%` | COMPLETED ✅ |
+| **Call Graph Tracing** | AST path exploration, extracting import/export and call edges | `0.001 seconds` | `0.0%` | COMPLETED ✅ |
+| **Rule & Complexity Evaluation** | Execution of circular dependency checks, layer compliance, dead code analysis, Halstead, cyclomatic metrics | `0.018 seconds` | `0.5%` | COMPLETED ✅ |
+| **Artifact & Report Generation** | Compilation and serialization of JSON, DOT, Mermaid, and MD files | `0.014 seconds` | `0.4%` | COMPLETED ✅ |
+| **Total Pipeline Wall Time** | Integrated end-to-end execution of verification sequence | `**3.791 seconds**` | `100.0%` | **SUCCESS** ✅ |
 
 ### 🔒 CRYPTOGRAPHIC REPOSITORY MANIFEST & FILE HASH SNAPSHOTS
 The table below lists the exact SHA-256 cryptographic hashes of the primary compliance-governed source and configuration files at the exact timestamp of this audit run. Any modification of these files post-verification will invalidate these signatures:
