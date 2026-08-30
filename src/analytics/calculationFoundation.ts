@@ -32,7 +32,7 @@ export interface CanonicalRecord {
   submissionDate: string;
   responseDate: string;
   status: string;
-  resolvedStatus: 'APPROVED' | 'REJECTED_OPEN' | 'REJECTED_CLOSED' | 'PENDING' | 'UNCLASSIFIED';
+  resolvedStatus: 'APPROVED' | 'REJECTED_OPEN' | 'REJECTED_CLOSED' | 'FINAL_CLOSED' | 'PENDING' | 'UNCLASSIFIED';
   isLatestRevision: boolean;
   isRev0: boolean;
   isHistoricalRev0: boolean;
@@ -138,7 +138,7 @@ export function getBusinessEntityKey(row: SubmittalRow): string {
 /**
  * 3. Revision & History Engine
  */
-export function processRevisionEngine(rows: SubmittalRow[], asOfDate?: string): Map<string, { latest: SubmittalRow; all: SubmittalRow[]; latestSheets: SubmittalRow[]; resolvedStatus: 'APPROVED' | 'REJECTED_OPEN' | 'REJECTED_CLOSED' | 'PENDING' | 'UNCLASSIFIED'; hasRejection: boolean; isResolved: boolean }> {
+export function processRevisionEngine(rows: SubmittalRow[], asOfDate?: string): Map<string, { latest: SubmittalRow; all: SubmittalRow[]; latestSheets: SubmittalRow[]; resolvedStatus: 'APPROVED' | 'REJECTED_OPEN' | 'REJECTED_CLOSED' | 'FINAL_CLOSED' | 'PENDING' | 'UNCLASSIFIED'; hasRejection: boolean; isResolved: boolean }> {
   const groups = new Map<string, SubmittalRow[]>();
   const cutoffTime = parseDateTimestamp(asOfDate);
 
@@ -156,7 +156,7 @@ export function processRevisionEngine(rows: SubmittalRow[], asOfDate?: string): 
     groups.get(key)!.push(row);
   });
 
-  const result = new Map<string, { latest: SubmittalRow; all: SubmittalRow[]; latestSheets: SubmittalRow[]; resolvedStatus: 'APPROVED' | 'REJECTED_OPEN' | 'REJECTED_CLOSED' | 'PENDING' | 'UNCLASSIFIED'; hasRejection: boolean; isResolved: boolean }>();
+  const result = new Map<string, { latest: SubmittalRow; all: SubmittalRow[]; latestSheets: SubmittalRow[]; resolvedStatus: 'APPROVED' | 'REJECTED_OPEN' | 'REJECTED_CLOSED' | 'FINAL_CLOSED' | 'PENDING' | 'UNCLASSIFIED'; hasRejection: boolean; isResolved: boolean }>();
 
   groups.forEach((groupRows, key) => {
     // Find max revision weight among group rows
@@ -333,6 +333,7 @@ export function calculateCanonicalKPIs(
   let totalRejectedRows = 0;
   let rejectedOpenRows = 0;
   let rejectedClosedRows = 0;
+  let finalClosedRows = 0;
   let rowApproved = 0;
   let rowPending = 0;
 
@@ -357,6 +358,8 @@ export function calculateCanonicalKPIs(
     } else if (rowStatusCat === 'REJECTED_CLOSED') {
       totalRejectedRows++;
       rejectedClosedRows++;
+    } else if (rowStatusCat === 'FINAL_CLOSED') {
+      finalClosedRows++;
     } else if (rowStatusCat === 'PENDING') {
       rowPending++;
     } else {
@@ -364,7 +367,7 @@ export function calculateCanonicalKPIs(
     }
   });
 
-  const rowApprovedClosed = rowApproved + rejectedClosedRows;
+  const rowApprovedClosed = rowApproved + rejectedClosedRows + finalClosedRows;
 
   // 2. CURRENT STATE LAYER (Unique SUB Ref at Latest Valid Revision)
   const baseForRevisions = fullDataset && fullDataset.length > 0 ? fullDataset : validRows;
@@ -376,6 +379,7 @@ export function calculateCanonicalKPIs(
   let approvedCurrent = 0;
   let rejectedOpenCurrent = 0;
   let rejectedClosedCurrent = 0;
+  let finalClosedCurrent = 0;
   let pendingCurrent = 0;
   let unclassifiedCurrent = 0;
   let resolvedRejections = 0;
@@ -408,6 +412,9 @@ export function calculateCanonicalKPIs(
         break;
       case 'REJECTED_CLOSED':
         rejectedClosedCurrent++;
+        break;
+      case 'FINAL_CLOSED':
+        finalClosedCurrent++;
         break;
       case 'PENDING':
         pendingCurrent++;
@@ -458,7 +465,7 @@ export function calculateCanonicalKPIs(
   });
 
   const totalUniqueDrawings = targetEntityKeys.size;
-  const totalEligible = approvedCurrent + rejectedOpenCurrent + rejectedClosedCurrent + pendingCurrent + unclassifiedCurrent;
+  const totalEligible = approvedCurrent + rejectedOpenCurrent + rejectedClosedCurrent + finalClosedCurrent + pendingCurrent + unclassifiedCurrent;
   const activeCurrentItems = pendingCurrent + rejectedOpenCurrent;
   const overdueFinal = Math.min(overdueCurrent, activeCurrentItems);
   const overdueRateOnActive = activeCurrentItems > 0 ? Number(((overdueFinal / activeCurrentItems) * 100).toFixed(1)) : 0;
@@ -492,6 +499,7 @@ export function calculateCanonicalKPIs(
     totalRejectedRows,
     rejectedOpenRows,
     rejectedClosedRows,
+    finalClosedRows,
 
     // Historical Aliases
     rejectionEvents: totalRejectedRows,
@@ -506,15 +514,17 @@ export function calculateCanonicalKPIs(
     currentApproved: approvedCurrent,
     currentRejectedOpen: rejectedOpenCurrent,
     currentRejectedClosed: rejectedClosedCurrent,
+    currentFinalClosed: finalClosedCurrent,
     currentRejected: rejectedOpenCurrent + rejectedClosedCurrent,
     currentPending: pendingCurrent + unclassifiedCurrent,
     currentOpen: pendingCurrent + rejectedOpenCurrent + unclassifiedCurrent,
-    currentClosed: approvedCurrent + rejectedClosedCurrent,
+    currentClosed: approvedCurrent + rejectedClosedCurrent + finalClosedCurrent,
 
     // Standard & Backwards Compatible Aliases
     approved: approvedCurrent,
     rejectedOpen: rejectedOpenCurrent,
     rejectedClosed: rejectedClosedCurrent,
+    finalClosed: finalClosedCurrent,
     totalRejected: rejectedOpenCurrent + rejectedClosedCurrent,
     pending: pendingCurrent,
     unclassified: unclassifiedCurrent,

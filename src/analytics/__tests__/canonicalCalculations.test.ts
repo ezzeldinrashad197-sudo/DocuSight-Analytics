@@ -1,4 +1,4 @@
-import { calculateCanonicalKPIs, getBusinessEntityKey, getStatusCodeCategory, processRevisionEngine } from '../calculationFoundation';
+import { calculateCanonicalKPIs, getBusinessEntityKey, getStatusCodeCategory, processRevisionEngine, classifyRow } from '../calculationFoundation';
 import { SubmittalRow } from '../../types';
 import { normalizeData } from '../../utils/calculations';
 
@@ -286,16 +286,19 @@ export function runCanonicalCalculationTests(): { name: string; passed: boolean;
   });
 
   // Test 8: User Case C: Rev 0 (OPEN/C) -> Rev 1 (CLOSED/D)
-  test('ER-008: Rev 0 (Open/C) + Rev 1 (Closed/D) -> Unique=1, RejectedClosed=1, RejectedOpen=0', () => {
+  test('ER-008: Rev 0 (Open/C) + Rev 1 (Closed/D) -> Unique=1, Approved=1, Closed=1, RejectedOpen=0, RejectedClosed=0', () => {
     const rows: SubmittalRow[] = [
       { id: '1', docNo: 'SUB-001', rev: '00', sheetNo: '01', documentType: 'DOC', discipline: 'STR', trade: 'Structural', workflowStage: 'Rejected', status: 'C', recordStatus: 'OPEN', submissionDate: '2026-01-01', dueDate: '', responseDate: '2026-01-05', logType: 'DOC', contractor: '', consultant: '', remarks: '', area: '', tradeSystem: '', isLatestRev: false, isRev0: true, delayDays: 0, overdue: false },
-      { id: '2', docNo: 'SUB-001', rev: '01', sheetNo: '01', documentType: 'DOC', discipline: 'STR', trade: 'Structural', workflowStage: 'Rejected', status: 'D', recordStatus: 'CLOSED', submissionDate: '2026-01-10', dueDate: '', responseDate: '2026-01-15', logType: 'DOC', contractor: '', consultant: '', remarks: '', area: '', tradeSystem: '', isLatestRev: true, isRev0: false, delayDays: 0, overdue: false },
+      { id: '2', docNo: 'SUB-001', rev: '01', sheetNo: '01', documentType: 'DOC', discipline: 'STR', trade: 'Structural', workflowStage: 'Disapproved', status: 'D', recordStatus: 'CLOSED', submissionDate: '2026-01-10', dueDate: '', responseDate: '2026-01-15', logType: 'DOC', contractor: '', consultant: '', remarks: '', area: '', tradeSystem: '', isLatestRev: true, isRev0: false, delayDays: 0, overdue: false },
     ];
 
     const kpi = calculateCanonicalKPIs(rows);
     if (kpi.totalUniqueDrawings !== 1) throw new Error(`Expected Unique=1, got ${kpi.totalUniqueDrawings}`);
-    if (kpi.rejectedClosed !== 1) throw new Error(`Expected Rejected Closed=1, got ${kpi.rejectedClosed}`);
+    if (kpi.approved !== 1 || kpi.currentApproved !== 1) throw new Error(`Expected Approved=1 for Code D, got ${kpi.approved}`);
+    if (kpi.rejectedClosed !== 0) throw new Error(`Expected Rejected Closed=0, got ${kpi.rejectedClosed}`);
     if (kpi.rejectedOpen !== 0) throw new Error(`Expected Rejected Open=0, got ${kpi.rejectedOpen}`);
+    if (kpi.currentClosed !== 1) throw new Error(`Expected currentClosed=1, got ${kpi.currentClosed}`);
+    if (kpi.currentOpen !== 0) throw new Error(`Expected currentOpen=0, got ${kpi.currentOpen}`);
   });
 
   // Test 9: Overdue Backlog Evaluation
@@ -373,10 +376,10 @@ export function runCanonicalCalculationTests(): { name: string; passed: boolean;
       // Item 1: Rev 0 Rejected Open -> Rev 1 Approved
       { id: '1', docNo: 'ITEM-1', rev: '00', sheetNo: '01', documentType: 'DOC', discipline: 'STR', trade: 'Structural', workflowStage: 'Rejected', status: 'C', recordStatus: 'OPEN', submissionDate: '2026-01-01', dueDate: '', responseDate: '2026-01-05', logType: 'DOC', contractor: '', consultant: '', remarks: '', area: '', tradeSystem: '', isLatestRev: false, isRev0: true, delayDays: 0, overdue: false },
       { id: '2', docNo: 'ITEM-1', rev: '01', sheetNo: '01', documentType: 'DOC', discipline: 'STR', trade: 'Structural', workflowStage: 'Approved', status: 'A', recordStatus: 'CLOSED', submissionDate: '2026-01-10', dueDate: '', responseDate: '2026-01-15', logType: 'DOC', contractor: '', consultant: '', remarks: '', area: '', tradeSystem: '', isLatestRev: true, isRev0: false, delayDays: 0, overdue: false },
-      // Item 2: Rev 0 Rejected Open -> Rev 1 Rejected Open -> Rev 2 Rejected Closed
+      // Item 2: Rev 0 Rejected Open -> Rev 1 Rejected Open -> Rev 2 Rejected Closed (C + Closed)
       { id: '3', docNo: 'ITEM-2', rev: '00', sheetNo: '01', documentType: 'DOC', discipline: 'STR', trade: 'Structural', workflowStage: 'Rejected', status: 'C', recordStatus: 'OPEN', submissionDate: '2026-01-01', dueDate: '', responseDate: '2026-01-05', logType: 'DOC', contractor: '', consultant: '', remarks: '', area: '', tradeSystem: '', isLatestRev: false, isRev0: true, delayDays: 0, overdue: false },
       { id: '4', docNo: 'ITEM-2', rev: '01', sheetNo: '01', documentType: 'DOC', discipline: 'STR', trade: 'Structural', workflowStage: 'Rejected', status: 'C', recordStatus: 'OPEN', submissionDate: '2026-01-08', dueDate: '', responseDate: '2026-01-12', logType: 'DOC', contractor: '', consultant: '', remarks: '', area: '', tradeSystem: '', isLatestRev: false, isRev0: false, delayDays: 0, overdue: false },
-      { id: '5', docNo: 'ITEM-2', rev: '02', sheetNo: '01', documentType: 'DOC', discipline: 'STR', trade: 'Structural', workflowStage: 'Rejected', status: 'D', recordStatus: 'CLOSED', submissionDate: '2026-01-15', dueDate: '', responseDate: '2026-01-20', logType: 'DOC', contractor: '', consultant: '', remarks: '', area: '', tradeSystem: '', isLatestRev: true, isRev0: false, delayDays: 0, overdue: false },
+      { id: '5', docNo: 'ITEM-2', rev: '02', sheetNo: '01', documentType: 'DOC', discipline: 'STR', trade: 'Structural', workflowStage: 'Rejected', status: 'C', recordStatus: 'CLOSED', submissionDate: '2026-01-15', dueDate: '', responseDate: '2026-01-20', logType: 'DOC', contractor: '', consultant: '', remarks: '', area: '', tradeSystem: '', isLatestRev: true, isRev0: false, delayDays: 0, overdue: false },
       // Item 3: Rev 0 Pending
       { id: '6', docNo: 'ITEM-3', rev: '00', sheetNo: '01', documentType: 'DOC', discipline: 'STR', trade: 'Structural', workflowStage: 'Pending', status: 'W', recordStatus: 'OPEN', submissionDate: '2026-01-01', dueDate: '', responseDate: '', logType: 'DOC', contractor: '', consultant: '', remarks: '', area: '', tradeSystem: '', isLatestRev: true, isRev0: true, delayDays: 0, overdue: false },
     ];
@@ -391,14 +394,14 @@ export function runCanonicalCalculationTests(): { name: string; passed: boolean;
 
     // 2. Current Unique Item Grain Assertions
     if (kpi.totalUniqueDrawings !== 3) throw new Error(`Expected 3 unique items, got ${kpi.totalUniqueDrawings}`);
-    if (kpi.currentApproved !== 1 || kpi.approved !== 1) throw new Error(`Expected 1 current approved item, got ${kpi.currentApproved}`);
-    if (kpi.currentRejectedClosed !== 1 || kpi.rejectedClosed !== 1) throw new Error(`Expected 1 current rejected closed item, got ${kpi.currentRejectedClosed}`);
+    if (kpi.currentApproved !== 2 || kpi.approved !== 2) throw new Error(`Expected 2 current approved items (ITEM-1 and ITEM-2 closed), got ${kpi.currentApproved}`);
+    if (kpi.currentRejectedClosed !== 0 || kpi.rejectedClosed !== 0) throw new Error(`Expected 0 current rejected closed items, got ${kpi.currentRejectedClosed}`);
     if (kpi.currentRejectedOpen !== 0 || kpi.rejectedOpen !== 0) throw new Error(`Expected 0 current rejected open items, got ${kpi.currentRejectedOpen}`);
-    if (kpi.currentRejected !== 1) throw new Error(`Expected 1 current total rejected item, got ${kpi.currentRejected}`);
+    if (kpi.currentRejected !== 0) throw new Error(`Expected 0 current total rejected items, got ${kpi.currentRejected}`);
     if (kpi.currentPending !== 1 || kpi.pending !== 1) throw new Error(`Expected 1 current pending item, got ${kpi.currentPending}`);
     
     // 3. Historical Rejection Resolution Assertions
-    if (kpi.resolvedRejections !== 1) throw new Error(`Expected 1 resolved rejection (ITEM-1), got ${kpi.resolvedRejections}`);
+    if (kpi.resolvedRejections !== 2) throw new Error(`Expected 2 resolved rejections, got ${kpi.resolvedRejections}`);
   });
 
   // Test 13: Case Normalization across lower/upper/mixed strings ('c', 'C', 'closed', 'w')
@@ -414,7 +417,7 @@ export function runCanonicalCalculationTests(): { name: string; passed: boolean;
     if (kpi.totalRejectedRows !== 2) throw new Error(`Expected 2 total rejected rows, got ${kpi.totalRejectedRows}`);
     if (kpi.rejectedOpenRows !== 1) throw new Error(`Expected 1 rejected open row, got ${kpi.rejectedOpenRows}`);
     if (kpi.rejectedClosedRows !== 1) throw new Error(`Expected 1 rejected closed row, got ${kpi.rejectedClosedRows}`);
-    if (kpi.approved !== 1) throw new Error(`Expected 1 approved item, got ${kpi.approved}`);
+    if (kpi.approved !== 2) throw new Error(`Expected 2 approved items in unique current grain, got ${kpi.approved}`);
     if (kpi.pending !== 1) throw new Error(`Expected 1 pending item, got ${kpi.pending}`);
   });
 
@@ -486,6 +489,102 @@ export function runCanonicalCalculationTests(): { name: string; passed: boolean;
     if (kpi.currentApproved !== 1) throw new Error(`Expected currentApproved=1, got ${kpi.currentApproved}`);
     if (kpi.currentRejected !== 0) throw new Error(`Expected currentRejected=0, got ${kpi.currentRejected}`);
     if (kpi.resolvedRejections !== 1) throw new Error(`Expected resolvedRejections=1, got ${kpi.resolvedRejections}`);
+  });
+
+  // Test 17: ER-017: Code D -> APPROVED (Closed=true, Approved=true, distinct from REJECTED_CLOSED)
+  test('ER-017: Code D -> APPROVED maintains Closed=true, Approved=true, and distinct status from REJECTED_CLOSED', () => {
+    // 1. Single row classification verification across all canonical codes
+    const catA = classifyRow('A', 'CLOSED');
+    const catB = classifyRow('B', 'CLOSED');
+    const catCOpen = classifyRow('C', 'OPEN');
+    const catCClsd = classifyRow('C', 'CLOSED');
+    const catD = classifyRow('D', 'CLOSED');
+    const catDDisappr = classifyRow('DISAPPROVED', 'CLOSED');
+
+    if (catA !== 'APPROVED') throw new Error(`Expected A -> APPROVED, got ${catA}`);
+    if (catB !== 'APPROVED') throw new Error(`Expected B -> APPROVED, got ${catB}`);
+    if (catCOpen !== 'REJECTED_OPEN') throw new Error(`Expected C + Open -> REJECTED_OPEN, got ${catCOpen}`);
+    if (catCClsd !== 'REJECTED_CLOSED') throw new Error(`Expected C + Closed -> REJECTED_CLOSED, got ${catCClsd}`);
+    if (catD !== 'APPROVED') throw new Error(`Expected D -> APPROVED, got ${catD}`);
+    if (catDDisappr !== 'APPROVED') throw new Error(`Expected DISAPPROVED -> APPROVED, got ${catDDisappr}`);
+
+    // 2. Row grain & item grain validation for Code D
+    const rowD: SubmittalRow = {
+      id: 'D-01',
+      docNo: 'ITEM-D-FINAL-01',
+      rev: '00',
+      sheetNo: '01',
+      documentType: 'DOC',
+      discipline: 'STR',
+      trade: 'Structural',
+      workflowStage: 'Disapproved',
+      status: 'D',
+      recordStatus: 'CLOSED',
+      submissionDate: '2026-01-01',
+      dueDate: '',
+      responseDate: '2026-01-05',
+      logType: 'DOC',
+      contractor: '',
+      consultant: '',
+      remarks: '',
+      area: '',
+      tradeSystem: '',
+      isLatestRev: true,
+      isRev0: true,
+      delayDays: 0,
+      overdue: false
+    };
+
+    const statusCode = getStatusCodeCategory(rowD);
+    if (statusCode !== 'APPROVED') throw new Error(`Expected getStatusCodeCategory(rowD) === APPROVED, got ${statusCode}`);
+
+    const kpi = calculateCanonicalKPIs([rowD]);
+
+    // Rigorous assertions
+    if (kpi.totalSubmittedSheets !== 1) throw new Error(`Expected totalSubmittedSheets=1, got ${kpi.totalSubmittedSheets}`);
+    if (kpi.approved !== 1 || kpi.currentApproved !== 1) throw new Error(`Expected Approved=1 for Code D, got ${kpi.approved}`);
+    if (kpi.rowApproved !== 1) throw new Error(`Expected rowApproved=1 for Code D, got ${kpi.rowApproved}`);
+    if (kpi.rejectedClosed !== 0 || kpi.rejectedClosedRows !== 0) throw new Error(`Expected RejectedClosed=0 for Code D, got ${kpi.rejectedClosed}`);
+    if (kpi.rejectedOpen !== 0 || kpi.rejectedOpenRows !== 0) throw new Error(`Expected RejectedOpen=0 for Code D, got ${kpi.rejectedOpen}`);
+    if (kpi.currentClosed !== 1) throw new Error(`Expected currentClosed=1 for Code D, got ${kpi.currentClosed}`);
+    if (kpi.currentOpen !== 0) throw new Error(`Expected currentOpen=0 for Code D, got ${kpi.currentOpen}`);
+    if (kpi.approvalRate !== 100) throw new Error(`Expected approvalRate=100% for Code D, got ${kpi.approvalRate}`);
+
+    // 3. Validation for Code C + Closed: Single-row/Historical grain is REJECTED_CLOSED, Current-state grain is APPROVED (closed)
+    const rowCClsd: SubmittalRow = {
+      id: 'C-01',
+      docNo: 'ITEM-C-CLOSED-01',
+      rev: '00',
+      sheetNo: '01',
+      documentType: 'DOC',
+      discipline: 'STR',
+      trade: 'Structural',
+      workflowStage: 'Rejected',
+      status: 'C',
+      recordStatus: 'CLOSED',
+      submissionDate: '2026-01-01',
+      dueDate: '',
+      responseDate: '2026-01-05',
+      logType: 'DOC',
+      contractor: '',
+      consultant: '',
+      remarks: '',
+      area: '',
+      tradeSystem: '',
+      isLatestRev: true,
+      isRev0: true,
+      delayDays: 0,
+      overdue: false
+    };
+
+    const statusCodeC = getStatusCodeCategory(rowCClsd);
+    if (statusCodeC !== 'REJECTED_CLOSED') throw new Error(`Expected getStatusCodeCategory(rowCClsd) === REJECTED_CLOSED, got ${statusCodeC}`);
+
+    const kpiC = calculateCanonicalKPIs([rowCClsd]);
+    if (kpiC.rejectedClosedRows !== 1) throw new Error(`Expected rejectedClosedRows=1 for Code C Closed in historical row grain, got ${kpiC.rejectedClosedRows}`);
+    if (kpiC.approved !== 1 || kpiC.currentApproved !== 1) throw new Error(`Expected Approved=1 for Code C Closed in unique item grain, got ${kpiC.approved}`);
+    if (kpiC.rejectedClosed !== 0 || kpiC.currentRejectedClosed !== 0) throw new Error(`Expected RejectedClosed=0 for Code C Closed in unique item grain, got ${kpiC.rejectedClosed}`);
+    if (kpiC.currentClosed !== 1) throw new Error(`Expected currentClosed=1 for Code C Closed, got ${kpiC.currentClosed}`);
   });
 
   return testResults;

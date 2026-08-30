@@ -1,6 +1,6 @@
 import { SubmittalRow } from '../types';
  
-export type CanonicalStatus = 'APPROVED' | 'REJECTED_OPEN' | 'REJECTED_CLOSED' | 'PENDING' | 'UNCLASSIFIED';
+export type CanonicalStatus = 'APPROVED' | 'REJECTED_OPEN' | 'REJECTED_CLOSED' | 'FINAL_CLOSED' | 'PENDING' | 'UNCLASSIFIED';
 export type StatusCategory = 'OPEN' | 'CLOSED' | 'REJECTED' | 'UNKNOWN';
 
 /**
@@ -33,7 +33,7 @@ export const getStatusCategory = (
  * Evaluates row review outcome strictly from Code.
  * Status is only used to distinguish whether an active Code C rejection is Open or Closed.
  */
-export function classifyRow(code?: string, status?: string): 'APPROVED' | 'REJECTED_OPEN' | 'REJECTED_CLOSED' | 'PENDING' | 'UNCLASSIFIED' {
+export function classifyRow(code?: string, status?: string): CanonicalStatus {
   const c = normalizeCanonicalString(code);
   const s = String(status || '').trim();
   const sUpper = s.toUpperCase();
@@ -47,14 +47,9 @@ export function classifyRow(code?: string, status?: string): 'APPROVED' | 'REJEC
     cleanCode = cleanCode.substring(5).trim();
   }
 
-  // Code A or Code B -> Approved
-  if (cleanCode === 'A' || cleanCode === 'B' || cleanCode === 'APPROVED' || cleanCode === 'ACCEPTED') {
+  // Code A or Code B or Code D -> Approved (Code D = Disapproved / Final Closed = No Further Submission)
+  if (cleanCode === 'A' || cleanCode === 'B' || cleanCode === 'D' || cleanCode === 'APPROVED' || cleanCode === 'ACCEPTED' || cleanCode === 'DISAPPROVED') {
     return 'APPROVED';
-  }
-
-  // Code D -> Rejected Closed (Final rejection, never resubmitted under this ref. ALWAYS closed)
-  if (cleanCode === 'D' || cleanCode === 'DISAPPROVED') {
-    return 'REJECTED_CLOSED';
   }
 
   // Code C -> "revise & resubmit". Status determines whether Open or Closed
@@ -79,20 +74,19 @@ export function classifyRow(code?: string, status?: string): 'APPROVED' | 'REJEC
  * 2. Submission Resolver (Priority across sheets at latest revision)
  */
 export function classifySubmission(
-  sheetsAtLatestRevision: ('APPROVED' | 'REJECTED_OPEN' | 'REJECTED_CLOSED' | 'PENDING' | 'approved' | 'rejected_open' | 'rejected_closed' | 'pending' | 'UNCLASSIFIED' | 'unclassified')[]
-): 'APPROVED' | 'REJECTED_OPEN' | 'REJECTED_CLOSED' | 'PENDING' | 'UNCLASSIFIED' {
-  const normalized = sheetsAtLatestRevision.map(s => s.toUpperCase());
+  sheetsAtLatestRevision: (CanonicalStatus | string)[]
+): CanonicalStatus {
+  const normalized = sheetsAtLatestRevision.map(s => String(s).toUpperCase());
   if (normalized.includes('REJECTED_OPEN')) return 'REJECTED_OPEN';   // highest priority — needs action
-  if (normalized.includes('REJECTED_CLOSED')) return 'REJECTED_CLOSED';
   if (normalized.includes('PENDING')) return 'PENDING';
   if (normalized.includes('UNCLASSIFIED')) return 'UNCLASSIFIED';
-  return 'APPROVED'; // only if every sheet at the latest revision is approved
+  return 'APPROVED'; // All sheets at latest revision are concluded/closed (APPROVED, REJECTED_CLOSED, FINAL_CLOSED) -> Current Approved
 }
 
 /**
  * 3. Deterministic Canonical Status Resolver (Section B & L of Master Prompt)
  */
-export function getStatusCodeCategory(codeOrRow?: string | SubmittalRow): 'APPROVED' | 'REJECTED_OPEN' | 'REJECTED_CLOSED' | 'PENDING' | 'UNCLASSIFIED' {
+export function getStatusCodeCategory(codeOrRow?: string | SubmittalRow): CanonicalStatus {
   if (!codeOrRow) return 'UNCLASSIFIED';
 
   let rawCode = '';
@@ -214,13 +208,14 @@ export function getStatusCodeCategory(codeOrRow?: string | SubmittalRow): 'APPRO
 
 
 /** Canonical adapter for downstream record/KPI models. */
-export type RecordNormalizedStatus = 'APPROVED' | 'REJECTED_OPEN' | 'REJECTED_CLOSED' | 'PENDING' | 'CLOSED' | 'OPEN' | 'UNCLASSIFIED';
+export type RecordNormalizedStatus = 'APPROVED' | 'REJECTED_OPEN' | 'REJECTED_CLOSED' | 'FINAL_CLOSED' | 'PENDING' | 'CLOSED' | 'OPEN' | 'UNCLASSIFIED';
 
 export const getRecordNormalizedStatus = (row: SubmittalRow): RecordNormalizedStatus => {
   const category = getStatusCodeCategory(row);
   if (category === 'APPROVED') return 'APPROVED';
   if (category === 'REJECTED_OPEN') return 'REJECTED_OPEN';
   if (category === 'REJECTED_CLOSED') return 'REJECTED_CLOSED';
+  if (category === 'FINAL_CLOSED') return 'FINAL_CLOSED';
   if (category === 'PENDING') return 'PENDING';
 
   const raw = normalizeCanonicalString(row.status || row.recordStatus || row.workflowStage || row.action);

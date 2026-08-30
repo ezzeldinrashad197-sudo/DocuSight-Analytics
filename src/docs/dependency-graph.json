@@ -643,6 +643,10 @@
       "target": "src/analytics/revisionResolver.ts"
     },
     {
+      "source": "src/analytics/analyticsCore.ts",
+      "target": "src/analytics/statusResolver.ts"
+    },
+    {
       "source": "src/analytics/analyticsService.ts",
       "target": "src/analytics/models.ts"
     },

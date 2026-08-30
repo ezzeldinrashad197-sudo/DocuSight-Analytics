@@ -181,6 +181,7 @@ digraph DependencyGraph {
   "src/analytics/analyticsCore.ts" -> "src/types.ts";
   "src/analytics/analyticsCore.ts" -> "src/utils/statusMatrixEngine.ts";
   "src/analytics/analyticsCore.ts" -> "src/analytics/revisionResolver.ts";
+  "src/analytics/analyticsCore.ts" -> "src/analytics/statusResolver.ts";
   "src/analytics/analyticsService.ts" -> "src/analytics/models.ts";
   "src/analytics/calculationFoundation.ts" -> "src/types.ts";
   "src/analytics/calculationFoundation.ts" -> "src/analytics/analyticsCore.ts";

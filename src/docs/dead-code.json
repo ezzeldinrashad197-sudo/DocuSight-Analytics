@@ -122,6 +122,14 @@
     },
     {
       "file": "src/analytics/calculationFoundation.ts",
+      "exportName": "classifySubmission",
+      "type": "Constant/Enum/Class",
+      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+      "reason": "No incoming imports of 'classifySubmission' detected in any active source modules.",
+      "referencedBy": []
+    },
+    {
+      "file": "src/analytics/calculationFoundation.ts",
       "exportName": "DataQualityIssue",
       "type": "Type/Interface",
       "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
@@ -1054,6 +1062,22 @@
       "type": "Constant/Enum/Class",
       "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
       "reason": "No incoming imports of 'mapDocumentToWorkflow' detected in any active source modules.",
+      "referencedBy": []
+    },
+    {
+      "file": "src/utils/calculations.ts",
+      "exportName": "classifyRow",
+      "type": "Constant/Enum/Class",
+      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+      "reason": "No incoming imports of 'classifyRow' detected in any active source modules.",
+      "referencedBy": []
+    },
+    {
+      "file": "src/utils/calculations.ts",
+      "exportName": "classifySubmission",
+      "type": "Constant/Enum/Class",
+      "confidence": "100% (Strict Compiler-grade AST symbol resolution)",
+      "reason": "No incoming imports of 'classifySubmission' detected in any active source modules.",
       "referencedBy": []
     },
     {

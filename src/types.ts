@@ -136,7 +136,8 @@ export interface KPIStats {
   rowPending?: number;          // Total rows with Pending / No Response / Waiting Status
   totalRejectedRows: number;    // Total rows with Rejected Status (Open or Closed)
   rejectedOpenRows: number;     // Total rows with Rejected Open Status (e.g. Code C Open)
-  rejectedClosedRows: number;   // Total rows with Rejected Closed Status (e.g. Code C Closed, Code D)
+  rejectedClosedRows: number;   // Total rows with Rejected Closed Status (e.g. Code C Closed)
+  finalClosedRows?: number;     // Total rows with Final Closed Status (Code D)
 
   // 2. Current State Metrics (Grain: Unique Entity / Latest Valid Revision)
   totalUniqueDrawings: number;  // Total Unique SUB Ref
@@ -144,15 +145,17 @@ export interface KPIStats {
   currentApproved: number;      // Current Approved Items (Unique grain)
   currentRejectedOpen: number;  // Current Rejected Open Items (Unique grain)
   currentRejectedClosed: number;// Current Rejected Closed Items (Unique grain)
+  currentFinalClosed?: number;  // Current Final Closed Items (Unique grain: Code D)
   currentRejected: number;      // Current Rejected Items (Unique grain: Open + Closed)
   currentPending: number;       // Current Pending Items (Unique grain)
   currentOpen: number;          // Current Open Items (Unique grain: Pending + Rejected Open)
-  currentClosed: number;        // Current Closed Items (Unique grain: Approved + Rejected Closed)
+  currentClosed: number;        // Current Closed Items (Unique grain: Approved + Rejected Closed + Final Closed)
 
   // Standard & Backwards Compatible Aliases
   approved: number;             // Approved Current Items (Alias for currentApproved)
   rejectedOpen: number;         // Rejected Open Current Items (Alias for currentRejectedOpen)
   rejectedClosed: number;       // Rejected Closed Current Items (Alias for currentRejectedClosed)
+  finalClosed?: number;         // Final Closed Current Items (Alias for currentFinalClosed)
   totalRejected?: number;       // Rejected Open + Rejected Closed (Combined)
   pending: number;              // Pending Current Items (Alias for currentPending)
   unclassified?: number;        // Unclassified Current Items
