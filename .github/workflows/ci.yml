@@ -24,7 +24,7 @@ jobs:
       - name: Install Project Dependencies (Strict npm ci)
         run: npm ci
 
-       - name: 'Gate 1: Type Integrity & Syntax Lint (tsc --noEmit)'
+      - name: 'Gate 1: Type Integrity & Syntax Lint (tsc --noEmit)'
         run: npm run lint
 
       - name: Gate 2: Architecture & SSOT Compliance Audit
