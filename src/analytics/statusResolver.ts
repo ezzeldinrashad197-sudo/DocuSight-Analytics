@@ -77,10 +77,11 @@ export function classifySubmission(
   sheetsAtLatestRevision: (CanonicalStatus | string)[]
 ): CanonicalStatus {
   const normalized = sheetsAtLatestRevision.map(s => String(s).toUpperCase());
-  if (normalized.includes('REJECTED_OPEN')) return 'REJECTED_OPEN';   // highest priority — needs action
+   if (normalized.includes('REJECTED_OPEN')) return 'REJECTED_OPEN';   // highest priority — needs action
+  if (normalized.includes('REJECTED_CLOSED')) return 'REJECTED_CLOSED'; // rejected via Code C and closed without ever being approved — must NOT collapse into Approved
   if (normalized.includes('PENDING')) return 'PENDING';
   if (normalized.includes('UNCLASSIFIED')) return 'UNCLASSIFIED';
-  return 'APPROVED'; // All sheets at latest revision are concluded/closed (APPROVED, REJECTED_CLOSED, FINAL_CLOSED) -> Current Approved
+  return 'APPROVED'; // only if every sheet at the latest revision is genuinely approved (Code A/B/D)
 }
 
 /**
