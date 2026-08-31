@@ -446,24 +446,20 @@ export const parseExcelFile = (file: File): Promise<SubmittalRow[]> => {
             const compDisc = compIdent?.discipline;
             const isCompDiscValid = compDisc && compDisc !== 'UNCLASSIFIED';
 
-            if (
+                        // ARCHITECTURE FIX (2026-08-30): register/sheet identity (compIdent) is now
+            // ALWAYS authoritative for grouping when valid — confirmed by domain owner.
+            // The row's own Discipline/Trade column no longer fragments a sheet's rows
+            // into different discipline groups; it's preserved separately for display via
+            // rawSourceIdentity/contextDiscipline, but never overrides classification.
+            if (isCompDiscValid) {
+              disciplineVal = compDisc;
+            } else if (
               rawDiscipline &&
               rawDiscipline.length > 0 &&
               !["YES", "NO", "N/A", "-", "NONE", "NULL"].includes(rawDiscipline)
             ) {
               const extracted = extractDiscipline(rawDiscipline);
-              if (extracted && extracted !== 'GEN') {
-                disciplineVal = extracted;
-              } else if (isCompDiscValid && (rawDiscipline === 'GEN' || rawDiscipline === 'GENERAL')) {
-                // Evidence Protection Rule:
-                // Level 1 / Level 2 composite identity (e.g. WIR-ARCH) MUST NOT be overwritten by generic row value
-                disciplineVal = compDisc;
-              } else {
-                disciplineVal = rawDiscipline;
-              }
-            } else if (isCompDiscValid) {
-              // Inherit from CompositeIdentity if no explicit row discipline
-              disciplineVal = compDisc;
+              disciplineVal = extracted || rawDiscipline;
             } else {
               const refString = (
                 colNcrRef >= 0
