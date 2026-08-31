@@ -27,17 +27,17 @@ jobs:
       - name: 'Gate 1: Type Integrity & Syntax Lint (tsc --noEmit)'
         run: npm run lint
 
-      - name: Gate 2: Architecture & SSOT Compliance Audit
+      - name: 'Gate 2: Architecture & SSOT Compliance Audit'
         run: npm run architecture-audit
 
-      - name: Gate 3: Unit Tests, Mathematical Invariants & Stress Benchmarks
+      - name: 'Gate 3: Unit Tests, Mathematical Invariants & Stress Benchmarks'
         run: npm run test
 
-      - name: Gate 4: Zero-Trust Authentication, Tenant Isolation & Negative Auth Tests
+      - name: 'Gate 4: Zero-Trust Authentication, Tenant Isolation & Negative Auth Tests'
         run: npm run test:auth
 
-      - name: Gate 5: End-to-End Integration & Golden Dataset Parity (0 Variance)
-        run: npx tsx scripts/run-integration-tests.ts
+      - name: 'Gate 5: End-to-End Integration & Golden Dataset Parity (0 Variance)'
+        run: npm run run-integration-tests
 
-      - name: Gate 6: Production Build & Asset Verification
+      - name: 'Gate 6: Production Build & Asset Verification'
         run: npm run build

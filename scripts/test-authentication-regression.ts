@@ -26,7 +26,7 @@ function assert(condition: boolean, testName: string, detail?: string) {
 const expectedHashes = {
   'src/utils/calculations.ts': '6d14efc35605055252dda85f2dbd14beca87ab17f6214646ccf9907da5465abf', // updated 2026-08-27: export classifyRow and classifySubmission
   'src/test-datasets/GOLDEN_REGRESSION_BASELINE.json': 'cf28ee271e70d502e826f7da120b1a4a0aa583c7d37af23892bc9b2be9c72ade',
-  'firestore.rules': 'b273f4a4a8fe2cd4aaad1e293892a5c23bdf7612262a45bf08b2942fe57409e4'
+  'firestore.rules': 'bb2654c3a03fa1aac102d1deab55ea2995de06a750ee2aa4dbc04021971d4344'
 };
 
 for (const [relPath, expectedHash] of Object.entries(expectedHashes)) {
@@ -385,6 +385,15 @@ function evaluateFirestoreSecurityRuleAccess(user: { uid: string; role: string; 
     if (action === 'write') return isEditor && isProjectMember;
   }
 
+  if (collection === 'security_test_history') {
+    if (action === 'read') return isAdmin || isEditor;
+    if (action === 'write') return isAdmin; // only create
+  }
+
+  if (collection === 'security_test_history_update' || collection === 'security_test_history_delete') {
+    return false; // update and delete are strictly false in rules
+  }
+
   return false;
 }
 
@@ -541,7 +550,7 @@ async function runLiveHttpSuite() {
     try {
       let got429 = false;
       let finalStatus = 0;
-      for (let i = 0; i < 25; i++) {
+      for (let i = 0; i < 60; i++) {
         const resp = await fetch(`${baseUrl}/api/insights`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -561,6 +570,44 @@ async function runLiveHttpSuite() {
     } catch (e: any) {
       assert(false, 'AUTH-022: Rate Limiting Enforcement — Real HTTP POST /api/insights', e.message);
     }
+
+    // AUTH-023: Rate Limiting on POST /api/link-identity (P1-07)
+    try {
+      let got429 = false;
+      let finalStatus = 0;
+      for (let i = 0; i < 25; i++) {
+        const resp = await fetch(`${baseUrl}/api/link-identity`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ idToken: 'test-token-for-rate-limit' })
+        });
+        finalStatus = resp.status;
+        if (resp.status === 429) {
+          got429 = true;
+          break;
+        }
+      }
+      assert(
+        got429,
+        'AUTH-023: Rate Limiting Enforcement — Real HTTP POST /api/link-identity returns 429 Too Many Requests upon exceeding threshold (P1-07)',
+        `Expected 429 status on link-identity upon exceeding 20 req/15min, last status received: ${finalStatus}`
+      );
+    } catch (e: any) {
+      assert(false, 'AUTH-023: Rate Limiting Enforcement — Real HTTP POST /api/link-identity', e.message);
+    }
+
+    // AUTH-024: Security Test History Firestore Rules Immutability (P1-08)
+    const adminUser = { uid: 'admin-sec-1', role: 'all' };
+    const viewerUser = { uid: 'viewer-sec-1', role: 'viewer' };
+    const unauthSecWrite = evaluateFirestoreSecurityRuleAccess(viewerUser, { projectId: 'global' }, 'write', 'security_test_history');
+    const authSecWrite = evaluateFirestoreSecurityRuleAccess(adminUser, { projectId: 'global' }, 'write', 'security_test_history');
+    const updateSecBlocked = evaluateFirestoreSecurityRuleAccess(adminUser, { projectId: 'global' }, 'write', 'security_test_history_update');
+    const deleteSecBlocked = evaluateFirestoreSecurityRuleAccess(adminUser, { projectId: 'global' }, 'write', 'security_test_history_delete');
+    
+    assert(
+      unauthSecWrite === false && authSecWrite === true && updateSecBlocked === false && deleteSecBlocked === false,
+      'AUTH-024: Security Test History Rules — Unauthorized write DENIED, Admin creation ALLOWED, Update/Delete FORBIDDEN (P1-08)'
+    );
 
   } finally {
     if (server) {

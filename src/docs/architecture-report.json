@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "generatedAt": "2026-08-30T11:27:41.778Z",
+    "generatedAt": "2026-08-30T14:44:08.441Z",
     "totalFilesScanned": 80,
     "architecturalViolations": 9,
     "complianceScore": 55,
@@ -3408,21 +3408,21 @@
     },
     {
       "callerFile": "src/analytics/statusResolver.ts",
-      "line": 205,
+      "line": 213,
       "context": "classifyRow(effectiveCode, effectiveStatus)",
       "destination": "src/utils/calculations.ts::classifyRow",
       "functionName": "classifyRow"
     },
     {
       "callerFile": "src/analytics/statusResolver.ts",
-      "line": 215,
+      "line": 223,
       "context": "getStatusCodeCategory(row)",
       "destination": "src/utils/calculations.ts::getStatusCodeCategory",
       "functionName": "getStatusCodeCategory"
     },
     {
       "callerFile": "src/analytics/statusResolver.ts",
-      "line": 222,
+      "line": 230,
       "context": "normalizeCanonicalString(row.status || row.recordStatus || row.workflowStage || row.action)",
       "destination": "src/utils/calculations.ts::normalizeCanonicalString",
       "functionName": "normalizeCanonicalString"
@@ -4045,7 +4045,7 @@
     },
     {
       "callerFile": "src/firebase.ts",
-      "line": 163,
+      "line": 164,
       "context": "handleFirestoreError(err, OperationType.WRITE, `project_stats/${projectId}`)",
       "destination": "src/utils/calculations.ts::handleFirestoreError",
       "functionName": "handleFirestoreError"

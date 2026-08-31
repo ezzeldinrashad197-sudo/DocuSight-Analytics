@@ -311,9 +311,9 @@ digraph CallGraph {
   "src/analytics/statusResolver.ts" -> "src/utils/calculations.ts::normalizeCanonicalString" [label="line 111", fontname="Courier", fontsize=8];
   "src/analytics/statusResolver.ts" -> "src/utils/calculations.ts::normalizeCanonicalString" [label="line 112", fontname="Courier", fontsize=8];
   "src/analytics/statusResolver.ts" -> "src/utils/calculations.ts::normalizeCanonicalString" [label="line 123", fontname="Courier", fontsize=8];
-  "src/analytics/statusResolver.ts" -> "src/utils/calculations.ts::classifyRow" [label="line 205", fontname="Courier", fontsize=8];
-  "src/analytics/statusResolver.ts" -> "src/utils/calculations.ts::getStatusCodeCategory" [label="line 215", fontname="Courier", fontsize=8];
-  "src/analytics/statusResolver.ts" -> "src/utils/calculations.ts::normalizeCanonicalString" [label="line 222", fontname="Courier", fontsize=8];
+  "src/analytics/statusResolver.ts" -> "src/utils/calculations.ts::classifyRow" [label="line 213", fontname="Courier", fontsize=8];
+  "src/analytics/statusResolver.ts" -> "src/utils/calculations.ts::getStatusCodeCategory" [label="line 223", fontname="Courier", fontsize=8];
+  "src/analytics/statusResolver.ts" -> "src/utils/calculations.ts::normalizeCanonicalString" [label="line 230", fontname="Courier", fontsize=8];
   "src/components/ActionTracker.tsx" -> "src/utils/calculations.ts::getStatusCodeCategory" [label="line 23", fontname="Courier", fontsize=8];
   "src/components/ActionTracker.tsx" -> "src/utils/calculations.ts::getStatusCodeCategory" [label="line 47", fontname="Courier", fontsize=8];
   "src/components/AdvancedAgingAnalysis.tsx" -> "src/utils/calculations.ts::getStatusCodeCategory" [label="line 16", fontname="Courier", fontsize=8];
@@ -402,7 +402,7 @@ digraph CallGraph {
   "src/components/WorkflowMappingCenter.tsx" -> "src/utils/calculations.ts::getLearningRules" [label="line 190", fontname="Courier", fontsize=8];
   "src/components/WorkflowMappingCenter.tsx" -> "src/utils/calculations.ts::mapDocumentToWorkflow" [label="line 209", fontname="Courier", fontsize=8];
   "src/db/index.ts" -> "src/utils/calculations.ts::createPool" [label="line 21", fontname="Courier", fontsize=8];
-  "src/firebase.ts" -> "src/utils/calculations.ts::handleFirestoreError" [label="line 163", fontname="Courier", fontsize=8];
+  "src/firebase.ts" -> "src/utils/calculations.ts::handleFirestoreError" [label="line 164", fontname="Courier", fontsize=8];
   "src/hooks/useExport.ts" -> "src/utils/calculations.ts::generatePptxReport" [label="line 269", fontname="Courier", fontsize=8];
   "src/hooks/useExport.ts" -> "src/utils/calculations.ts::generatePptxReport" [label="line 273", fontname="Courier", fontsize=8];
   "src/hooks/useUpload.ts" -> "src/utils/calculations.ts::processMultiUpload" [label="line 26", fontname="Courier", fontsize=8];
